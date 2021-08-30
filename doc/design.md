@@ -66,12 +66,12 @@ Needs: impl, itest
 
 ## REST API Endpoints
 
-### Execute SQL Statement 
+### Execute SQL Query
 
 #### Execute SQL Statement Endpoint 
 `dsn~execute-sql-statement-endpoint~1`
 
-ERA provide the following endpoint to the API users: `/api/v1/data [post]`
+ERA provide the following endpoint to the API users: `/api/v1/query [get]`
 
 Covers:
 
@@ -121,7 +121,7 @@ Needs: impl, itest
 #### Query Results Limitation
 `dsn~query-results-limitation~1`
 
-The result set has 1000 rows or fewer by default.
+The result set has 1000 rows or fewer.
 
 Covers:
 

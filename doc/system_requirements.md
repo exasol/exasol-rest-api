@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Exasol REST API(ERA) is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints.
+Exasol REST API (ERA) is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints.
 
 ## About This Document
 
