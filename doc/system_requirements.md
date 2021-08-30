@@ -12,12 +12,13 @@ The target audience are end-users, requirement engineers, software designers and
 
 ### Goal
 
-The Exasol REST API's main goal is providing a service for interactions with the Exasol database via REST API.
+The Exasol REST API's main goal is to enable attaching 3rd party products to Exasol that require a REST-compliant web interface.
 
 ### Quality Goals
 
 Exasol REST API's main quality goals are in descending order of importance:
 
+* Standard Compliance
 * Usability
 * Security
 * Performance
@@ -49,14 +50,14 @@ Needs: req
 
 ## Functional Requirements
 
-### Execute SQL Statement
-`req~execute-sql-statement~1`
+### Execute Query
+`req~execute-query~1`
 
-API users can execute SQL statements via REST API and receive results back.
+API users can execute queries via REST API and receive results back.
 
 Rationale:
 
-SQL statement is a programmatic way to interact with a database. If we support SQL statements - we cover the main part of the database functionality.
+Query is a request to access data from a database. If we support queries - we cover the main part of the database read functionality.
 
 Covers:
 

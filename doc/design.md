@@ -38,7 +38,7 @@ ERA uses [Exasol WebSockets API](https://github.com/exasol/websocket-api) to pro
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-query~1`
 
 Needs: impl, itest
 
@@ -49,7 +49,7 @@ Exasol admins create a service account for the ERA proxy service.
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-query~1`
 
 Needs: impl, itest
 
@@ -60,38 +60,38 @@ Exasol admins configure the proxy service with the service account credentials.
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-query~1`
 
 Needs: impl, itest
 
 ## REST API Endpoints
 
-### Execute SQL Query
+### Execute Query
 
-#### Execute SQL Statement Endpoint 
-`dsn~execute-sql-statement-endpoint~1`
+#### Execute Query Endpoint 
+`dsn~execute-query-endpoint~1`
 
 ERA provide the following endpoint to the API users: `/api/v1/query [get]`
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-query~1`
 
 Needs: impl, itest
 
-#### Execute SQL Statement Headers
-`dsn~execute-sql-statement-headers~1`
+#### Execute Query Headers
+`dsn~execute-query-headers~1`
 
 //TODO 
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-query~1`
 
 Needs: impl, itest
 
-#### Execute SQL Statement Request Body
-`dsn~execute-sql-statement-request-body~1`
+#### Execute Query Request Body
+`dsn~execute-query-request-body~1`
 
 ERA accepts the following format of the request body:
 
@@ -103,18 +103,18 @@ ERA accepts the following format of the request body:
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-sql-query~1`
 
 Needs: impl, itest
 
-#### Execute SQL Statement Response Body
-`dsn~execute-sql-statement-response-body~1`
+#### Execute Query Response Body
+`dsn~execute-query-response-body~1`
 
 See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-sql-query~1`
 
 Needs: impl, itest
 
@@ -125,7 +125,7 @@ The result set has 1000 rows or fewer.
 
 Covers:
 
-* `req~execute-sql-statement~1`
+* `req~execute-sql-query~1`
 
 Needs: impl, itest
 
