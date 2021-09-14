@@ -1,26 +1,33 @@
 package exasol_rest_api
 
 import (
-	"context"
 	"github.com/mitchellh/mapstructure"
 )
 
 func Query(query string) (string, error) {
 	connection, _ := openConnection()
-	response, _ := connection.simpleExec(query)
-	err := connection.Close()
+	response, _ := connection.executeQuery(query)
+	err := connection.close()
 	if err != nil {
 		return "", err
 	}
 	return response, nil
 }
 
-func openConnection() (*connection, error) {
+func openConnection() (*websocketConnection, error) {
 	connProperties := readConnectionProperties()
-	exasolConnector := &connector{
-		connProperties: createConnectionProperties(connProperties),
+	connection := &websocketConnection{
+		connProperties: &connProperties,
 	}
-	return exasolConnector.Connect(context.Background())
+	err := connection.connect()
+	if err != nil {
+		return nil, err
+	}
+	err = connection.login()
+	if err != nil {
+		return nil, err
+	}
+	return connection, err
 }
 
 func readConnectionProperties() connectionProperties {
@@ -29,7 +36,7 @@ func readConnectionProperties() connectionProperties {
 	GetPropertiesFromFile("connection-properties.yml", &propertiesAsInterface)
 	err := mapstructure.Decode(propertiesAsInterface, &properties)
 	if err != nil {
-		ErrorLogger.Printf("error reading connection properties: %s", err)
+		ErrorLogger.Printf("error reading websocketConnection properties: %s", err)
 	}
 	return properties
 }
