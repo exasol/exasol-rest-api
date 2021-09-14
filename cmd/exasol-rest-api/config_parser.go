@@ -14,7 +14,6 @@ type connectionProperties struct {
 	ClientName       string
 	ClientVersion    string
 	Schema           string
-	Autocommit       bool
 	FetchSize        int
 	Compression      bool
 	ResultSetMaxRows int
@@ -47,7 +46,6 @@ func getDefaultConfig(host string, port int) *connectionProperties {
 		Host:        host,
 		Port:        port,
 		ApiVersion:  2,
-		Autocommit:  true,
 		Encryption:  true,
 		Compression: false,
 		UseTLS:      false,

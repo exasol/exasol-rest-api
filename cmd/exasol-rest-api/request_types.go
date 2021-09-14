@@ -11,7 +11,6 @@ type LoginCommand struct {
 }
 
 type Attributes struct {
-	Autocommit                  bool   `json:"autocommit,omitempty"`
 	CompressionEnabled          bool   `json:"compressionEnabled,omitempty"`
 	CurrentSchema               string `json:"currentSchema,omitempty"`
 	DateFormat                  string `json:"dateFormat,omitempty"`

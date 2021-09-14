@@ -89,7 +89,6 @@ func (connection *websocketConnection) login() error {
 		ClientVersion:  connection.connProperties.ClientName,
 		ClientRuntime:  runtime.Version(),
 		Attributes: Attributes{
-			Autocommit:         connection.connProperties.Autocommit,
 			CurrentSchema:      connection.connProperties.Schema,
 			CompressionEnabled: hasCompression,
 		},
@@ -99,8 +98,7 @@ func (connection *websocketConnection) login() error {
 		authRequest.ClientOsUsername = osUser.Username
 	}
 
-	authResponse := &AuthResponse{}
-	err = connection.send(context.Background(), authRequest, authResponse)
+	err = connection.send(context.Background(), authRequest, nil)
 	if err != nil {
 		return err
 	}

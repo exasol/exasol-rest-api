@@ -1,10 +1,21 @@
 package exasol_rest_api
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
+	"net/http"
 )
 
-func Query(query string) (string, error) {
+func Query(context *gin.Context) {
+	response, err := QueryExasol(context.Param("query"))
+	if err != nil {
+		ErrorLogger.Printf("error during querying Exasol: %s", err)
+	} else {
+		context.IndentedJSON(http.StatusOK, response)
+	}
+}
+
+func QueryExasol(query string) (string, error) {
 	connection, _ := openConnection()
 	response, _ := connection.executeQuery(query)
 	err := connection.close()
@@ -17,7 +28,7 @@ func Query(query string) (string, error) {
 func openConnection() (*websocketConnection, error) {
 	connProperties := readConnectionProperties()
 	connection := &websocketConnection{
-		connProperties: &connProperties,
+		connProperties: connProperties,
 	}
 	err := connection.connect()
 	if err != nil {
@@ -30,13 +41,16 @@ func openConnection() (*websocketConnection, error) {
 	return connection, err
 }
 
-func readConnectionProperties() connectionProperties {
+func readConnectionProperties() *connectionProperties {
 	var properties connectionProperties
 	var propertiesAsInterface interface{} = properties
-	GetPropertiesFromFile("connection-properties.yml", &propertiesAsInterface)
-	err := mapstructure.Decode(propertiesAsInterface, &properties)
+	err := GetPropertiesFromFile("/home/sia/git/exasol-rest-api/cmd/exasol-rest-api/connection-properties.yml", &propertiesAsInterface)
+	if err != nil {
+		return nil
+	}
+	err = mapstructure.Decode(propertiesAsInterface, &properties)
 	if err != nil {
 		ErrorLogger.Printf("error reading websocketConnection properties: %s", err)
 	}
-	return properties
+	return createConnectionProperties(properties)
 }

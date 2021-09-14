@@ -5,18 +5,25 @@ import (
 	"os"
 )
 
-func GetPropertiesFromFile(filepath string, properties *interface{}) {
-	configFile := openFile(filepath)
+func GetPropertiesFromFile(filepath string, properties *interface{}) error {
+	configFile, err := openFile(filepath)
+	if err != nil {
+		return err
+	}
 	decodePropertiesFile(configFile, properties)
 	closeFile(configFile)
+	return nil
 }
 
-func openFile(filepath string) *os.File {
-	configFile, err := os.Open(filepath)
+func openFile(filepath string) (*os.File, error) {
+	file, err := os.Open(filepath)
 	if err != nil {
-		ErrorLogger.Printf("cannot open a file: %s. %s", filepath, err)
+		return nil, err
+	} else if file == nil {
+		return nil, os.ErrNotExist
+	} else {
+		return file, err
 	}
-	return configFile
 }
 
 func decodePropertiesFile(configFile *os.File, properties *interface{}) {
