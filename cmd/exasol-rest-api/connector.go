@@ -1,16 +1,16 @@
-package main
+package exasol_rest_api
 
 import (
 	"context"
 )
 
 type connector struct {
-	config *config
+	connProperties *connectionProperties
 }
 
 func (c *connector) Connect(ctx context.Context) (*connection, error) {
 	conn := &connection{
-		config:   c.config,
+		config:   c.connProperties,
 		ctx:      ctx,
 		isClosed: true,
 	}

@@ -1,4 +1,4 @@
-package main
+package exasol_rest_api
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 )
 
 type connection struct {
-	config    *config
+	config    *connectionProperties
 	websocket *websocket.Conn
 	ctx       context.Context
 	isClosed  bool
@@ -72,7 +72,7 @@ func (c *connection) login(ctx context.Context) error {
 	password := []byte(c.config.Password)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
-		errorLogger.Printf("password encryption error: %s", err)
+		ErrorLogger.Printf("password encryption error: %s", err)
 		return driver.ErrBadConn
 	}
 	b64Pass := base64.StdEncoding.EncodeToString(encPass)

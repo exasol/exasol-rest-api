@@ -1,4 +1,4 @@
-package main
+package exasol_rest_api
 
 import (
 	"bytes"
@@ -112,7 +112,7 @@ func (c *connection) send(ctx context.Context, request, response interface{}) er
 func (c *connection) asyncSend(request interface{}) (func(interface{}) error, error) {
 	message, err := json.Marshal(request)
 	if err != nil {
-		errorLogger.Printf("could not marshal request, %s", err)
+		ErrorLogger.Printf("could not marshal request, %s", err)
 		return nil, driver.ErrBadConn
 	}
 
@@ -131,7 +131,7 @@ func (c *connection) asyncSend(request interface{}) (func(interface{}) error, er
 
 	err = c.websocket.WriteMessage(messageType, message)
 	if err != nil {
-		errorLogger.Printf("could not send request, %s", err)
+		ErrorLogger.Printf("could not send request, %s", err)
 		return nil, driver.ErrBadConn
 	}
 
@@ -139,7 +139,7 @@ func (c *connection) asyncSend(request interface{}) (func(interface{}) error, er
 
 		_, message, err := c.websocket.ReadMessage()
 		if err != nil {
-			errorLogger.Printf("could not receive data, %s", err)
+			ErrorLogger.Printf("could not receive data, %s", err)
 			return driver.ErrBadConn
 		}
 
@@ -148,19 +148,19 @@ func (c *connection) asyncSend(request interface{}) (func(interface{}) error, er
 			b := bytes.NewReader(message)
 			r, err := zlib.NewReader(b)
 			if err != nil {
-				errorLogger.Printf("could not decode compressed data, %s", err)
+				ErrorLogger.Printf("could not decode compressed data, %s", err)
 				return driver.ErrBadConn
 			}
 			err = json.NewDecoder(r).Decode(result)
 			if err != nil {
-				errorLogger.Printf("could not decode data, %s", err)
+				ErrorLogger.Printf("could not decode data, %s", err)
 				return driver.ErrBadConn
 			}
 
 		} else {
 			err = json.Unmarshal(message, result)
 			if err != nil {
-				errorLogger.Printf("could not receive data, %s", err)
+				ErrorLogger.Printf("could not receive data, %s", err)
 				return driver.ErrBadConn
 			}
 		}
@@ -181,7 +181,7 @@ func (c *connection) asyncSend(request interface{}) (func(interface{}) error, er
 func (c *connection) asyncSend2(request interface{}) (string, error) {
 	message, err := json.Marshal(request)
 	if err != nil {
-		errorLogger.Printf("could not marshal request, %s", err)
+		ErrorLogger.Printf("could not marshal request, %s", err)
 		return "", driver.ErrBadConn
 	}
 
@@ -200,7 +200,7 @@ func (c *connection) asyncSend2(request interface{}) (string, error) {
 
 	err = c.websocket.WriteMessage(messageType, message)
 	if err != nil {
-		errorLogger.Printf("could not send request, %s", err)
+		ErrorLogger.Printf("could not send request, %s", err)
 		return "", driver.ErrBadConn
 	}
 
@@ -210,7 +210,7 @@ func (c *connection) asyncSend2(request interface{}) (string, error) {
 func (c *connection) getResult() (string, error) {
 	_, message, err := c.websocket.ReadMessage()
 	if err != nil {
-		errorLogger.Printf("could not receive data, %s", err)
+		ErrorLogger.Printf("could not receive data, %s", err)
 		return "", driver.ErrBadConn
 	}
 
@@ -219,19 +219,19 @@ func (c *connection) getResult() (string, error) {
 		b := bytes.NewReader(message)
 		r, err := zlib.NewReader(b)
 		if err != nil {
-			errorLogger.Printf("could not decode compressed data, %s", err)
+			ErrorLogger.Printf("could not decode compressed data, %s", err)
 			return "", driver.ErrBadConn
 		}
 		err = json.NewDecoder(r).Decode(result)
 		if err != nil {
-			errorLogger.Printf("could not decode data, %s", err)
+			ErrorLogger.Printf("could not decode data, %s", err)
 			return "", driver.ErrBadConn
 		}
 
 	} else {
 		err = json.Unmarshal(message, result)
 		if err != nil {
-			errorLogger.Printf("could not receive data, %s", err)
+			ErrorLogger.Printf("could not receive data, %s", err)
 			return "", driver.ErrBadConn
 		}
 	}

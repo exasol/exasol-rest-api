@@ -1,4 +1,4 @@
-package main
+package exasol_rest_api
 
 import "encoding/json"
 
