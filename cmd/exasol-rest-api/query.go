@@ -10,7 +10,7 @@ import (
 func Query(context *gin.Context) {
 	response, err := QueryExasol(context.Param("query"))
 	if err != nil {
-		ErrorLogger.Printf("error during querying Exasol: %s", err)
+		errorLogger.Printf("error during querying Exasol: %s", err)
 	} else {
 		context.IndentedJSON(http.StatusOK, response)
 	}
@@ -46,13 +46,13 @@ func openConnection(propertiesPath string) (*websocketConnection, error) {
 func readConnectionProperties(propertiesPath string) *ConnectionProperties {
 	var properties ConnectionProperties
 	var propertiesAsInterface interface{} = properties
-	err := GetPropertiesFromFile(propertiesPath, &propertiesAsInterface)
+	err := getPropertiesFromFile(propertiesPath, &propertiesAsInterface)
 	if err != nil {
 		return nil
 	}
 	err = mapstructure.Decode(propertiesAsInterface, &properties)
 	if err != nil {
-		ErrorLogger.Printf("error reading websocketConnection properties: %s", err)
+		errorLogger.Printf("error reading websocketConnection properties: %s", err)
 	}
 	return createConnectionProperties(properties)
 }

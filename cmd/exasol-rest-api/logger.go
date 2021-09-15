@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-var ErrorLogger = Logger(log.New(os.Stderr, "[exasol] ", log.LstdFlags|log.Lshortfile))
+var errorLogger = Logger(log.New(os.Stderr, "[exasol] ", log.LstdFlags|log.Lshortfile))
 
 // Logger is used to log critical error messages.
 type Logger interface {

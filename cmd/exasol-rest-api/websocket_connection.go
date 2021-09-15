@@ -94,7 +94,7 @@ func (connection *websocketConnection) login() error {
 	password := []byte(connection.connProperties.Password)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
-		ErrorLogger.Printf("password encryption error: %s", err)
+		errorLogger.Printf("password encryption error: %s", err)
 		return driver.ErrBadConn
 	}
 	b64Pass := base64.StdEncoding.EncodeToString(encPass)

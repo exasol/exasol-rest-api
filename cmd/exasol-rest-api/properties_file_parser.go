@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func GetPropertiesFromFile(filepath string, properties *interface{}) error {
+func getPropertiesFromFile(filepath string, properties *interface{}) error {
 	configFile, err := openFile(filepath)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func decodePropertiesFile(configFile *os.File, properties *interface{}) {
 	decoder := yaml.NewDecoder(configFile)
 	err := decoder.Decode(&properties)
 	if err != nil {
-		ErrorLogger.Printf("cannot decode a property file: %s. %s", configFile.Name(), err)
+		errorLogger.Printf("cannot decode a property file: %s. %s", configFile.Name(), err)
 	}
 }
 
@@ -38,7 +38,7 @@ func closeFile(configFile *os.File) {
 	defer func(configFile *os.File) {
 		err := configFile.Close()
 		if err != nil {
-			ErrorLogger.Printf("error closing a file: %s. %s", configFile.Name(), err)
+			errorLogger.Printf("error closing a file: %s. %s", configFile.Name(), err)
 		}
 	}(configFile)
 }
