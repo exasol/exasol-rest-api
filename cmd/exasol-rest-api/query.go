@@ -18,9 +18,15 @@ func Query(context *gin.Context) {
 
 func QueryExasol(query string) (string, error) {
 	propertiesPath := os.Getenv("CONNECTION_PROPERTIES_PATH")
-	connection, _ := openConnection(propertiesPath)
-	response, _ := connection.executeQuery(query)
-	err := connection.close()
+	connection, err := openConnection(propertiesPath)
+	if err != nil {
+		return "", err
+	}
+	response, err := connection.executeQuery(query)
+	if err != nil {
+		return "", err
+	}
+	err = connection.close()
 	if err != nil {
 		return "", err
 	}

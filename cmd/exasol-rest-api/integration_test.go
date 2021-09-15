@@ -24,6 +24,9 @@ type IntegrationTestSuite struct {
 	ctx             context.Context
 	exasolContainer testcontainers.Container
 	port            int
+	router          *gin.Engine
+	username        string
+	password        string
 }
 
 func TestIntegrationSuite(t *testing.T) {
@@ -32,24 +35,40 @@ func TestIntegrationSuite(t *testing.T) {
 
 func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
+	suite.username = "api_service_account"
+	suite.password = "secret_password"
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.port = getExasolPort(suite.exasolContainer, suite.ctx)
-	createConnectionPropertiesFile(suite)
-	createTableInExasol(suite)
+	suite.createConnectionPropertiesFile()
+	suite.createTableInExasol()
+	suite.startServer()
 }
 
-func (suite *IntegrationTestSuite) TestGetMethod() {
+func (suite *IntegrationTestSuite) startServer() {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	router.GET("/api/v1/query/:query", exasol_rest_api.Query)
+	suite.router = router
+}
 
+func (suite *IntegrationTestSuite) TestQuery() {
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
-	router.ServeHTTP(responseRecorder, req)
+	suite.router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusOK, responseRecorder.Code)
 	suite.Equal("\"{\\\"status\\\":\\\"ok\\\",\\\"responseData\\\":{\\\"results\\\":[{\\\"resultType\\\":\\\"resultSet\\\",\\\"resultSet\\\":{\\\"numColumns\\\":2,\\\"numRows\\\":1,\\\"numRowsInMessage\\\":1,\\\"columns\\\":[{\\\"name\\\":\\\"X\\\",\\\"dataType\\\":{\\\"type\\\":\\\"DECIMAL\\\",\\\"precision\\\":18,\\\"scale\\\":0}},{\\\"name\\\":\\\"Y\\\",\\\"dataType\\\":{\\\"type\\\":\\\"VARCHAR\\\",\\\"size\\\":100,\\\"characterSet\\\":\\\"UTF8\\\"}}],\\\"data\\\":[[15],[\\\"test\\\"]]}}],\\\"numResults\\\":1}}\"",
-		responseRecorder.Body.String())
+		string(responseRecorder.Body.Bytes()))
+}
+
+func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/CREATE SCHEMA not_allowed_schema", nil)
+	onError(err)
+	responseRecorder := httptest.NewRecorder()
+	suite.router.ServeHTTP(responseRecorder, req)
+	suite.Equal(http.StatusOK, responseRecorder.Code)
+	suite.Contains(responseRecorder.Body.String(),
+		"\"{\\\"status\\\":\\\"error\\\",\\\"exception\\\":{\\\"text\\\":\\\"insufficient privileges for creating schema")
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
@@ -80,10 +99,10 @@ func onError(err error) {
 	}
 }
 
-func createConnectionPropertiesFile(suite *IntegrationTestSuite) {
+func (suite *IntegrationTestSuite) createConnectionPropertiesFile() {
 	connProperties := &exasol_rest_api.ConnectionProperties{
-		User:       "sys",
-		Password:   "exasol",
+		User:       suite.username,
+		Password:   suite.password,
 		Host:       "localhost",
 		Port:       suite.port,
 		Encryption: false,
@@ -100,10 +119,14 @@ func createConnectionPropertiesFile(suite *IntegrationTestSuite) {
 	onError(err)
 }
 
-func createTableInExasol(suite *IntegrationTestSuite) {
+func (suite *IntegrationTestSuite) createTableInExasol() {
 	database, _ := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Port(suite.port).String())
 	schemaName := "TEST_SCHEMA_1"
 	_, _ = database.Exec("CREATE SCHEMA " + schemaName)
 	_, _ = database.Exec("CREATE TABLE " + schemaName + ".TEST_TABLE(x INT, y VARCHAR(100))")
 	_, _ = database.Exec("INSERT INTO " + schemaName + ".TEST_TABLE VALUES (15, 'test')")
+
+	_, _ = database.Exec("CREATE USER " + suite.username + " IDENTIFIED BY \"" + suite.password + "\"")
+	_, _ = database.Exec("GRANT CREATE SESSION TO " + suite.username)
+	_, _ = database.Exec("GRANT SELECT ON SCHEMA " + schemaName + " TO " + suite.username)
 }
