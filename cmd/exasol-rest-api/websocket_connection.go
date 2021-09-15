@@ -59,10 +59,10 @@ func (connection *websocketConnection) executeQuery(query string) (string, error
 		Command: Command{"execute"},
 		SQLText: query,
 		Attributes: Attributes{
-			ResultSetMaxRows: connection.connProperties.ResultSetMaxRows,
+			ResultSetMaxRows: 1000,
 		},
 	}
-	result, err := connection.sendRequest(command)
+	result, err := connection.sendRequestWithStringResponse(command)
 	if err != nil {
 		return "", err
 	} else {
@@ -104,7 +104,6 @@ func (connection *websocketConnection) login() error {
 		Password:       b64Pass,
 		UseCompression: false,
 		ClientName:     "Exasol REST API",
-		DriverName:     fmt.Sprintf("exasol-driver-go %s", "v1.0.0"),
 		ClientOs:       runtime.GOOS,
 		ClientRuntime:  runtime.Version(),
 	}
@@ -122,7 +121,7 @@ func (connection *websocketConnection) login() error {
 }
 
 func (connection *websocketConnection) send(request, response interface{}) error {
-	receiver, err := connection.asyncSend(request)
+	receiver, err := connection.sendRequestWithInterfaceResponse(request)
 	if err != nil {
 		return err
 	}
@@ -133,7 +132,7 @@ func (connection *websocketConnection) send(request, response interface{}) error
 	return nil
 }
 
-func (connection *websocketConnection) asyncSend(request interface{}) (func(interface{}) error, error) {
+func (connection *websocketConnection) sendRequestWithInterfaceResponse(request interface{}) (func(interface{}) error, error) {
 	requestAsJson, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -142,7 +141,7 @@ func (connection *websocketConnection) asyncSend(request interface{}) (func(inte
 	messageType := websocket.TextMessage
 	err = connection.websocket.WriteMessage(messageType, requestAsJson)
 	if err != nil {
-		return nil, driver.ErrBadConn
+		return nil, err
 	}
 
 	return func(response interface{}) error {
@@ -150,18 +149,14 @@ func (connection *websocketConnection) asyncSend(request interface{}) (func(inte
 		if err != nil {
 			return err
 		}
-
 		result := &BaseResponse{}
-
 		err = json.Unmarshal(message, result)
 		if err != nil {
 			return err
 		}
-
 		if result.Status != "ok" {
 			return fmt.Errorf("[%s] %s", result.Exception.SQLCode, result.Exception.Text)
 		}
-
 		if response == nil {
 			return nil
 		}
@@ -169,7 +164,7 @@ func (connection *websocketConnection) asyncSend(request interface{}) (func(inte
 	}, nil
 }
 
-func (connection *websocketConnection) sendRequest(request interface{}) (string, error) {
+func (connection *websocketConnection) sendRequestWithStringResponse(request interface{}) (string, error) {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
 		return "", err
@@ -178,13 +173,8 @@ func (connection *websocketConnection) sendRequest(request interface{}) (string,
 	messageType := websocket.TextMessage
 	err = connection.websocket.WriteMessage(messageType, requestJson)
 	if err != nil {
-		ErrorLogger.Printf("could not send request, %s", err)
-		return "", driver.ErrBadConn
+		return "", err
 	}
-	return connection.getResponseString()
-}
-
-func (connection *websocketConnection) getResponseString() (string, error) {
 	_, message, err := connection.websocket.ReadMessage()
 	if err != nil {
 		return "", err

@@ -1,9 +1,5 @@
 package exasol_rest_api
 
-import (
-	"time"
-)
-
 type ConnectionProperties struct {
 	User             string
 	Password         string
@@ -12,7 +8,6 @@ type ConnectionProperties struct {
 	ApiVersion       int
 	FetchSize        int
 	ResultSetMaxRows int
-	Timeout          time.Time
 	Encryption       bool
 	UseTLS           bool
 }
@@ -25,7 +20,6 @@ func createConnectionProperties(userDefinedProperties ConnectionProperties) *Con
 	defaultConfig.ApiVersion = userDefinedProperties.ApiVersion
 	defaultConfig.FetchSize = userDefinedProperties.FetchSize
 	defaultConfig.ResultSetMaxRows = userDefinedProperties.ResultSetMaxRows
-	defaultConfig.Timeout = userDefinedProperties.Timeout
 	defaultConfig.Encryption = userDefinedProperties.Encryption
 	defaultConfig.UseTLS = userDefinedProperties.UseTLS
 	return defaultConfig
