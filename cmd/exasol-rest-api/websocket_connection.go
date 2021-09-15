@@ -21,7 +21,7 @@ import (
 )
 
 type websocketConnection struct {
-	connProperties *connectionProperties
+	connProperties *ConnectionProperties
 	websocket      *websocket.Conn
 }
 

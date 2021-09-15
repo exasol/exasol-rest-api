@@ -1,2 +1,2 @@
 .idea
-cmd/exasol-rest-api/connection-properties.yml
+connection-properties.yml

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type connectionProperties struct {
+type ConnectionProperties struct {
 	User             string
 	Password         string
 	Host             string
@@ -22,7 +22,7 @@ type connectionProperties struct {
 	UseTLS           bool
 }
 
-func createConnectionProperties(userDefinedProperties connectionProperties) *connectionProperties {
+func createConnectionProperties(userDefinedProperties ConnectionProperties) *ConnectionProperties {
 	defaultConfig := getDefaultConfig(userDefinedProperties.Host, userDefinedProperties.Port)
 	defaultConfig.User = userDefinedProperties.User
 	defaultConfig.Password = userDefinedProperties.Password
@@ -41,8 +41,8 @@ func createConnectionProperties(userDefinedProperties connectionProperties) *con
 	return defaultConfig
 }
 
-func getDefaultConfig(host string, port int) *connectionProperties {
-	return &connectionProperties{
+func getDefaultConfig(host string, port int) *ConnectionProperties {
+	return &ConnectionProperties{
 		Host:        host,
 		Port:        port,
 		ApiVersion:  2,

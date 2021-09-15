@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"net/http"
+	"os"
 )
 
 func Query(context *gin.Context) {
@@ -16,7 +17,8 @@ func Query(context *gin.Context) {
 }
 
 func QueryExasol(query string) (string, error) {
-	connection, _ := openConnection()
+	propertiesPath := os.Getenv("CONNECTION_PROPERTIES_PATH")
+	connection, _ := openConnection(propertiesPath)
 	response, _ := connection.executeQuery(query)
 	err := connection.close()
 	if err != nil {
@@ -25,8 +27,8 @@ func QueryExasol(query string) (string, error) {
 	return response, nil
 }
 
-func openConnection() (*websocketConnection, error) {
-	connProperties := readConnectionProperties()
+func openConnection(propertiesPath string) (*websocketConnection, error) {
+	connProperties := readConnectionProperties(propertiesPath)
 	connection := &websocketConnection{
 		connProperties: connProperties,
 	}
@@ -41,10 +43,10 @@ func openConnection() (*websocketConnection, error) {
 	return connection, err
 }
 
-func readConnectionProperties() *connectionProperties {
-	var properties connectionProperties
+func readConnectionProperties(propertiesPath string) *ConnectionProperties {
+	var properties ConnectionProperties
 	var propertiesAsInterface interface{} = properties
-	err := GetPropertiesFromFile("/home/sia/git/exasol-rest-api/cmd/exasol-rest-api/connection-properties.yml", &propertiesAsInterface)
+	err := GetPropertiesFromFile(propertiesPath, &propertiesAsInterface)
 	if err != nil {
 		return nil
 	}
