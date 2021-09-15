@@ -9,13 +9,8 @@ type ConnectionProperties struct {
 	Password         string
 	Host             string
 	Port             int
-	Params           map[string]string // Connection parameters
 	ApiVersion       int
-	ClientName       string
-	ClientVersion    string
-	Schema           string
 	FetchSize        int
-	Compression      bool
 	ResultSetMaxRows int
 	Timeout          time.Time
 	Encryption       bool
@@ -27,13 +22,8 @@ func createConnectionProperties(userDefinedProperties ConnectionProperties) *Con
 	defaultConfig.User = userDefinedProperties.User
 	defaultConfig.Password = userDefinedProperties.Password
 	defaultConfig.Port = userDefinedProperties.Port
-	defaultConfig.Params = userDefinedProperties.Params
 	defaultConfig.ApiVersion = userDefinedProperties.ApiVersion
-	defaultConfig.ClientName = userDefinedProperties.ClientName
-	defaultConfig.ClientVersion = userDefinedProperties.ClientVersion
-	defaultConfig.Schema = userDefinedProperties.Schema
 	defaultConfig.FetchSize = userDefinedProperties.FetchSize
-	defaultConfig.Compression = userDefinedProperties.Compression
 	defaultConfig.ResultSetMaxRows = userDefinedProperties.ResultSetMaxRows
 	defaultConfig.Timeout = userDefinedProperties.Timeout
 	defaultConfig.Encryption = userDefinedProperties.Encryption
@@ -43,14 +33,11 @@ func createConnectionProperties(userDefinedProperties ConnectionProperties) *Con
 
 func getDefaultConfig(host string, port int) *ConnectionProperties {
 	return &ConnectionProperties{
-		Host:        host,
-		Port:        port,
-		ApiVersion:  2,
-		Encryption:  true,
-		Compression: false,
-		UseTLS:      false,
-		ClientName:  "Go client",
-		Params:      map[string]string{},
-		FetchSize:   128 * 1024,
+		Host:       host,
+		Port:       port,
+		ApiVersion: 2,
+		Encryption: true,
+		UseTLS:     false,
+		FetchSize:  128 * 1024,
 	}
 }

@@ -45,6 +45,8 @@ func (suite *IntegrationTestSuite) TestGetMethod() {
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusOK, responseRecorder.Code)
+	suite.Equal("\"{\\\"status\\\":\\\"ok\\\",\\\"responseData\\\":{\\\"results\\\":[{\\\"resultType\\\":\\\"resultSet\\\",\\\"resultSet\\\":{\\\"numColumns\\\":1,\\\"numRows\\\":1,\\\"numRowsInMessage\\\":1,\\\"columns\\\":[{\\\"name\\\":\\\"1\\\",\\\"dataType\\\":{\\\"type\\\":\\\"DECIMAL\\\",\\\"precision\\\":1,\\\"scale\\\":0}}],\\\"data\\\":[[1]]}}],\\\"numResults\\\":1}}\"",
+		responseRecorder.Body.String())
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {

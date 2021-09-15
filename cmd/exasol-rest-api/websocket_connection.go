@@ -1,8 +1,6 @@
 package exasol_rest_api
 
 import (
-	"bytes"
-	"compress/zlib"
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
@@ -26,10 +24,34 @@ type websocketConnection struct {
 }
 
 func (connection *websocketConnection) close() error {
-	err := connection.send(context.Background(), &Command{Command: "disconnect"}, nil)
+	err := connection.send(&Command{Command: "disconnect"}, nil)
 	connection.websocket.Close()
 	connection.websocket = nil
 	return err
+}
+
+func (connection *websocketConnection) connect() error {
+	uri := fmt.Sprintf("%s:%d", connection.connProperties.Host, connection.connProperties.Port)
+	exaURL := url.URL{
+		Scheme: connection.getURIScheme(),
+		Host:   uri,
+	}
+	dialer := *websocket.DefaultDialer
+	dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: !connection.connProperties.UseTLS}
+	websocketConnection, _, err := dialer.DialContext(context.Background(), exaURL.String(), nil)
+	if err == nil {
+		connection.websocket = websocketConnection
+		connection.websocket.EnableWriteCompression(false)
+	}
+	return err
+}
+
+func (connection *websocketConnection) getURIScheme() string {
+	if connection.connProperties.Encryption {
+		return "wss"
+	} else {
+		return "ws"
+	}
 }
 
 func (connection *websocketConnection) executeQuery(query string) (string, error) {
@@ -40,7 +62,7 @@ func (connection *websocketConnection) executeQuery(query string) (string, error
 			ResultSetMaxRows: connection.connProperties.ResultSetMaxRows,
 		},
 	}
-	result, err := connection.asyncSend2(command)
+	result, err := connection.sendRequest(command)
 	if err != nil {
 		return "", err
 	} else {
@@ -49,14 +71,12 @@ func (connection *websocketConnection) executeQuery(query string) (string, error
 }
 
 func (connection *websocketConnection) login() error {
-	hasCompression := connection.connProperties.Compression
-	connection.connProperties.Compression = false
 	loginCommand := &LoginCommand{
 		Command:         Command{"login"},
 		ProtocolVersion: connection.connProperties.ApiVersion,
 	}
 	loginResponse := &PublicKeyResponse{}
-	err := connection.send(context.Background(), loginCommand, loginResponse)
+	err := connection.send(loginCommand, loginResponse)
 	if err != nil {
 		return err
 	}
@@ -83,129 +103,59 @@ func (connection *websocketConnection) login() error {
 		Username:       connection.connProperties.User,
 		Password:       b64Pass,
 		UseCompression: false,
-		ClientName:     connection.connProperties.ClientName,
+		ClientName:     "Exasol REST API",
 		DriverName:     fmt.Sprintf("exasol-driver-go %s", "v1.0.0"),
 		ClientOs:       runtime.GOOS,
-		ClientVersion:  connection.connProperties.ClientName,
 		ClientRuntime:  runtime.Version(),
-		Attributes: Attributes{
-			CurrentSchema:      connection.connProperties.Schema,
-			CompressionEnabled: hasCompression,
-		},
 	}
 
 	if osUser, err := user.Current(); err != nil {
 		authRequest.ClientOsUsername = osUser.Username
 	}
 
-	err = connection.send(context.Background(), authRequest, nil)
+	err = connection.send(authRequest, nil)
 	if err != nil {
 		return err
 	}
-	connection.connProperties.Compression = hasCompression
 
 	return nil
 }
 
-func (connection *websocketConnection) getURIScheme() string {
-	if connection.connProperties.Encryption {
-		return "wss"
-	} else {
-		return "ws"
-	}
-}
-
-func (connection *websocketConnection) connect() error {
-	host := connection.connProperties.Host
-	uri := fmt.Sprintf("%s:%d", host, connection.connProperties.Port)
-	u := url.URL{
-		Scheme: connection.getURIScheme(),
-		Host:   uri,
-	}
-	dialer := *websocket.DefaultDialer
-	dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: !connection.connProperties.UseTLS}
-
-	ws, _, err := dialer.DialContext(context.Background(), u.String(), nil)
-	if err == nil {
-		connection.websocket = ws
-		connection.websocket.EnableWriteCompression(false)
-	}
-	return err
-}
-
-func (connection *websocketConnection) send(ctx context.Context, request, response interface{}) error {
+func (connection *websocketConnection) send(request, response interface{}) error {
 	receiver, err := connection.asyncSend(request)
 	if err != nil {
 		return err
 	}
-	channel := make(chan error, 1)
-	go func() { channel <- receiver(response) }()
-	select {
-	case <-ctx.Done():
-		_, err := connection.asyncSend(&Command{Command: "abortQuery"})
-		if err != nil {
-			return fmt.Errorf("could not abort query %w", ctx.Err())
-		}
-		return ctx.Err()
-	case err := <-channel:
+	err = receiver(response)
+	if err != nil {
 		return err
 	}
+	return nil
 }
 
 func (connection *websocketConnection) asyncSend(request interface{}) (func(interface{}) error, error) {
-	message, err := json.Marshal(request)
+	requestAsJson, err := json.Marshal(request)
 	if err != nil {
-		ErrorLogger.Printf("could not marshal request, %s", err)
-		return nil, driver.ErrBadConn
+		return nil, err
 	}
 
 	messageType := websocket.TextMessage
-	if connection.connProperties.Compression {
-		var b bytes.Buffer
-		w := zlib.NewWriter(&b)
-		_, err = w.Write(message)
-		if err != nil {
-			return nil, err
-		}
-		w.Close()
-		message = b.Bytes()
-		messageType = websocket.BinaryMessage
-	}
-
-	err = connection.websocket.WriteMessage(messageType, message)
+	err = connection.websocket.WriteMessage(messageType, requestAsJson)
 	if err != nil {
-		ErrorLogger.Printf("could not send request, %s", err)
 		return nil, driver.ErrBadConn
 	}
 
 	return func(response interface{}) error {
-
 		_, message, err := connection.websocket.ReadMessage()
 		if err != nil {
-			ErrorLogger.Printf("could not receive data, %s", err)
-			return driver.ErrBadConn
+			return err
 		}
 
 		result := &BaseResponse{}
-		if connection.connProperties.Compression {
-			b := bytes.NewReader(message)
-			r, err := zlib.NewReader(b)
-			if err != nil {
-				ErrorLogger.Printf("could not decode compressed data, %s", err)
-				return driver.ErrBadConn
-			}
-			err = json.NewDecoder(r).Decode(result)
-			if err != nil {
-				ErrorLogger.Printf("could not decode data, %s", err)
-				return driver.ErrBadConn
-			}
 
-		} else {
-			err = json.Unmarshal(message, result)
-			if err != nil {
-				ErrorLogger.Printf("could not receive data, %s", err)
-				return driver.ErrBadConn
-			}
+		err = json.Unmarshal(message, result)
+		if err != nil {
+			return err
 		}
 
 		if result.Status != "ok" {
@@ -215,69 +165,29 @@ func (connection *websocketConnection) asyncSend(request interface{}) (func(inte
 		if response == nil {
 			return nil
 		}
-
 		return json.Unmarshal(result.ResponseData, response)
-
 	}, nil
 }
 
-func (connection *websocketConnection) asyncSend2(request interface{}) (string, error) {
-	message, err := json.Marshal(request)
+func (connection *websocketConnection) sendRequest(request interface{}) (string, error) {
+	requestJson, err := json.Marshal(request)
 	if err != nil {
-		ErrorLogger.Printf("could not marshal request, %s", err)
-		return "", driver.ErrBadConn
+		return "", err
 	}
 
 	messageType := websocket.TextMessage
-	if connection.connProperties.Compression {
-		var b bytes.Buffer
-		w := zlib.NewWriter(&b)
-		_, err = w.Write(message)
-		if err != nil {
-			return "", err
-		}
-		w.Close()
-		message = b.Bytes()
-		messageType = websocket.BinaryMessage
-	}
-
-	err = connection.websocket.WriteMessage(messageType, message)
+	err = connection.websocket.WriteMessage(messageType, requestJson)
 	if err != nil {
 		ErrorLogger.Printf("could not send request, %s", err)
 		return "", driver.ErrBadConn
 	}
-
-	return connection.getResult()
+	return connection.getResponseString()
 }
 
-func (connection *websocketConnection) getResult() (string, error) {
+func (connection *websocketConnection) getResponseString() (string, error) {
 	_, message, err := connection.websocket.ReadMessage()
 	if err != nil {
-		ErrorLogger.Printf("could not receive data, %s", err)
-		return "", driver.ErrBadConn
+		return "", err
 	}
-
-	result := &BaseResponse{}
-	if connection.connProperties.Compression {
-		b := bytes.NewReader(message)
-		r, err := zlib.NewReader(b)
-		if err != nil {
-			ErrorLogger.Printf("could not decode compressed data, %s", err)
-			return "", driver.ErrBadConn
-		}
-		err = json.NewDecoder(r).Decode(result)
-		if err != nil {
-			ErrorLogger.Printf("could not decode data, %s", err)
-			return "", driver.ErrBadConn
-		}
-
-	} else {
-		err = json.Unmarshal(message, result)
-		if err != nil {
-			ErrorLogger.Printf("could not receive data, %s", err)
-			return "", driver.ErrBadConn
-		}
-	}
-	marshal, err := json.Marshal(result)
-	return string(marshal), nil
+	return string(message), nil
 }
