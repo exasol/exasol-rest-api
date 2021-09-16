@@ -54,7 +54,7 @@ func (connection *websocketConnection) getURIScheme() string {
 	}
 }
 
-func (connection *websocketConnection) executeQuery(query string) (string, error) {
+func (connection *websocketConnection) executeQuery(query string) ([]byte, error) {
 	command := &SQLCommand{
 		Command: Command{"execute"},
 		SQLText: query,
@@ -64,7 +64,7 @@ func (connection *websocketConnection) executeQuery(query string) (string, error
 	}
 	result, err := connection.sendRequestWithStringResponse(command)
 	if err != nil {
-		return "", err
+		return nil, err
 	} else {
 		return result, err
 	}
@@ -164,20 +164,20 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 	}, nil
 }
 
-func (connection *websocketConnection) sendRequestWithStringResponse(request interface{}) (string, error) {
+func (connection *websocketConnection) sendRequestWithStringResponse(request interface{}) ([]byte, error) {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	messageType := websocket.TextMessage
 	err = connection.websocket.WriteMessage(messageType, requestJson)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	_, message, err := connection.websocket.ReadMessage()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(message), nil
+	return message, nil
 }

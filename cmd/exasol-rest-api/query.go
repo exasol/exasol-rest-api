@@ -12,23 +12,23 @@ func Query(context *gin.Context) {
 	if err != nil {
 		errorLogger.Printf("error during querying Exasol: %s", err)
 	} else {
-		context.IndentedJSON(http.StatusOK, response)
+		context.Data(http.StatusOK, "application/json", response)
 	}
 }
 
-func QueryExasol(query string) (string, error) {
+func QueryExasol(query string) ([]byte, error) {
 	propertiesPath := os.Getenv("CONNECTION_PROPERTIES_PATH")
 	connection, err := openConnection(propertiesPath)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	response, err := connection.executeQuery(query)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	err = connection.close()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return response, nil
 }
