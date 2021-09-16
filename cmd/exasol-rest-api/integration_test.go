@@ -4,13 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"log"
 	exasol_rest_api "main/cmd/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/exasol/exasol-driver-go"
@@ -27,6 +24,7 @@ type IntegrationTestSuite struct {
 	router          *gin.Engine
 	username        string
 	password        string
+	app             exasol_rest_api.Application
 }
 
 func TestIntegrationSuite(t *testing.T) {
@@ -39,7 +37,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.password = "secret_password"
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.port = getExasolPort(suite.exasolContainer, suite.ctx)
-	suite.createConnectionPropertiesFile()
+	suite.createApplication()
 	suite.createTableInExasol()
 	suite.startServer()
 }
@@ -47,7 +45,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 func (suite *IntegrationTestSuite) startServer() {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	router.GET("/api/v1/query/:query", exasol_rest_api.Query)
+	router.GET("/api/v1/query/:query", suite.app.Query)
 	suite.router = router
 }
 
@@ -99,7 +97,7 @@ func onError(err error) {
 	}
 }
 
-func (suite *IntegrationTestSuite) createConnectionPropertiesFile() {
+func (suite *IntegrationTestSuite) createApplication() {
 	connProperties := &exasol_rest_api.ConnectionProperties{
 		User:       suite.username,
 		Password:   suite.password,
@@ -109,14 +107,9 @@ func (suite *IntegrationTestSuite) createConnectionPropertiesFile() {
 		UseTLS:     false,
 		ApiVersion: 2,
 	}
-	file, err := ioutil.TempFile("", "connection_properties_*.yml")
-	onError(err)
-	data, err := yaml.Marshal(&connProperties)
-	onError(err)
-	_, err = file.Write(data)
-	onError(err)
-	err = os.Setenv("CONNECTION_PROPERTIES_PATH", file.Name())
-	onError(err)
+	suite.app = exasol_rest_api.Application{
+		ConnProperties: connProperties,
+	}
 }
 
 func (suite *IntegrationTestSuite) createTableInExasol() {
