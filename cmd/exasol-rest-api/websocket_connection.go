@@ -19,7 +19,7 @@ import (
 )
 
 type websocketConnection struct {
-	connProperties *ConnectionProperties
+	connProperties *ApplicationProperties
 	websocket      *websocket.Conn
 }
 
@@ -31,7 +31,7 @@ func (connection *websocketConnection) close() error {
 }
 
 func (connection *websocketConnection) connect() error {
-	uri := fmt.Sprintf("%s:%d", connection.connProperties.Host, connection.connProperties.Port)
+	uri := fmt.Sprintf("%s:%d", connection.connProperties.ExasolHost, connection.connProperties.ExasolPort)
 	exaURL := url.URL{
 		Scheme: connection.getURIScheme(),
 		Host:   uri,
@@ -73,7 +73,7 @@ func (connection *websocketConnection) executeQuery(query string) ([]byte, error
 func (connection *websocketConnection) login() error {
 	loginCommand := &LoginCommand{
 		Command:         Command{"login"},
-		ProtocolVersion: connection.connProperties.ApiVersion,
+		ProtocolVersion: connection.connProperties.ExasolWebsocketApiVersion,
 	}
 	loginResponse := &PublicKeyResponse{}
 	err := connection.send(loginCommand, loginResponse)
@@ -91,7 +91,7 @@ func (connection *websocketConnection) login() error {
 		N: &modulus,
 		E: int(pubKeyExp),
 	}
-	password := []byte(connection.connProperties.Password)
+	password := []byte(connection.connProperties.ExasolPassword)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
 		errorLogger.Printf("password encryption error: %s", err)
@@ -100,7 +100,7 @@ func (connection *websocketConnection) login() error {
 	b64Pass := base64.StdEncoding.EncodeToString(encPass)
 
 	authRequest := AuthCommand{
-		Username:       connection.connProperties.User,
+		Username:       connection.connProperties.ExasolUser,
 		Password:       b64Pass,
 		UseCompression: false,
 		ClientName:     "Exasol REST API",

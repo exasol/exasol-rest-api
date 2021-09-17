@@ -98,17 +98,17 @@ func onError(err error) {
 }
 
 func (suite *IntegrationTestSuite) createApplication() {
-	connProperties := &exasol_rest_api.ConnectionProperties{
-		User:       suite.username,
-		Password:   suite.password,
-		Host:       "localhost",
-		Port:       suite.port,
-		Encryption: false,
-		UseTLS:     false,
-		ApiVersion: 2,
+	connProperties := &exasol_rest_api.ApplicationProperties{
+		ExasolUser:                suite.username,
+		ExasolPassword:            suite.password,
+		ExasolHost:                "localhost",
+		ExasolPort:                suite.port,
+		Encryption:                false,
+		UseTLS:                    false,
+		ExasolWebsocketApiVersion: 2,
 	}
 	suite.app = exasol_rest_api.Application{
-		ConnProperties: connProperties,
+		Properties: connProperties,
 	}
 }
 

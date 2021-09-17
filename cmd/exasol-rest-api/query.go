@@ -6,7 +6,7 @@ import (
 )
 
 type Application struct {
-	ConnProperties *ConnectionProperties
+	Properties *ApplicationProperties
 }
 
 func (application *Application) Query(context *gin.Context) {
@@ -36,7 +36,7 @@ func (application *Application) queryExasol(query string) ([]byte, error) {
 
 func (application *Application) openConnection() (*websocketConnection, error) {
 	connection := &websocketConnection{
-		connProperties: application.ConnProperties,
+		connProperties: application.Properties,
 	}
 	err := connection.connect()
 	if err != nil {
