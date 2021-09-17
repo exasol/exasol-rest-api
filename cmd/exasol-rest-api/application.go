@@ -5,7 +5,7 @@ import (
 )
 
 func Run() {
-	applicationProperties := getApplicationProperties("APPLICATION_PROPERTIES_PATH")
+	applicationProperties := GetApplicationProperties("APPLICATION_PROPERTIES_PATH")
 	application := Application{
 		Properties: applicationProperties,
 	}

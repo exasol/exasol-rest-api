@@ -17,7 +17,7 @@ type ApplicationProperties struct {
 	UseTLS                    bool
 }
 
-func getApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
+func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
 	propertiesPath := os.Getenv(applicationPropertiesPathKey)
 	if propertiesPath == "" {
 		panic("runtime error: missing environment variable: " + applicationPropertiesPathKey)
