@@ -1,17 +1,21 @@
 package exasol_rest_api
 
 import (
-	"gopkg.in/yaml.v2"
+	"errors"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
-func getPropertiesFromFile(filepath string, properties *interface{}) error {
-	configFile, err := openFile(filepath)
+func getPropertiesFromFile(filepath string, properties *ApplicationProperties) error {
+	propertiesFile, err := openFile(filepath)
 	if err != nil {
 		return err
 	}
-	decodePropertiesFile(configFile, properties)
-	closeFile(configFile)
+	err = decodePropertiesFile(propertiesFile, properties)
+	if err != nil {
+		return err
+	}
+	closeFile(propertiesFile)
 	return nil
 }
 
@@ -20,18 +24,15 @@ func openFile(filepath string) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	} else if file == nil {
-		return nil, os.ErrNotExist
+		return nil, errors.New("properties file doesn't exist")
 	} else {
-		return file, err
+		return file, nil
 	}
 }
 
-func decodePropertiesFile(configFile *os.File, properties *interface{}) {
-	decoder := yaml.NewDecoder(configFile)
-	err := decoder.Decode(&properties)
-	if err != nil {
-		errorLogger.Printf("cannot decode a property file: %s. %s", configFile.Name(), err)
-	}
+func decodePropertiesFile(propertiesFile *os.File, properties *ApplicationProperties) error {
+	decoder := yaml.NewDecoder(propertiesFile)
+	return decoder.Decode(&properties)
 }
 
 func closeFile(configFile *os.File) {

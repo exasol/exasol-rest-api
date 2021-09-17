@@ -2,7 +2,6 @@ package exasol_rest_api
 
 import (
 	"errors"
-	"github.com/mitchellh/mapstructure"
 	"os"
 )
 
@@ -32,12 +31,7 @@ func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationP
 
 func readApplicationProperties(propertiesFilePath string) (*ApplicationProperties, error) {
 	var properties ApplicationProperties
-	var propertiesAsInterface interface{} = properties
-	err := getPropertiesFromFile(propertiesFilePath, &propertiesAsInterface)
-	if err != nil {
-		return nil, err
-	}
-	err = mapstructure.Decode(propertiesAsInterface, &properties)
+	err := getPropertiesFromFile(propertiesFilePath, &properties)
 	if err != nil {
 		return nil, err
 	}
