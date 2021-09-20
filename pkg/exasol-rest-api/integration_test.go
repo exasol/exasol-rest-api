@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"log"
-	exasol_rest_api "main/cmd/exasol-rest-api"
+	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
 	"testing"

@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	exasol_rest_api "main/cmd/exasol-rest-api"
+	exasol_rest_api "main/pkg/exasol-rest-api"
 	"os"
 	"testing"
 )
