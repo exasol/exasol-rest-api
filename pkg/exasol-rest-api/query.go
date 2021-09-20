@@ -12,7 +12,10 @@ type Application struct {
 func (application *Application) Query(context *gin.Context) {
 	response, err := application.queryExasol(context.Param("query"))
 	if err != nil {
-		errorLogger.Printf("error during querying Exasol: %s", err)
+		context.JSON(http.StatusBadRequest, gin.H{
+			"ErrorCode": "EXA-REST-API-1",
+			"Message":   err.Error(),
+		})
 	} else {
 		context.Data(http.StatusOK, "application/json", response)
 	}
