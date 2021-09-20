@@ -55,7 +55,7 @@ func (suite *IntegrationTestSuite) TestQuery() {
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusOK, responseRecorder.Code)
 	suite.Equal("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
-		string(responseRecorder.Body.Bytes()))
+		responseRecorder.Body.String())
 }
 
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
