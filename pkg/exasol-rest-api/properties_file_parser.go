@@ -11,13 +11,8 @@ func getPropertiesFromFile(filepath string) (*ApplicationProperties, error) {
 	if err != nil {
 		return nil, err
 	}
-	properties := ApplicationProperties{}
-	err = decodePropertiesFile(propertiesFile, &properties)
-	if err != nil {
-		return nil, err
-	}
-	closeFile(propertiesFile)
-	return &properties, nil
+	defer closeFile(propertiesFile)
+	return decodePropertiesFile(propertiesFile)
 }
 
 func openFile(filepath string) (*os.File, error) {
@@ -31,9 +26,15 @@ func openFile(filepath string) (*os.File, error) {
 	}
 }
 
-func decodePropertiesFile(propertiesFile *os.File, properties *ApplicationProperties) error {
+func decodePropertiesFile(propertiesFile *os.File) (*ApplicationProperties, error) {
 	decoder := yaml.NewDecoder(propertiesFile)
-	return decoder.Decode(&properties)
+	properties := ApplicationProperties{}
+	err := decoder.Decode(&properties)
+	if err != nil {
+		return nil, err
+	} else {
+		return &properties, nil
+	}
 }
 
 func closeFile(configFile *os.File) {

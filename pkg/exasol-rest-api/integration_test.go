@@ -23,6 +23,7 @@ type IntegrationTestSuite struct {
 	defaultExasolUsername string
 	defaultExasolPassword string
 	exasolPort            int
+	exasolHost            string
 	appProperties         *exasol_rest_api.ApplicationProperties
 }
 
@@ -35,8 +36,9 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.defaultExasolUsername = "api_service_account"
 	suite.defaultExasolPassword = "secret_password"
 	suite.exasolContainer = runExasolContainer(suite.ctx)
-	suite.exasolPort = getExasolPort(suite.exasolContainer, suite.ctx)
-	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolPort)
+	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
+	suite.exasolPort = 8563
+	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost, suite.exasolPort)
 }
 
 func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Application) *gin.Engine {
@@ -70,7 +72,7 @@ func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 }
 
 func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege() {
-	username := "user_without_session"
+	username := "user_without_session_privilege"
 	password := "secret"
 	suite.createExasolUser(username, password)
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
@@ -155,10 +157,10 @@ func runExasolContainer(ctx context.Context) testcontainers.Container {
 	return exasolContainer
 }
 
-func getExasolPort(exasolContainer testcontainers.Container, ctx context.Context) int {
-	port, err := exasolContainer.MappedPort(ctx, "8563")
+func getExasolHost(exasolContainer testcontainers.Container, ctx context.Context) string {
+	host, err := exasolContainer.ContainerIP(ctx)
 	onError(err)
-	return port.Int()
+	return host
 }
 
 func onError(err error) {
@@ -172,7 +174,7 @@ func (suite *IntegrationTestSuite) createApplicationWithDefaultProperties() exas
 	properties := &exasol_rest_api.ApplicationProperties{
 		ExasolUser:                suite.defaultExasolUsername,
 		ExasolPassword:            suite.defaultExasolPassword,
-		ExasolHost:                "localhost",
+		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
 		Encryption:                false,
 		UseTLS:                    false,
@@ -189,19 +191,28 @@ func (suite *IntegrationTestSuite) createApplication(properties *exasol_rest_api
 	}
 }
 
-func createDefaultServiceUserWithAccess(user string, password string, port int) {
-	database, _ := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Port(port).String())
+func createDefaultServiceUserWithAccess(user string, password string, host string, port int) {
+	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).String())
+	onError(err)
 	schemaName := "TEST_SCHEMA_1"
-	_, _ = database.Exec("CREATE SCHEMA " + schemaName)
-	_, _ = database.Exec("CREATE TABLE " + schemaName + ".TEST_TABLE(x INT, y VARCHAR(100))")
-	_, _ = database.Exec("INSERT INTO " + schemaName + ".TEST_TABLE VALUES (15, 'test')")
+	_, err = database.Exec("CREATE SCHEMA " + schemaName)
+	onError(err)
+	_, err = database.Exec("CREATE TABLE " + schemaName + ".TEST_TABLE(x INT, y VARCHAR(100))")
+	onError(err)
+	_, err = database.Exec("INSERT INTO " + schemaName + ".TEST_TABLE VALUES (15, 'test')")
+	onError(err)
 
-	_, _ = database.Exec("CREATE USER " + user + " IDENTIFIED BY \"" + password + "\"")
-	_, _ = database.Exec("GRANT CREATE SESSION TO " + user)
-	_, _ = database.Exec("GRANT SELECT ON SCHEMA " + schemaName + " TO " + user)
+	_, err = database.Exec("CREATE USER " + user + " IDENTIFIED BY \"" + password + "\"")
+	onError(err)
+	_, err = database.Exec("GRANT CREATE SESSION TO " + user)
+	onError(err)
+	_, err = database.Exec("GRANT SELECT ON SCHEMA " + schemaName + " TO " + user)
+	onError(err)
 }
 
 func (suite *IntegrationTestSuite) createExasolUser(username string, password string) {
-	database, _ := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Port(suite.exasolPort).String())
-	_, _ = database.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
+	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Port(suite.exasolPort).String())
+	onError(err)
+	_, err = database.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
+	onError(err)
 }
