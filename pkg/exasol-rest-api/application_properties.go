@@ -5,17 +5,19 @@ import (
 	"os"
 )
 
+//ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
-	ApplicationServer         string
-	ExasolUser                string
-	ExasolPassword            string
-	ExasolHost                string
-	ExasolPort                int
-	ExasolWebsocketApiVersion int
-	Encryption                bool
-	UseTLS                    bool
+	ApplicationServer         string `yaml:"server-address"`
+	ExasolUser                string `yaml:"exasol-user"`
+	ExasolPassword            string `yaml:"exasol-password"`
+	ExasolHost                string `yaml:"exasol-host"`
+	ExasolPort                int    `yaml:"exasol-port"`
+	ExasolWebsocketApiVersion int    `yaml:"exasol-websocket-api-version"`
+	Encryption                bool   `yaml:"encryption"`
+	UseTLS                    bool   `yaml:"use-tls"`
 }
 
+//GetApplicationProperties creates an application properties.
 func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
 	propertiesPath := os.Getenv(applicationPropertiesPathKey)
 	if propertiesPath == "" {
@@ -23,8 +25,7 @@ func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationP
 	}
 	properties, err := readApplicationProperties(propertiesPath)
 	if err != nil {
-		errorLogger.Printf("runtime error: cannot read application properties. %s", err)
-		panic("cannot start application without properties")
+		panic("runtime error: application properties are missing or incorrect. " + err.Error())
 	}
 	return properties
 }

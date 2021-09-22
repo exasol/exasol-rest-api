@@ -1,19 +1,19 @@
 package exasol_rest_api
 
-type Command struct {
+type command struct {
 	Command string `json:"command"`
 }
 
-type LoginCommand struct {
-	Command
+type loginCommand struct {
+	command
 	ProtocolVersion int `json:"protocolVersion"`
 }
 
-type Attributes struct {
+type attributes struct {
 	ResultSetMaxRows int `json:"resultSetMaxRows,omitempty"`
 }
 
-type AuthCommand struct {
+type authCommand struct {
 	Username         string `json:"username"`
 	Password         string `json:"password"`
 	UseCompression   bool   `json:"useCompression"`
@@ -23,8 +23,8 @@ type AuthCommand struct {
 	ClientRuntime    string `json:"clientRuntime,omitempty"`
 }
 
-type SQLCommand struct {
-	Command
+type sqlCommand struct {
+	command
 	SQLText    string     `json:"sqlText"`
-	Attributes Attributes `json:"attributes,omitempty"`
+	Attributes attributes `json:"attributes,omitempty"`
 }

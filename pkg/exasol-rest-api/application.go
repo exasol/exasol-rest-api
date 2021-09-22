@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Run starts the REST API service.
 func Run() {
 	applicationProperties := GetApplicationProperties("APPLICATION_PROPERTIES_PATH")
 	application := Application{
@@ -13,6 +14,6 @@ func Run() {
 	router.GET("/api/v1/query/:query", application.Query)
 	err := router.Run(applicationProperties.ApplicationServer)
 	if err != nil {
-		errorLogger.Printf("error starting API server: %s", err)
+		panic("error starting API server: " + err.Error())
 	}
 }

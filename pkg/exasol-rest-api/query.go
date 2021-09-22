@@ -5,10 +5,12 @@ import (
 	"net/http"
 )
 
+//Application represents the REST API service.
 type Application struct {
 	Properties *ApplicationProperties
 }
 
+//Query allows users to send a query to the Exasol database.
 func (application *Application) Query(context *gin.Context) {
 	response, err := application.queryExasol(context.Param("query"))
 	if err != nil {

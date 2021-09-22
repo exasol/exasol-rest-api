@@ -26,21 +26,21 @@ ExasolPassword: "somepass"
 
 You can also provide additional configurations:
 
-| Property                  |  Default          | Description                                     |
-| :-----------------------: | :---------------: | :---------------------------------------------- |
-| ApplicationServer         |  "localhost:8080" | Server to start the API application on.         |
-| ExasolUser                |                   | Name of the Exasol service user.                |
-| ExasolPassword            |                   | Password of the Exasol service user             |
-| ExasolHost                | "localhost"       | Exasol host.                                    |
-| ExasolPort                | 8563              | Exasol port.                                    |
-| ExasolWebsocketApiVersion | 2                 | Version of Exasol Websocket API.                |
-| Encryption                | false             | Exasol automatic encryption.                    |
-| UseTLS                    | false             | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
+| Property                     |  Default          | Description                                          |
+| :--------------------------: | :---------------: | :--------------------------------------------------- |
+| server-address               |  "localhost:8080" | Address for the server to listen for new connection. |
+| exasol-user                  |                   | Name of the Exasol service user.                     |
+| exasol-password              |                   | Password of the Exasol service user                  |
+| exasol-host                  | "localhost"       | Exasol host.                                         |
+| exasol-port                  | 8563              | Exasol port.                                         |
+| exasol-websocket-api-version | 2                 | Version of Exasol Websocket API.                     |
+| encryption                   | false             | Automatic [Exasol connection encryption][1]. You can enable or disable it. |
+| use-tls                      | false             | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
 
 Before starting the application, you need to set an environment variable that points to the properties file:
 
 ```
-APPLICATION_PROPERTIES_PATH=application-properties.yml
+APPLICATION_PROPERTIES_PATH=application_properties.yml
 ```
 
 ### Start API Service
@@ -54,3 +54,5 @@ On Linux:
 ```shell
 ./exasol-rest-api
 ```
+
+[1]: https://community.exasol.com/t5/database-features/database-connection-encryption-at-exasol/ta-p/2259

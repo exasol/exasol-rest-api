@@ -2,18 +2,18 @@ package exasol_rest_api
 
 import "encoding/json"
 
-type BaseResponse struct {
+type baseResponse struct {
 	Status       string          `json:"status"`
 	ResponseData json.RawMessage `json:"responseData"`
-	Exception    *Exception      `json:"exception"`
+	Exception    *exception      `json:"exception"`
 }
 
-type Exception struct {
+type exception struct {
 	Text    string `json:"text"`
 	SQLCode string `json:"sqlCode"`
 }
 
-type PublicKeyResponse struct {
+type publicKeyResponse struct {
 	PublicKeyPem      string `json:"publicKeyPem"`
 	PublicKeyModulus  string `json:"publicKeyModulus"`
 	PublicKeyExponent string `json:"publicKeyExponent"`

@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
-	"database/sql/driver"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -24,7 +23,7 @@ type websocketConnection struct {
 }
 
 func (connection *websocketConnection) close() error {
-	err := connection.send(&Command{Command: "disconnect"}, nil)
+	err := connection.send(&command{Command: "disconnect"}, nil)
 	connection.websocket.Close()
 	connection.websocket = nil
 	return err
@@ -55,10 +54,10 @@ func (connection *websocketConnection) getURIScheme() string {
 }
 
 func (connection *websocketConnection) executeQuery(query string) ([]byte, error) {
-	command := &SQLCommand{
-		Command: Command{"execute"},
+	command := &sqlCommand{
+		command: command{"execute"},
 		SQLText: query,
-		Attributes: Attributes{
+		Attributes: attributes{
 			ResultSetMaxRows: 1000,
 		},
 	}
@@ -71,11 +70,11 @@ func (connection *websocketConnection) executeQuery(query string) ([]byte, error
 }
 
 func (connection *websocketConnection) login() error {
-	loginCommand := &LoginCommand{
-		Command:         Command{"login"},
+	loginCommand := &loginCommand{
+		command:         command{"login"},
 		ProtocolVersion: connection.connProperties.ExasolWebsocketApiVersion,
 	}
-	loginResponse := &PublicKeyResponse{}
+	loginResponse := &publicKeyResponse{}
 	err := connection.send(loginCommand, loginResponse)
 	if err != nil {
 		return err
@@ -95,11 +94,11 @@ func (connection *websocketConnection) login() error {
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
 		errorLogger.Printf("password encryption error: %s", err)
-		return driver.ErrBadConn
+		return err
 	}
 	b64Pass := base64.StdEncoding.EncodeToString(encPass)
 
-	authRequest := AuthCommand{
+	authRequest := authCommand{
 		Username:       connection.connProperties.ExasolUser,
 		Password:       b64Pass,
 		UseCompression: false,
@@ -149,7 +148,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 		if err != nil {
 			return err
 		}
-		result := &BaseResponse{}
+		result := &baseResponse{}
 		err = json.Unmarshal(message, result)
 		if err != nil {
 			return err

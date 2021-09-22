@@ -73,7 +73,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingFile() 
 	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
 	err := os.Setenv(applicationPropertiesPathKey, "file/does/not/exist")
 	onError(err)
-	suite.PanicsWithValue("cannot start application without properties",
+	suite.PanicsWithValue("runtime error: application properties are missing or incorrect. open file/does/not/exist: no such file or directory",
 		func() { exasol_rest_api.GetApplicationProperties("APPLICATION_PROPERTIES_PATH") })
 }
 
@@ -82,7 +82,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 		ExasolPassword: "pass",
 	}
 	applicationPropertiesPathKey := suite.setPathToPropertiesFileEnv(properties)
-	suite.PanicsWithValue("cannot start application without properties",
+	suite.PanicsWithValue("runtime error: application properties are missing or incorrect. exasol username is missing in properties",
 		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
 }
 
@@ -91,7 +91,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingPasswor
 		ExasolUser: "myUSer",
 	}
 	applicationPropertiesPathKey := suite.setPathToPropertiesFileEnv(properties)
-	suite.PanicsWithValue("cannot start application without properties",
+	suite.PanicsWithValue("runtime error: application properties are missing or incorrect. exasol password is missing in properties",
 		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
 }
 
@@ -100,7 +100,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 		UseTLS: true,
 	}
 	applicationPropertiesPathKey := suite.setPathToPropertiesFileEnv(properties)
-	suite.PanicsWithValue("cannot start application without properties",
+	suite.PanicsWithValue("runtime error: application properties are missing or incorrect. exasol username and password are missing in properties",
 		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
 }
 
