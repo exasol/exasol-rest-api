@@ -28,11 +28,11 @@ func (application *Application) queryExasol(query string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer connection.close()
 	response, err := connection.executeQuery(query)
 	if err != nil {
 		return nil, err
 	}
-	err = connection.close()
 	if err != nil {
 		return nil, err
 	}
@@ -51,5 +51,5 @@ func (application *Application) openConnection() (*websocketConnection, error) {
 	if err != nil {
 		return nil, err
 	}
-	return connection, err
+	return connection, nil
 }

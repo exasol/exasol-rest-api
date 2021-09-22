@@ -78,6 +78,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
 		ExasolUser:                username,
 		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
 		ExasolWebsocketApiVersion: 2,
 	}))
@@ -95,6 +96,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
 		ExasolUser:                "not_existing_user",
 		ExasolPassword:            "wrong_password",
+		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
 		ExasolWebsocketApiVersion: 2,
 	}))
@@ -112,6 +114,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
 		ExasolUser:                suite.defaultExasolUsername,
 		ExasolPassword:            suite.defaultExasolPassword,
+		ExasolHost:                suite.exasolHost,
 		ExasolPort:                4321,
 		ExasolWebsocketApiVersion: 2,
 	}))
@@ -129,6 +132,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
 		ExasolUser:                suite.defaultExasolUsername,
 		ExasolPassword:            suite.defaultExasolPassword,
+		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
 		ExasolWebsocketApiVersion: 0,
 	}))
@@ -192,7 +196,7 @@ func (suite *IntegrationTestSuite) createApplication(properties *exasol_rest_api
 }
 
 func createDefaultServiceUserWithAccess(user string, password string, host string, port int) {
-	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).String())
+	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).Autocommit(true).String())
 	onError(err)
 	schemaName := "TEST_SCHEMA_1"
 	_, err = database.Exec("CREATE SCHEMA " + schemaName)
@@ -211,7 +215,8 @@ func createDefaultServiceUserWithAccess(user string, password string, host strin
 }
 
 func (suite *IntegrationTestSuite) createExasolUser(username string, password string) {
-	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Port(suite.exasolPort).String())
+	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).
+		Host(suite.exasolHost).Port(suite.exasolPort).String())
 	onError(err)
 	_, err = database.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
 	onError(err)

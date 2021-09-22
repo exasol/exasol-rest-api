@@ -22,13 +22,6 @@ type websocketConnection struct {
 	websocket      *websocket.Conn
 }
 
-func (connection *websocketConnection) close() error {
-	err := connection.send(&command{Command: "disconnect"}, nil)
-	connection.websocket.Close()
-	connection.websocket = nil
-	return err
-}
-
 func (connection *websocketConnection) connect() error {
 	uri := fmt.Sprintf("%s:%d", connection.connProperties.ExasolHost, connection.connProperties.ExasolPort)
 	exaURL := url.URL{
@@ -43,6 +36,15 @@ func (connection *websocketConnection) connect() error {
 		connection.websocket.EnableWriteCompression(false)
 	}
 	return err
+}
+
+func (connection *websocketConnection) close() {
+	err := connection.send(&command{Command: "disconnect"}, nil)
+	connection.websocket.Close()
+	connection.websocket = nil
+	if err != nil {
+
+	}
 }
 
 func (connection *websocketConnection) getURIScheme() string {
@@ -61,12 +63,7 @@ func (connection *websocketConnection) executeQuery(query string) ([]byte, error
 			ResultSetMaxRows: 1000,
 		},
 	}
-	result, err := connection.sendRequestWithStringResponse(command)
-	if err != nil {
-		return nil, err
-	} else {
-		return result, err
-	}
+	return connection.sendRequestWithStringResponse(command)
 }
 
 func (connection *websocketConnection) login() error {
@@ -111,12 +108,7 @@ func (connection *websocketConnection) login() error {
 		authRequest.ClientOsUsername = osUser.Username
 	}
 
-	err = connection.send(authRequest, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return connection.send(authRequest, nil)
 }
 
 func (connection *websocketConnection) send(request, response interface{}) error {
@@ -124,11 +116,7 @@ func (connection *websocketConnection) send(request, response interface{}) error
 	if err != nil {
 		return err
 	}
-	err = receiver(response)
-	if err != nil {
-		return err
-	}
-	return nil
+	return receiver(response)
 }
 
 func (connection *websocketConnection) sendRequestWithInterfaceResponse(request interface{}) (func(interface{}) error, error) {
@@ -143,7 +131,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 		return nil, err
 	}
 
-	return func(response interface{}) error {
+	return func(responseType interface{}) error {
 		_, message, err := connection.websocket.ReadMessage()
 		if err != nil {
 			return err
@@ -156,10 +144,10 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 		if result.Status != "ok" {
 			return fmt.Errorf("[%s] %s", result.Exception.SQLCode, result.Exception.Text)
 		}
-		if response == nil {
+		if responseType == nil {
 			return nil
 		}
-		return json.Unmarshal(result.ResponseData, response)
+		return json.Unmarshal(result.ResponseData, responseType)
 	}, nil
 }
 
