@@ -31,19 +31,19 @@ func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationP
 }
 
 func readApplicationProperties(propertiesFilePath string) (*ApplicationProperties, error) {
-	var properties ApplicationProperties
-	err := getPropertiesFromFile(propertiesFilePath, &properties)
+	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
 		return nil, err
 	}
-	err = properties.initializeProperties()
+	properties.fillMissingWithDefaultValues()
+	err = properties.validate()
 	if err != nil {
 		return nil, err
 	} else {
-		return &properties, nil
+		return properties, nil
 	}
 }
-func (applicationProperties *ApplicationProperties) initializeProperties() error {
+func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues() {
 	defaultProperties := getDefaultProperties()
 	if applicationProperties.ApplicationServer == "" {
 		applicationProperties.ApplicationServer = defaultProperties.ApplicationServer
@@ -57,10 +57,9 @@ func (applicationProperties *ApplicationProperties) initializeProperties() error
 	if applicationProperties.ExasolWebsocketApiVersion == 0 {
 		applicationProperties.ExasolWebsocketApiVersion = defaultProperties.ExasolWebsocketApiVersion
 	}
-	return applicationProperties.validateExasolUser()
 }
 
-func (applicationProperties *ApplicationProperties) validateExasolUser() error {
+func (applicationProperties *ApplicationProperties) validate() error {
 	if applicationProperties.ExasolUser == "" && applicationProperties.ExasolPassword == "" {
 		return errors.New("exasol username and password are missing in properties")
 	} else if applicationProperties.ExasolUser == "" {

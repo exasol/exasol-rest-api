@@ -53,17 +53,6 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	suite.Equal(expected, actual)
 }
 
-func (suite *ApplicationPropertiesSuite) writePropertiesToTempFile(
-	properties *exasol_rest_api.ApplicationProperties) string {
-	file, err := ioutil.TempFile("", "application_properties_*.yml")
-	onError(err)
-	data, err := yaml.Marshal(&properties)
-	onError(err)
-	_, err = file.Write(data)
-	onError(err)
-	return file.Name()
-}
-
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithoutPath() {
 	suite.PanicsWithValue("runtime error: missing environment variable: DUMMY_KEY",
 		func() { exasol_rest_api.GetApplicationProperties("DUMMY_KEY") })
@@ -102,6 +91,17 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 	applicationPropertiesPathKey := suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("runtime error: application properties are missing or incorrect. exasol username and password are missing in properties",
 		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
+}
+
+func (suite *ApplicationPropertiesSuite) writePropertiesToTempFile(
+	properties *exasol_rest_api.ApplicationProperties) string {
+	file, err := ioutil.TempFile("", "application_properties_*.yml")
+	onError(err)
+	data, err := yaml.Marshal(&properties)
+	onError(err)
+	_, err = file.Write(data)
+	onError(err)
+	return file.Name()
 }
 
 func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(properties *exasol_rest_api.ApplicationProperties) string {

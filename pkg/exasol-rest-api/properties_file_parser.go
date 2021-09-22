@@ -6,17 +6,18 @@ import (
 	"os"
 )
 
-func getPropertiesFromFile(filepath string, properties *ApplicationProperties) error {
+func getPropertiesFromFile(filepath string) (*ApplicationProperties, error) {
 	propertiesFile, err := openFile(filepath)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = decodePropertiesFile(propertiesFile, properties)
+	properties := ApplicationProperties{}
+	err = decodePropertiesFile(propertiesFile, &properties)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	closeFile(propertiesFile)
-	return nil
+	return &properties, nil
 }
 
 func openFile(filepath string) (*os.File, error) {
