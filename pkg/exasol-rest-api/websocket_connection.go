@@ -43,7 +43,7 @@ func (connection *websocketConnection) close() {
 	connection.websocket.Close()
 	connection.websocket = nil
 	if err != nil {
-
+		errorLogger.Printf("error closing a connection: %s", err)
 	}
 }
 
