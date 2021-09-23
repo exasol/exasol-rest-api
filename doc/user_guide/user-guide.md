@@ -4,9 +4,7 @@
 
 ### Database Side Preparation
 
-* Create a user in the Exasol database for the api service. This user will be used for all connections. Grant **
-  minimum** privileges to the user. We strongly recommend to only grant SELECT on required schemas/tables. Please keep
-  in mind that all API users uses the same service account.
+* Create a user in the Exasol database for the API service. This user is a service account for Exasol REST API. The service account will be used for all connections, therefore grant **minimum** privileges to it. We strongly recommend to only grant SELECT on required schemas/tables. Please keep in mind that all API users use the same service account.
 
 ```sql
 CREATE USER api_service_account IDENTIFIED BY secret_password;
@@ -20,8 +18,8 @@ The application needs a configuration file in yml format. The minimum required p
 Exasol service account described above:
 
 ```yaml
-ExasolUser: "someuser"
-ExasolPassword: "somepass"
+ExasolUser: "api_service_account"
+ExasolPassword: "secret_password"
 ```
 
 You can also provide additional configurations:
@@ -29,8 +27,8 @@ You can also provide additional configurations:
 | Property                     |  Default          | Description                                          |
 | :--------------------------: | :---------------: | :--------------------------------------------------- |
 | server-address               |  "localhost:8080" | Address for the server to listen for new connection. |
-| exasol-user                  |                   | Name of the Exasol service user.                     |
-| exasol-password              |                   | Password of the Exasol service user                  |
+| exasol-user                  |                   | Name of the Exasol service account.                  |
+| exasol-password              |                   | Password of the Exasol service account.              |
 | exasol-host                  | "localhost"       | Exasol host.                                         |
 | exasol-port                  | 8563              | Exasol port.                                         |
 | exasol-websocket-api-version | 2                 | Version of Exasol Websocket API.                     |

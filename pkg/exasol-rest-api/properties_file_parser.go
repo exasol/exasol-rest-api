@@ -38,10 +38,8 @@ func decodePropertiesFile(propertiesFile *os.File) (*ApplicationProperties, erro
 }
 
 func closeFile(configFile *os.File) {
-	defer func(configFile *os.File) {
-		err := configFile.Close()
-		if err != nil {
-			errorLogger.Printf("error closing a file: %s. %s", configFile.Name(), err)
-		}
-	}(configFile)
+	err := configFile.Close()
+	if err != nil {
+		errorLogger.Printf("error closing a file: %s. %s", configFile.Name(), err)
+	}
 }

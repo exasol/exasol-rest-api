@@ -93,21 +93,16 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
 }
 
-func (suite *ApplicationPropertiesSuite) writePropertiesToTempFile(
-	properties *exasol_rest_api.ApplicationProperties) string {
+func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(properties *exasol_rest_api.ApplicationProperties) string {
 	file, err := ioutil.TempFile("", "application_properties_*.yml")
+	defer file.Close()
 	onError(err)
 	data, err := yaml.Marshal(&properties)
 	onError(err)
 	_, err = file.Write(data)
 	onError(err)
-	return file.Name()
-}
-
-func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(properties *exasol_rest_api.ApplicationProperties) string {
-	pathToFile := suite.writePropertiesToTempFile(properties)
 	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
-	err := os.Setenv(applicationPropertiesPathKey, pathToFile)
+	err = os.Setenv(applicationPropertiesPathKey, file.Name())
 	onError(err)
 	return applicationPropertiesPathKey
 }
