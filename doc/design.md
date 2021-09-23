@@ -13,7 +13,7 @@ This document's section structure is derived from the "[arc42](https://arc42.org
 
 ## Requirement Overview
 
-Please refer to the [System Requirement Specification](system_requirements.md) for user-level requirements.
+Please refer to the [System Requirement Specification](system-requirements.md) for user-level requirements.
 
 # Building Blocks
 
