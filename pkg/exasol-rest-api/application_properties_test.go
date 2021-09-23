@@ -95,7 +95,12 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 
 func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(properties *exasol_rest_api.ApplicationProperties) string {
 	file, err := ioutil.TempFile("", "application_properties_*.yml")
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(file)
 	onError(err)
 	data, err := yaml.Marshal(&properties)
 	onError(err)
