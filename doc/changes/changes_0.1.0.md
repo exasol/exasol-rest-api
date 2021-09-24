@@ -4,6 +4,12 @@ Code name:
 
 ## Summary
 
+
+## Features
+
+* #3: Added initial implementation.
+* #11: Added swagger.
+
 ## Documentation
 
 * #1: Added system requirements and design.

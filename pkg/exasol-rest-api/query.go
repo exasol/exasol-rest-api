@@ -13,7 +13,14 @@ type Application struct {
 	Properties *ApplicationProperties
 }
 
-// Query allows users to send a query to the Exasol database.
+// @Summary Query the Exasol databse.
+// @Description provide a query and get a result set
+// @Accept  json
+// @Produce  json
+// @Param   query     path    string     true        "SELECT query"
+// @Success 200 {string} status and result set
+// @Failure 400 {string} error code and error message
+// @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
 	response, err := application.queryExasol(context.Param("query"))
 	if err != nil {
