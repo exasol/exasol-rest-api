@@ -6,8 +6,6 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 
 ## Information for Users
 
-## Information for Developers
-
 - [User Guide](doc/user_guide/user-guide.md)
 - [System Requirements](doc/system-requirements.md)
 - [Design](doc/design.md)
