@@ -38,12 +38,12 @@ You can also provide additional configurations:
 Before starting the application, you need to set an environment variable that points to the properties file:
 
 ```
-APPLICATION_PROPERTIES_PATH=application_properties.yml
+APPLICATION_PROPERTIES_PATH=application-properties.yml
 ```
 
 ### Start API Service
 
-* Download the latest executable from our [GitHub repository](https://github.com/exasol/exasol-rest-api/releases).
+* Download the latest executable from our [GitHub repository](https://github.com/exasol/exasol-rest-api/releases). 
 
 * Start the service:
 
@@ -52,5 +52,13 @@ On Linux:
 ```shell
 ./exasol-rest-api
 ```
+
+On Windows: open a command prompt and start the service from the prompt:  
+
+```shell
+path\to\file\exasol-rest-api-x86-64.exe
+```
+
+Windows Hint: If you start the application via a double-click on the file, when the application crashes you it exits immediately. It means you won't see any error messages. So we recommend starting the application via cmd.
 
 [1]: https://community.exasol.com/t5/database-features/database-connection-encryption-at-exasol/ta-p/2259

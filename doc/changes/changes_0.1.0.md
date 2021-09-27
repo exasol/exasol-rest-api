@@ -9,6 +9,7 @@ Code name:
 
 * #3: Added initial implementation.
 * #11: Added swagger.
+* #8: Added release builds for Linux and Windows.
 
 ## Documentation
 
