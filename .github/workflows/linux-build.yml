@@ -28,7 +28,7 @@ jobs:
         run: bash generate-swagger-docs
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2.5
+        uses: golangci/golangci-lint-action@v2
         with:
           version: v1.42
 
