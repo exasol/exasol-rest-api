@@ -80,7 +80,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 		ExasolPassword:            password,
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -89,7 +89,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"ErrorCode\":\"EXA-REST-API-1\",\"Message\":\"[08004] Connection exception - insufficient privileges: CREATE SESSION.\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}")
 }
 
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
@@ -98,7 +98,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		ExasolPassword:            "wrong_password",
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -107,7 +107,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"ErrorCode\":\"EXA-REST-API-1\",\"Message\":\"[08004] Connection exception - authentication failed.\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}")
 }
 
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
@@ -116,7 +116,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                4321,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -124,7 +124,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
-	suite.Contains(responseRecorder.Body.String(), "{\"ErrorCode\":\"EXA-REST-API-1\"")
+	suite.Contains(responseRecorder.Body.String(), "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol:")
 	suite.Contains(responseRecorder.Body.String(), "connect: connection refused")
 }
 
@@ -134,7 +134,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketApiVersion: 0,
+		ExasolWebsocketAPIVersion: 0,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -143,7 +143,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"ErrorCode\":\"EXA-REST-API-1\",\"Message\":\"[00000] Could not create WebSocket protocol version 0\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [00000] Could not create WebSocket protocol version 0\"}")
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
@@ -182,7 +182,7 @@ func (suite *IntegrationTestSuite) createApplicationWithDefaultProperties() exas
 		ExasolPort:                suite.exasolPort,
 		Encryption:                false,
 		UseTLS:                    false,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}
 	return exasol_rest_api.Application{
 		Properties: properties,

@@ -69,7 +69,7 @@ func (connection *websocketConnection) executeQuery(query string) ([]byte, error
 func (connection *websocketConnection) login() error {
 	loginCommand := &loginCommand{
 		command:         command{"login"},
-		ProtocolVersion: connection.connProperties.ExasolWebsocketApiVersion,
+		ProtocolVersion: connection.connProperties.ExasolWebsocketAPIVersion,
 	}
 	loginResponse := &publicKeyResponse{}
 	err := connection.send(loginCommand, loginResponse)

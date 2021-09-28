@@ -1,48 +1,60 @@
 package exasol_rest_api
 
 import (
-	"errors"
+	"fmt"
+	error_reporting_go "github.com/exasol/error-reporting-go"
 	"os"
 )
 
-//ApplicationProperties for Exasol REST API service.
+// ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
 	ApplicationServer         string `yaml:"server-address"`
 	ExasolUser                string `yaml:"exasol-user"`
 	ExasolPassword            string `yaml:"exasol-password"`
 	ExasolHost                string `yaml:"exasol-host"`
 	ExasolPort                int    `yaml:"exasol-port"`
-	ExasolWebsocketApiVersion int    `yaml:"exasol-websocket-api-version"`
+	ExasolWebsocketAPIVersion int    `yaml:"exasol-websocket-api-version"`
 	Encryption                bool   `yaml:"encryption"`
 	UseTLS                    bool   `yaml:"use-tls"`
 }
 
-//GetApplicationProperties creates an application properties.
+// GetApplicationProperties creates an application properties.
 func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
 	propertiesPath := os.Getenv(applicationPropertiesPathKey)
 	if propertiesPath == "" {
-		panic("runtime error: missing environment variable: " + applicationPropertiesPathKey)
+		panic(error_reporting_go.ExaError("E-ERA-4").Message("runtime error: missing environment variable: {{env}}").
+			Parameter("env", applicationPropertiesPathKey).String())
 	}
+
 	properties, err := readApplicationProperties(propertiesPath)
 	if err != nil {
-		panic("runtime error: application properties are missing or incorrect. " + err.Error())
+		panic(error_reporting_go.ExaError("E-ERA-5").
+			Message("runtime error: application properties are missing or incorrect. {{error|uq}}").
+			Parameter("error", err.Error()).String())
 	}
+
 	return properties
 }
 
 func readApplicationProperties(propertiesFilePath string) (*ApplicationProperties, error) {
 	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("E-ERA-6").
+			Message("cannot read properties from specified file: {{filePath}}. {{error|uq}}").
+			Parameter("filePath", propertiesFilePath).Parameter("error", err.Error())
 	}
+
 	properties.fillMissingWithDefaultValues()
+
 	err = properties.validate()
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("E-ERA-7").Message("properties file validation failed. {{error|uq}}").
+			Parameter("error", err.Error())
 	} else {
 		return properties, nil
 	}
 }
+
 func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues() {
 	defaultProperties := getDefaultProperties()
 	if applicationProperties.ApplicationServer == "" {
@@ -54,18 +66,21 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 	if applicationProperties.ExasolPort == 0 {
 		applicationProperties.ExasolPort = defaultProperties.ExasolPort
 	}
-	if applicationProperties.ExasolWebsocketApiVersion == 0 {
-		applicationProperties.ExasolWebsocketApiVersion = defaultProperties.ExasolWebsocketApiVersion
+	if applicationProperties.ExasolWebsocketAPIVersion == 0 {
+		applicationProperties.ExasolWebsocketAPIVersion = defaultProperties.ExasolWebsocketAPIVersion
 	}
 }
 
 func (applicationProperties *ApplicationProperties) validate() error {
 	if applicationProperties.ExasolUser == "" && applicationProperties.ExasolPassword == "" {
-		return errors.New("exasol username and password are missing in properties")
+		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-8").Message("exasol username and password are missing in properties.").
+			Mitigation("please specify an Exasol username and password via properties.").String())
 	} else if applicationProperties.ExasolUser == "" {
-		return errors.New("exasol username is missing in properties")
+		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-9").Message("exasol username is missing in properties.").
+			Mitigation("please specify an Exasol username via properties.").String())
 	} else if applicationProperties.ExasolPassword == "" {
-		return errors.New("exasol password is missing in properties")
+		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-10").Message("exasol password is missing in properties.").
+			Mitigation("please specify an Exasol password via properties.").String())
 	} else {
 		return nil
 	}
@@ -76,6 +91,6 @@ func getDefaultProperties() *ApplicationProperties {
 		ApplicationServer:         "localhost:8080",
 		ExasolHost:                "localhost",
 		ExasolPort:                8563,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}
 }

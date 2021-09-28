@@ -3,6 +3,7 @@ module main
 go 1.16
 
 require (
+	github.com/exasol/error-reporting-go v0.0.0-20210928115847-09f31457c2bb
 	github.com/exasol/exasol-driver-go v0.0.0-20210823115457-bc7df4ac05ae
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
