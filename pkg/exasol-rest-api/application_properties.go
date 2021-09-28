@@ -73,13 +73,16 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 
 func (applicationProperties *ApplicationProperties) validate() error {
 	if applicationProperties.ExasolUser == "" && applicationProperties.ExasolPassword == "" {
-		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-8").Message("exasol username and password are missing in properties.").
+		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-8").
+			Message("exasol username and password are missing in properties.").
 			Mitigation("please specify an Exasol username and password via properties.").String())
 	} else if applicationProperties.ExasolUser == "" {
-		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-9").Message("exasol username is missing in properties.").
+		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-9").
+			Message("exasol username is missing in properties.").
 			Mitigation("please specify an Exasol username via properties.").String())
 	} else if applicationProperties.ExasolPassword == "" {
-		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-10").Message("exasol password is missing in properties.").
+		return fmt.Errorf(error_reporting_go.ExaError("E-ERA-10").
+			Message("exasol password is missing in properties.").
 			Mitigation("please specify an Exasol password via properties.").String())
 	} else {
 		return nil

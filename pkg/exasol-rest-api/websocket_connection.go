@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	error_reporting_go "github.com/exasol/error-reporting-go"
 	"github.com/gorilla/websocket"
 	"math/big"
 	"net/url"
@@ -34,8 +35,12 @@ func (connection *websocketConnection) connect() error {
 	if err == nil {
 		connection.websocket = websocketConnection
 		connection.websocket.EnableWriteCompression(false)
+		return nil
+	} else {
+		return error_reporting_go.ExaError("E-ERA-14").
+			Message("error while establishing a websockets connection: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
-	return err
 }
 
 func (connection *websocketConnection) close() {
@@ -74,7 +79,9 @@ func (connection *websocketConnection) login() error {
 	loginResponse := &publicKeyResponse{}
 	err := connection.send(loginCommand, loginResponse)
 	if err != nil {
-		return err
+		return error_reporting_go.ExaError("E-ERA-15").
+			Message("error while sending a login command via websockets connection: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
 
 	pubKeyMod, _ := hex.DecodeString(loginResponse.PublicKeyModulus)
@@ -90,8 +97,9 @@ func (connection *websocketConnection) login() error {
 	password := []byte(connection.connProperties.ExasolPassword)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
-		errorLogger.Printf("password encryption error: %s", err)
-		return err
+		return error_reporting_go.ExaError("E-ERA-16").
+			Message("password encryption error during login via websockets connection: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
 	b64Pass := base64.StdEncoding.EncodeToString(encPass)
 
@@ -119,52 +127,57 @@ func (connection *websocketConnection) send(request, response interface{}) error
 	return receiver(response)
 }
 
-func (connection *websocketConnection) sendRequestWithInterfaceResponse(request interface{}) (func(interface{}) error, error) {
-	requestAsJson, err := json.Marshal(request)
-	if err != nil {
-		return nil, err
-	}
-
-	messageType := websocket.TextMessage
-	err = connection.websocket.WriteMessage(messageType, requestAsJson)
+func (connection *websocketConnection) sendRequestWithInterfaceResponse(request interface{}) (func(interface{}) error,
+	error) {
+	message, err := connection.sendRequestWithStringResponse(request)
 	if err != nil {
 		return nil, err
 	}
 
 	return func(responseType interface{}) error {
-		_, message, err := connection.websocket.ReadMessage()
-		if err != nil {
-			return err
-		}
 		result := &baseResponse{}
 		err = json.Unmarshal(message, result)
+
 		if err != nil {
-			return err
+			return error_reporting_go.ExaError("F-ERA-20").
+				Message("error converting JSON message from websockets into response struct: {{error|uq}}").
+				Parameter("error", err.Error())
 		}
+
 		if result.Status != "ok" {
 			return fmt.Errorf("[%s] %s", result.Exception.SQLCode, result.Exception.Text)
 		}
+
 		if responseType == nil {
 			return nil
 		}
+
 		return json.Unmarshal(result.ResponseData, responseType)
 	}, nil
 }
 
 func (connection *websocketConnection) sendRequestWithStringResponse(request interface{}) ([]byte, error) {
-	requestJson, err := json.Marshal(request)
+	requestJSON, err := json.Marshal(request)
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("F-ERA-17").
+			Message("cannot convert request into JSON format: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
 
 	messageType := websocket.TextMessage
-	err = connection.websocket.WriteMessage(messageType, requestJson)
+	err = connection.websocket.WriteMessage(messageType, requestJSON)
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("F-ERA-18").
+			Message("error writing a message via websocket connection: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
+
 	_, message, err := connection.websocket.ReadMessage()
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("F-ERA-19").
+			Message("error reading a message from websocket: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
+
 	return message, nil
 }

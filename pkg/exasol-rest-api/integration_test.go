@@ -143,7 +143,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [00000] Could not create WebSocket protocol version 0\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}")
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {

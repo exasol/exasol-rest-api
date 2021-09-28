@@ -64,7 +64,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingFile() 
 	onError(err)
 	suite.PanicsWithValue("E-ERA-5: runtime error: application properties are missing or incorrect. "+
 		"E-ERA-6: cannot read properties from specified file: 'file/does/not/exist'. "+
-		"open file/does/not/exist: no such file or directory",
+		"E-ERA-11: cannot open a file. open file/does/not/exist: no such file or directory",
 		func() { exasol_rest_api.GetApplicationProperties("APPLICATION_PROPERTIES_PATH") })
 }
 
@@ -97,11 +97,13 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 	applicationPropertiesPathKey := suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-5: runtime error: application properties are missing or incorrect. "+
 		"E-ERA-7: properties file validation failed. "+
-		"E-ERA-8: exasol username and password are missing in properties. please specify an Exasol username and password via properties.",
+		"E-ERA-8: exasol username and password are missing in properties. "+
+		"please specify an Exasol username and password via properties.",
 		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
 }
 
-func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(properties *exasol_rest_api.ApplicationProperties) string {
+func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
+	properties *exasol_rest_api.ApplicationProperties) string {
 	file, err := ioutil.TempFile("", "application_properties_*.yml")
 	defer func(file *os.File) {
 		err := file.Close()
