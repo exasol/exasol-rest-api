@@ -25,5 +25,5 @@ bash generate-swagger-docs
 Hint: If you installed swag, but the script doesn't work because swag is missing, try setting the following environment variable:
 
 ```shell
- export PATH=$(go env GOPATH)/bin:$PATH
+export PATH=$(go env GOPATH)/bin:$PATH
 ```

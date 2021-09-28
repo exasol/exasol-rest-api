@@ -20,10 +20,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Swag
+        run: go get -u github.com/swaggo/swag/cmd/swag
+      - name: Setup Enviroment variable for Swagger
+        run: export PATH=$(go env GOPATH)/bin:$PATH
+      - name: Generate Swagger API Description
+        run: bash generate-swagger-docs
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.39
+          version: v1.42
+          skip-go-installation: true
+          skip-pkg-cache: true
 
       - name: test
         run: go test -coverprofile=coverage.out ./...
