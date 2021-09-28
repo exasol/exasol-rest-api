@@ -61,4 +61,10 @@ path\to\file\exasol-rest-api-x86-64.exe
 
 Windows Hint: If you start the application via a double-click on the file, when the application crashes you it exits immediately. It means you won't see any error messages. So we recommend starting the application via cmd.
 
+### Accessing the Service
+
+You can access the service on the host and port you specified. For the default values: `http://localhost:8080/api/v1/<endpoint here>`.
+
+You can also access the Swagger documentation. Here is an example with the default values: `http://localhost:8080/swagger/index.html`
+
 [1]: https://community.exasol.com/t5/database-features/database-connection-encryption-at-exasol/ta-p/2259
