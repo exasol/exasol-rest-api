@@ -14,6 +14,9 @@ func Run() {
 	applicationProperties := GetApplicationProperties("APPLICATION_PROPERTIES_PATH")
 	application := Application{
 		Properties: applicationProperties,
+		Authorizer: &TokenAuthorizer{
+			AllowedToken: applicationProperties.APIToken,
+		},
 	}
 	router := gin.Default()
 	swaggerURL := ginSwagger.URL("/swagger/doc.json")
