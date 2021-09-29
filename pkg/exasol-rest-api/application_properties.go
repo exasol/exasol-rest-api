@@ -22,7 +22,7 @@ type ApplicationProperties struct {
 func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
 	propertiesPath := os.Getenv(applicationPropertiesPathKey)
 	if propertiesPath == "" {
-		panic(error_reporting_go.ExaError("E-ERA-4").Message("runtime error: missing environment variable: {{env}}.").
+		panic(error_reporting_go.ExaError("E-ERA-4").Message("missing environment variable: {{env}}.").
 			Parameter("env", applicationPropertiesPathKey).
 			Mitigation("please set the variable according to the user guide.").String())
 	}
@@ -30,7 +30,7 @@ func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationP
 	properties, err := readApplicationProperties(propertiesPath)
 	if err != nil {
 		panic(error_reporting_go.ExaError("E-ERA-5").
-			Message("runtime error: application properties are missing or incorrect. {{error|uq}}").
+			Message("application properties are missing or incorrect. {{error|uq}}").
 			Parameter("error", err.Error()).String())
 	}
 
@@ -41,8 +41,8 @@ func readApplicationProperties(propertiesFilePath string) (*ApplicationPropertie
 	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
 		return nil, error_reporting_go.ExaError("E-ERA-6").
-			Message("cannot read properties from specified file: {{filePath}}. {{error|uq}}").
-			Parameter("filePath", propertiesFilePath).Parameter("error", err.Error())
+			Message("cannot read properties from specified file: {{file path}}. {{error|uq}}").
+			Parameter("file path", propertiesFilePath).Parameter("error", err.Error())
 	}
 
 	properties.fillMissingWithDefaultValues()
