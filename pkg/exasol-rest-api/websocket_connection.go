@@ -31,6 +31,7 @@ func (connection *websocketConnection) connect() error {
 	}
 	dialer := *websocket.DefaultDialer
 	dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: !connection.connProperties.UseTLS}
+
 	websocketConnection, _, err := dialer.DialContext(context.Background(), exaURL.String(), nil)
 	if err == nil {
 		connection.websocket = websocketConnection
@@ -48,7 +49,7 @@ func (connection *websocketConnection) close() {
 	connection.websocket.Close()
 	connection.websocket = nil
 	if err != nil {
-		errorLogger.Printf("error closing a connection: %s", err)
+		errorLogger.Printf("error closing a websockets connection: %s", err)
 	}
 }
 
@@ -68,6 +69,7 @@ func (connection *websocketConnection) executeQuery(query string) ([]byte, error
 			ResultSetMaxRows: 1000,
 		},
 	}
+
 	return connection.sendRequestWithStringResponse(command)
 }
 
@@ -77,6 +79,7 @@ func (connection *websocketConnection) login() error {
 		ProtocolVersion: connection.connProperties.ExasolWebsocketAPIVersion,
 	}
 	loginResponse := &publicKeyResponse{}
+
 	err := connection.send(loginCommand, loginResponse)
 	if err != nil {
 		return error_reporting_go.ExaError("E-ERA-15").
@@ -97,7 +100,7 @@ func (connection *websocketConnection) login() error {
 	password := []byte(connection.connProperties.ExasolPassword)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
-		return error_reporting_go.ExaError("E-ERA-16").
+		return error_reporting_go.ExaError("F-ERA-16").
 			Message("password encryption error during login via websockets connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}

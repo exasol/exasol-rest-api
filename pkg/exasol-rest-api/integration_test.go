@@ -38,7 +38,8 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
 	suite.exasolPort = 8563
-	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost, suite.exasolPort)
+	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost,
+		suite.exasolPort)
 }
 
 func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Application) *gin.Engine {
@@ -58,6 +59,17 @@ func (suite *IntegrationTestSuite) TestQuery() {
 	suite.Equal(http.StatusOK, responseRecorder.Code)
 	suite.Equal("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
 		responseRecorder.Body.String())
+}
+
+func (suite *IntegrationTestSuite) TestQueryWithTypo() {
+	router := suite.startServer(suite.createApplicationWithDefaultProperties())
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECTFROM TEST_SCHEMA_1.TEST_TABLE", nil)
+	onError(err)
+	responseRecorder := httptest.NewRecorder()
+	router.ServeHTTP(responseRecorder, req)
+	suite.Equal(http.StatusOK, responseRecorder.Code)
+	suite.Contains(responseRecorder.Body.String(),
+		"{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected IDENTIFIER_LIST_")
 }
 
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
@@ -124,7 +136,8 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
-	suite.Contains(responseRecorder.Body.String(), "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol:")
+	suite.Contains(responseRecorder.Body.String(),
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol:")
 	suite.Contains(responseRecorder.Body.String(), "connect: connection refused")
 }
 
@@ -196,7 +209,8 @@ func (suite *IntegrationTestSuite) createApplication(properties *exasol_rest_api
 }
 
 func createDefaultServiceUserWithAccess(user string, password string, host string, port int) {
-	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).Autocommit(true).String())
+	database, err := sql.Open("exasol",
+		exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).Autocommit(true).String())
 	onError(err)
 	schemaName := "TEST_SCHEMA_1"
 	_, err = database.Exec("CREATE SCHEMA " + schemaName)
