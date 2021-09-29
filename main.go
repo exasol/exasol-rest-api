@@ -12,6 +12,10 @@ import exasol_rest_api "main/pkg/exasol-rest-api"
 // @license.name MIT License
 // @license.url https://github.com/exasol/exasol-rest-api/blob/main/LICENSE
 
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 // @BasePath /api/v1
 
 func main() {

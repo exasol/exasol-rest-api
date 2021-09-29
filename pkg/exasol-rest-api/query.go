@@ -19,9 +19,11 @@ type Application struct {
 // @Description provide a query and get a result set
 // @Accept  json
 // @Produce  json
+// @Security ApiKeyAuth
 // @Param   query     path    string     true        "SELECT query"
 // @Success 200 {string} status and result set
 // @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
 // @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
 	err := application.Authorizer.Authorize(context.Request)

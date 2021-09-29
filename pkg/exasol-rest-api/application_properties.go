@@ -8,7 +8,7 @@ import (
 
 // ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
-	APITokens                 []string `yaml:"api-token"`
+	APITokens                 []string `yaml:"api-tokens"`
 	ApplicationServer         string   `yaml:"server-address"`
 	ExasolUser                string   `yaml:"exasol-user"`
 	ExasolPassword            string   `yaml:"exasol-password"`
