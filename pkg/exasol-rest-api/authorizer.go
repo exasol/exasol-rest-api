@@ -8,21 +8,23 @@ import (
 
 // Authorizer is responsible for the API users' authorization
 type Authorizer interface {
-	authorize(request *http.Request) error
+	// Authorize a token
+	Authorize(request *http.Request) error
 }
 
 // TokenAuthorizer is a token-based implementation of the Authorizer
 type TokenAuthorizer struct {
-	AllowedToken string
+	AllowedTokens map[string]bool
 }
 
-func (auth *TokenAuthorizer) authorize(request *http.Request) error {
+func (auth *TokenAuthorizer) Authorize(request *http.Request) error {
 	tokens := request.Header["Authorization"]
 
 	authorized := false
 	for _, token := range tokens {
-		if token == auth.AllowedToken {
+		if auth.AllowedTokens[token] {
 			authorized = true
+			break
 		}
 	}
 

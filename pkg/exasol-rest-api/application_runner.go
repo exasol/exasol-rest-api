@@ -15,7 +15,7 @@ func Run() {
 	application := Application{
 		Properties: applicationProperties,
 		Authorizer: &TokenAuthorizer{
-			AllowedToken: applicationProperties.APIToken,
+			AllowedTokens: CreateStringsSet(applicationProperties.APITokens),
 		},
 	}
 	router := gin.Default()

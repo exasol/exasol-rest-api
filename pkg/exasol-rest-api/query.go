@@ -24,16 +24,16 @@ type Application struct {
 // @Failure 400 {string} error code and error message
 // @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
-	err := application.Authorizer.authorize(context.Request)
+	err := application.Authorizer.Authorize(context.Request)
 	if err != nil {
 		context.JSON(http.StatusForbidden, gin.H{"Error": err.Error()})
-	}
-
-	response, err := application.queryExasol(context.Param("query"))
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 	} else {
-		context.Data(http.StatusOK, "application/json", response)
+		response, err := application.queryExasol(context.Param("query"))
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		} else {
+			context.Data(http.StatusOK, "application/json", response)
+		}
 	}
 }
 

@@ -22,7 +22,7 @@ type IntegrationTestSuite struct {
 	exasolContainer       testcontainers.Container
 	defaultExasolUsername string
 	defaultExasolPassword string
-	defaultAuthToken      string
+	defaultAuthTokens     []string
 	exasolPort            int
 	exasolHost            string
 	appProperties         *exasol_rest_api.ApplicationProperties
@@ -36,7 +36,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
 	suite.defaultExasolUsername = "api_service_account"
 	suite.defaultExasolPassword = "secret_password"
-	suite.defaultAuthToken = "abc"
+	suite.defaultAuthTokens = []string{"abc", "cba"}
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
 	suite.exasolPort = 8563
@@ -55,7 +55,7 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 func (suite *IntegrationTestSuite) TestQuery() {
 	router := suite.startServer(suite.createApplicationWithDefaultProperties())
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 
 	responseRecorder := httptest.NewRecorder()
@@ -68,7 +68,7 @@ func (suite *IntegrationTestSuite) TestQuery() {
 func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 	router := suite.startServer(suite.createApplicationWithDefaultProperties())
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECTFROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
@@ -80,7 +80,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 	router := suite.startServer(suite.createApplicationWithDefaultProperties())
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/CREATE SCHEMA not_allowed_schema", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
@@ -94,7 +94,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	password := "secret"
 	suite.createExasolUser(username, password)
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
-		APIToken:                  suite.defaultAuthToken,
+		APITokens:                 suite.defaultAuthTokens,
 		ExasolUser:                username,
 		ExasolPassword:            password,
 		ExasolHost:                suite.exasolHost,
@@ -103,7 +103,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
@@ -114,7 +114,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
-		APIToken:                  suite.defaultAuthToken,
+		APITokens:                 suite.defaultAuthTokens,
 		ExasolUser:                "not_existing_user",
 		ExasolPassword:            "wrong_password",
 		ExasolHost:                suite.exasolHost,
@@ -123,7 +123,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
@@ -134,7 +134,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
-		APIToken:                  suite.defaultAuthToken,
+		APITokens:                 suite.defaultAuthTokens,
 		ExasolUser:                suite.defaultExasolUsername,
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
@@ -143,7 +143,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
@@ -155,7 +155,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 
 func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	router := suite.startServer(suite.createApplication(&exasol_rest_api.ApplicationProperties{
-		APIToken:                  suite.defaultAuthToken,
+		APITokens:                 suite.defaultAuthTokens,
 		ExasolUser:                suite.defaultExasolUsername,
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
@@ -164,13 +164,26 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", suite.defaultAuthToken)
+	req.Header.Set("Authorization", suite.defaultAuthTokens[0])
 	onError(err)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
 		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}")
+}
+
+func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
+	router := suite.startServer(suite.createApplicationWithDefaultProperties())
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
+	req.Header.Set("Authorization", "badToken")
+	onError(err)
+
+	responseRecorder := httptest.NewRecorder()
+	router.ServeHTTP(responseRecorder, req)
+	suite.Equal(http.StatusForbidden, responseRecorder.Code)
+	suite.Equal("{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+		responseRecorder.Body.String())
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
@@ -203,7 +216,7 @@ func onError(err error) {
 
 func (suite *IntegrationTestSuite) createApplicationWithDefaultProperties() exasol_rest_api.Application {
 	properties := &exasol_rest_api.ApplicationProperties{
-		APIToken:                  suite.defaultAuthToken,
+		APITokens:                 suite.defaultAuthTokens,
 		ExasolUser:                suite.defaultExasolUsername,
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
@@ -219,7 +232,7 @@ func (suite *IntegrationTestSuite) createApplication(properties *exasol_rest_api
 	return exasol_rest_api.Application{
 		Properties: properties,
 		Authorizer: &exasol_rest_api.TokenAuthorizer{
-			AllowedToken: properties.APIToken,
+			AllowedTokens: exasol_rest_api.CreateStringsSet(properties.APITokens),
 		},
 	}
 }
