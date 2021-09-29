@@ -1,7 +1,8 @@
 package exasol_rest_api
 
 import (
-	"errors"
+	"fmt"
+	error_reporting_go "github.com/exasol/error-reporting-go"
 	"gopkg.in/yaml.v3"
 	"os"
 )
@@ -11,6 +12,7 @@ func getPropertiesFromFile(filepath string) (*ApplicationProperties, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer closeFile(propertiesFile)
 	return decodePropertiesFile(propertiesFile)
 }
@@ -18,9 +20,11 @@ func getPropertiesFromFile(filepath string) (*ApplicationProperties, error) {
 func openFile(filepath string) (*os.File, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("E-ERA-11").Message("cannot open a file. {{error|uq}}").
+			Parameter("error", err.Error())
 	} else if file == nil {
-		return nil, errors.New("properties file doesn't exist")
+		return nil, fmt.Errorf(error_reporting_go.ExaError("E-ERA-12").
+			Message("properties file doesn't exist.").String())
 	} else {
 		return file, nil
 	}
@@ -29,17 +33,19 @@ func openFile(filepath string) (*os.File, error) {
 func decodePropertiesFile(propertiesFile *os.File) (*ApplicationProperties, error) {
 	decoder := yaml.NewDecoder(propertiesFile)
 	properties := ApplicationProperties{}
+
 	err := decoder.Decode(&properties)
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("E-ERA-13").Message("cannot decode properties file. {{error|uq}}.").
+			Parameter("error", err.Error()).
+			Mitigation("Please make sure that file is not empty and contains correct properties.")
 	} else {
 		return &properties, nil
 	}
 }
 
 func closeFile(configFile *os.File) {
-	err := configFile.Close()
-	if err != nil {
+	if err := configFile.Close(); err != nil {
 		errorLogger.Printf("error closing a file: %s. %s", configFile.Name(), err)
 	}
 }

@@ -38,7 +38,8 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
 	suite.exasolPort = 8563
-	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost, suite.exasolPort)
+	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost,
+		suite.exasolPort)
 }
 
 func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Application) *gin.Engine {
@@ -58,6 +59,17 @@ func (suite *IntegrationTestSuite) TestQuery() {
 	suite.Equal(http.StatusOK, responseRecorder.Code)
 	suite.Equal("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
 		responseRecorder.Body.String())
+}
+
+func (suite *IntegrationTestSuite) TestQueryWithTypo() {
+	router := suite.startServer(suite.createApplicationWithDefaultProperties())
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECTFROM TEST_SCHEMA_1.TEST_TABLE", nil)
+	onError(err)
+	responseRecorder := httptest.NewRecorder()
+	router.ServeHTTP(responseRecorder, req)
+	suite.Equal(http.StatusOK, responseRecorder.Code)
+	suite.Contains(responseRecorder.Body.String(),
+		"{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected IDENTIFIER_LIST_")
 }
 
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
@@ -80,7 +92,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 		ExasolPassword:            password,
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -89,7 +101,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"ErrorCode\":\"EXA-REST-API-1\",\"Message\":\"[08004] Connection exception - insufficient privileges: CREATE SESSION.\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}")
 }
 
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
@@ -98,7 +110,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		ExasolPassword:            "wrong_password",
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -107,7 +119,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"ErrorCode\":\"EXA-REST-API-1\",\"Message\":\"[08004] Connection exception - authentication failed.\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}")
 }
 
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
@@ -116,7 +128,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                4321,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -124,7 +136,8 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
-	suite.Contains(responseRecorder.Body.String(), "{\"ErrorCode\":\"EXA-REST-API-1\"")
+	suite.Contains(responseRecorder.Body.String(),
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol:")
 	suite.Contains(responseRecorder.Body.String(), "connect: connection refused")
 }
 
@@ -134,7 +147,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 		ExasolPassword:            suite.defaultExasolPassword,
 		ExasolHost:                suite.exasolHost,
 		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketApiVersion: 0,
+		ExasolWebsocketAPIVersion: 0,
 	}))
 
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
@@ -143,7 +156,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusBadRequest, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(),
-		"{\"ErrorCode\":\"EXA-REST-API-1\",\"Message\":\"[00000] Could not create WebSocket protocol version 0\"}")
+		"{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}")
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
@@ -182,7 +195,7 @@ func (suite *IntegrationTestSuite) createApplicationWithDefaultProperties() exas
 		ExasolPort:                suite.exasolPort,
 		Encryption:                false,
 		UseTLS:                    false,
-		ExasolWebsocketApiVersion: 2,
+		ExasolWebsocketAPIVersion: 2,
 	}
 	return exasol_rest_api.Application{
 		Properties: properties,
@@ -196,7 +209,8 @@ func (suite *IntegrationTestSuite) createApplication(properties *exasol_rest_api
 }
 
 func createDefaultServiceUserWithAccess(user string, password string, host string, port int) {
-	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).Autocommit(true).String())
+	database, err := sql.Open("exasol",
+		exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).Autocommit(true).String())
 	onError(err)
 	schemaName := "TEST_SCHEMA_1"
 	_, err = database.Exec("CREATE SCHEMA " + schemaName)

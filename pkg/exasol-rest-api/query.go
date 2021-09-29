@@ -4,6 +4,7 @@ Package exasol_rest_api contains Exasol REST API logic.
 package exasol_rest_api
 
 import (
+	error_reporting_go "github.com/exasol/error-reporting-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -25,8 +26,7 @@ func (application *Application) Query(context *gin.Context) {
 	response, err := application.queryExasol(context.Param("query"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
-			"ErrorCode": "EXA-REST-API-1",
-			"Message":   err.Error(),
+			"Error": err.Error(),
 		})
 	} else {
 		context.Data(http.StatusOK, "application/json", response)
@@ -36,16 +36,19 @@ func (application *Application) Query(context *gin.Context) {
 func (application *Application) queryExasol(query string) ([]byte, error) {
 	connection, err := application.openConnection()
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("E-ERA-2").
+			Message("error while opening a connection with Exasol: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
+
 	defer connection.close()
+
 	response, err := connection.executeQuery(query)
 	if err != nil {
-		return nil, err
+		return nil, error_reporting_go.ExaError("E-ERA-3").Message("error while executing a query: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	return response, nil
 }
 
@@ -53,13 +56,16 @@ func (application *Application) openConnection() (*websocketConnection, error) {
 	connection := &websocketConnection{
 		connProperties: application.Properties,
 	}
+
 	err := connection.connect()
 	if err != nil {
 		return nil, err
 	}
+
 	err = connection.login()
 	if err != nil {
 		return nil, err
 	}
+
 	return connection, nil
 }
