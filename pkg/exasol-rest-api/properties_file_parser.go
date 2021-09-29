@@ -36,8 +36,9 @@ func decodePropertiesFile(propertiesFile *os.File) (*ApplicationProperties, erro
 
 	err := decoder.Decode(&properties)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-13").Message("cannot decode properties file. {{error|uq}}").
-			Parameter("error", err.Error())
+		return nil, error_reporting_go.ExaError("E-ERA-13").Message("cannot decode properties file. {{error|uq}}.").
+			Parameter("error", err.Error()).
+			Mitigation("Please make sure that file is not empty and contains correct properties.")
 	} else {
 		return &properties, nil
 	}

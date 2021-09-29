@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+const applicationPropertiesPathKey = "APPLICATION_PROPERTIES_PATH"
+
 type ApplicationPropertiesSuite struct {
 	suite.Suite
 }
@@ -54,18 +56,36 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithoutPath() {
-	suite.PanicsWithValue("E-ERA-4: runtime error: missing environment variable: 'DUMMY_KEY'",
+	suite.PanicsWithValue("E-ERA-4: runtime error: missing environment variable: 'DUMMY_KEY'. "+
+		"please set the variable according to the user guide.",
 		func() { exasol_rest_api.GetApplicationProperties("DUMMY_KEY") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingFile() {
-	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
 	err := os.Setenv(applicationPropertiesPathKey, "file/does/not/exist")
 	onError(err)
 	suite.PanicsWithValue("E-ERA-5: runtime error: application properties are missing or incorrect. "+
 		"E-ERA-6: cannot read properties from specified file: 'file/does/not/exist'. "+
 		"E-ERA-11: cannot open a file. open file/does/not/exist: no such file or directory",
-		func() { exasol_rest_api.GetApplicationProperties("APPLICATION_PROPERTIES_PATH") })
+		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
+}
+
+func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEmptyFile() {
+	file, err := ioutil.TempFile("", "application_properties_*.yml")
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(file)
+	err = os.Setenv(applicationPropertiesPathKey, file.Name())
+	onError(err)
+
+	suite.PanicsWithValue("E-ERA-5: runtime error: application properties are missing or incorrect. "+
+		"E-ERA-6: cannot read properties from specified file: '"+file.Name()+"'. "+
+		"E-ERA-13: cannot decode properties file. EOF. "+
+		"Please make sure that file is not empty and contains correct properties.",
+		func() { exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey) })
 }
 
 func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsername() {
@@ -116,7 +136,6 @@ func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
 	onError(err)
 	_, err = file.Write(data)
 	onError(err)
-	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
 	err = os.Setenv(applicationPropertiesPathKey, file.Name())
 	onError(err)
 	return applicationPropertiesPathKey

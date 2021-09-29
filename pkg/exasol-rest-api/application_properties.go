@@ -22,8 +22,9 @@ type ApplicationProperties struct {
 func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
 	propertiesPath := os.Getenv(applicationPropertiesPathKey)
 	if propertiesPath == "" {
-		panic(error_reporting_go.ExaError("E-ERA-4").Message("runtime error: missing environment variable: {{env}}").
-			Parameter("env", applicationPropertiesPathKey).String())
+		panic(error_reporting_go.ExaError("E-ERA-4").Message("runtime error: missing environment variable: {{env}}.").
+			Parameter("env", applicationPropertiesPathKey).
+			Mitigation("please set the variable according to the user guide.").String())
 	}
 
 	properties, err := readApplicationProperties(propertiesPath)
