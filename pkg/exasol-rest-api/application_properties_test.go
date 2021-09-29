@@ -71,16 +71,13 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingFile() 
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEmptyFile() {
-	file, err := ioutil.TempFile("", "application_properties_*.yml")
+	file, _ := ioutil.TempFile("", "application_properties_*.yml")
 	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			panic(err)
-		}
+		onError(file.Close())
 	}(file)
-	err = os.Setenv(applicationPropertiesPathKey, file.Name())
-	onError(err)
 
+	err := os.Setenv(applicationPropertiesPathKey, file.Name())
+	onError(err)
 	suite.PanicsWithValue("E-ERA-5: runtime error: application properties are missing or incorrect. "+
 		"E-ERA-6: cannot read properties from specified file: '"+file.Name()+"'. "+
 		"E-ERA-13: cannot decode properties file. EOF. "+
@@ -126,12 +123,8 @@ func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
 	properties *exasol_rest_api.ApplicationProperties) string {
 	file, err := ioutil.TempFile("", "application_properties_*.yml")
 	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			panic(err)
-		}
+		onError(file.Close())
 	}(file)
-	onError(err)
 	data, err := yaml.Marshal(&properties)
 	onError(err)
 	_, err = file.Write(data)
