@@ -44,15 +44,16 @@ APPLICATION_PROPERTIES_PATH=application-properties.yml
 
 ### Authorization
 
-Add a list of API tokens to the configuration file:
+Add a list of API tokens to the configuration file. Example:
 
 ```yaml
 api-tokens:
-  - "Z9wsPLOpKV"
-  - "olwU1t7w4F"
-  - "Br3Bb822tv"
+  - "fwe3cqzE9pQblAYbLFRmxtN03uMgJ2"
+  - "nKBwcSyMHr1BnYsV8kiaU0cxNY6iQr"
+  - "ubwl5sCao6RHE3iCqe72M6zJc1cHHQ"
 ```
 
+The tokens must have at least 30 alphanumeric characters.
 Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service

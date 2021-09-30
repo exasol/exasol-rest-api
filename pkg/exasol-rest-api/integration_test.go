@@ -36,7 +36,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.ctx = context.Background()
 	suite.defaultExasolUsername = "api_service_account"
 	suite.defaultExasolPassword = "secret_password"
-	suite.defaultAuthTokens = []string{"abc", "cba"}
+	suite.defaultAuthTokens = []string{"3J90XAv9loMIXzQdfYmtJrHAbopPsc", "OR6rq6KjWmhvGU770A9OTjpfH86nlk"}
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
 	suite.exasolPort = 8563
@@ -176,13 +176,26 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 	router := suite.startServer(suite.createApplicationWithDefaultProperties())
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
-	req.Header.Set("Authorization", "badToken")
+	req.Header.Set("Authorization", "OR6rq6KjWmhvGU770A9OTjpfH86nlkq")
 	onError(err)
 
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
 	suite.Equal(http.StatusForbidden, responseRecorder.Code)
 	suite.Equal("{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+		responseRecorder.Body.String())
+}
+
+func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
+	router := suite.startServer(suite.createApplicationWithDefaultProperties())
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
+	req.Header.Set("Authorization", "tooshort")
+	onError(err)
+
+	responseRecorder := httptest.NewRecorder()
+	router.ServeHTTP(responseRecorder, req)
+	suite.Equal(http.StatusForbidden, responseRecorder.Code)
+	suite.Equal("{\"Error\":\"E-ERA-23: an authorization token has invalid length: 8. please only use tokens with the length longer or equal to 30.\"}",
 		responseRecorder.Body.String())
 }
 
