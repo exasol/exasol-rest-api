@@ -12,24 +12,30 @@ import (
 // Application represents the REST API service.
 type Application struct {
 	Properties *ApplicationProperties
+	Authorizer Authorizer
 }
 
 // @Summary Query the Exasol databse.
 // @Description provide a query and get a result set
 // @Accept  json
 // @Produce  json
+// @Security ApiKeyAuth
 // @Param   query     path    string     true        "SELECT query"
 // @Success 200 {string} status and result set
 // @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
 // @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
-	response, err := application.queryExasol(context.Param("query"))
+	err := application.Authorizer.Authorize(context.Request)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"Error": err.Error(),
-		})
+		context.JSON(http.StatusForbidden, gin.H{"Error": err.Error()})
 	} else {
-		context.Data(http.StatusOK, "application/json", response)
+		response, err := application.queryExasol(context.Param("query"))
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		} else {
+			context.Data(http.StatusOK, "application/json", response)
+		}
 	}
 }
 

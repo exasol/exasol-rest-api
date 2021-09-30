@@ -8,14 +8,15 @@ import (
 
 // ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
-	ApplicationServer         string `yaml:"server-address"`
-	ExasolUser                string `yaml:"exasol-user"`
-	ExasolPassword            string `yaml:"exasol-password"`
-	ExasolHost                string `yaml:"exasol-host"`
-	ExasolPort                int    `yaml:"exasol-port"`
-	ExasolWebsocketAPIVersion int    `yaml:"exasol-websocket-api-version"`
-	Encryption                bool   `yaml:"encryption"`
-	UseTLS                    bool   `yaml:"use-tls"`
+	APITokens                 []string `yaml:"api-tokens"`
+	ApplicationServer         string   `yaml:"server-address"`
+	ExasolUser                string   `yaml:"exasol-user"`
+	ExasolPassword            string   `yaml:"exasol-password"`
+	ExasolHost                string   `yaml:"exasol-host"`
+	ExasolPort                int      `yaml:"exasol-port"`
+	ExasolWebsocketAPIVersion int      `yaml:"exasol-websocket-api-version"`
+	Encryption                bool     `yaml:"encryption"`
+	UseTLS                    bool     `yaml:"use-tls"`
 }
 
 // GetApplicationProperties creates an application properties.

@@ -26,6 +26,7 @@ You can also provide additional configurations:
 
 | Property                     |  Default          | Description                                          |
 | :--------------------------: | :---------------: | :--------------------------------------------------- |
+| api-tokens                   |                   | List of allowed API tokens for authorization.        |
 | server-address               |  "localhost:8080" | Address for the server to listen for new connection. |
 | exasol-user                  |                   | Name of the Exasol service account.                  |
 | exasol-password              |                   | Password of the Exasol service account.              |
@@ -40,6 +41,20 @@ Before starting the application, you need to set an environment variable that po
 ```
 APPLICATION_PROPERTIES_PATH=application-properties.yml
 ```
+
+### Authorization
+
+Add a list of API tokens to the configuration file. Example:
+
+```yaml
+api-tokens:
+  - "fwe3cqzE9pQblAYbLFRmxtN03uMgJ2"
+  - "nKBwcSyMHr1BnYsV8kiaU0cxNY6iQr"
+  - "ubwl5sCao6RHE3iCqe72M6zJc1cHHQ"
+```
+
+The tokens must have at least 30 alphanumeric characters.
+Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
 

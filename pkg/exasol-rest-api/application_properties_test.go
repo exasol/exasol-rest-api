@@ -21,6 +21,7 @@ func TestApplicationPropertiesSuite(t *testing.T) {
 
 func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 	expected := &exasol_rest_api.ApplicationProperties{
+		APITokens:                 []string{"abc"},
 		ApplicationServer:         "test:8888",
 		ExasolUser:                "myUser",
 		ExasolPassword:            "pass",
@@ -43,6 +44,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	applicationPropertiesPathKey := suite.setPathToPropertiesFileEnv(minimalRequiredProperties)
 	actual := exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey)
 	expected := &exasol_rest_api.ApplicationProperties{
+		APITokens:                 []string{},
 		ApplicationServer:         "localhost:8080",
 		ExasolUser:                "myUser",
 		ExasolPassword:            "pass",
