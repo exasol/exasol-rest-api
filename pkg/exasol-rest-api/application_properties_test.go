@@ -45,7 +45,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	actual := exasol_rest_api.GetApplicationProperties(applicationPropertiesPathKey)
 	expected := &exasol_rest_api.ApplicationProperties{
 		APITokens:                 []string{},
-		ApplicationServer:         "localhost:8080",
+		ApplicationServer:         "0.0.0.0:8080",
 		ExasolUser:                "myUser",
 		ExasolPassword:            "pass",
 		ExasolHost:                "localhost",
