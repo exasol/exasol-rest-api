@@ -11,6 +11,7 @@ Code name:
 * #11: Added swagger.
 * #8: Added release builds for Linux and Windows.
 * #10: Added Error Reporting Go module, improved errors handling.
+* #20: Provided Dockerfile for building docker images.
 
 ## Documentation
 

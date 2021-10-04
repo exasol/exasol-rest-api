@@ -93,7 +93,7 @@ func (applicationProperties *ApplicationProperties) validate() error {
 
 func getDefaultProperties() *ApplicationProperties {
 	return &ApplicationProperties{
-		ApplicationServer:         "localhost:8080",
+		ApplicationServer:         "0.0.0.0:8080",
 		ExasolHost:                "localhost",
 		ExasolPort:                8563,
 		ExasolWebsocketAPIVersion: 2,
