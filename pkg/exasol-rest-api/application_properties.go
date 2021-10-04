@@ -20,7 +20,8 @@ type ApplicationProperties struct {
 }
 
 // GetApplicationProperties creates an application properties.
-func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
+func GetApplicationProperties() *ApplicationProperties {
+	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
 	propertiesPath := os.Getenv(applicationPropertiesPathKey)
 	if propertiesPath == "" {
 		panic(error_reporting_go.ExaError("E-ERA-4").Message("missing environment variable: {{env}}.").
