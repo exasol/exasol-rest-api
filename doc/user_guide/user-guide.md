@@ -15,11 +15,15 @@ GRANT SELECT ON SCHEMA my_schema TO api_service_account;
 ### Configuration File
 
 The application needs a configuration file in yml format. The minimum required parameters are the credentials of the
-Exasol service account described above:
+Exasol service account described above and a list of API tokens (see [Authorization](#authorization)):
 
 ```yaml
-ExasolUser: "api_service_account"
-ExasolPassword: "secret_password"
+exasol-user: "api_service_account"
+exasol-password: "secret_password"
+api-tokens:
+  - "fwe3cqzE9pQblAYbLFRmxtN03uMgJ2"
+  - "nKBwcSyMHr1BnYsV8kiaU0cxNY6iQr"
+  - "ubwl5sCao6RHE3iCqe72M6zJc1cHHQ"
 ```
 
 You can also provide additional configurations:
@@ -44,17 +48,8 @@ APPLICATION_PROPERTIES_PATH=application-properties.yml
 
 ### Authorization
 
-Add a list of API tokens to the configuration file. Example:
-
-```yaml
-api-tokens:
-  - "fwe3cqzE9pQblAYbLFRmxtN03uMgJ2"
-  - "nKBwcSyMHr1BnYsV8kiaU0cxNY6iQr"
-  - "ubwl5sCao6RHE3iCqe72M6zJc1cHHQ"
-```
-
-The tokens must have at least 30 alphanumeric characters.
-Only users with the tokens you listed can access secured API endpoints.
+Add a list of API tokens to the configuration file (find an example above). 
+The tokens must have at least 30 alphanumeric characters. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
 

@@ -21,41 +21,42 @@ type ApplicationProperties struct {
 
 // GetApplicationProperties creates an application properties.
 func GetApplicationProperties() *ApplicationProperties {
-	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
-	propertiesPath := os.Getenv(applicationPropertiesPathKey)
-	if propertiesPath == "" {
-		panic(error_reporting_go.ExaError("E-ERA-4").Message("missing environment variable: {{env}}.").
-			Parameter("env", applicationPropertiesPathKey).
-			Mitigation("please set the variable according to the user guide.").String())
-	}
-
-	properties, err := readApplicationProperties(propertiesPath)
+	properties, err := readApplicationProperties()
 	if err != nil {
-		panic(error_reporting_go.ExaError("E-ERA-5").
-			Message("application properties are missing or incorrect. {{error|uq}}").
-			Parameter("error", err.Error()).String())
+		panic(err.Error())
 	}
-
-	return properties
-}
-
-func readApplicationProperties(propertiesFilePath string) (*ApplicationProperties, error) {
-	properties, err := getPropertiesFromFile(propertiesFilePath)
-	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-6").
-			Message("cannot read properties from specified file: {{file path}}. {{error|uq}}").
-			Parameter("file path", propertiesFilePath).Parameter("error", err.Error())
-	}
-
 	properties.fillMissingWithDefaultValues()
-
 	err = properties.validate()
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-7").Message("properties file validation failed. {{error|uq}}").
-			Parameter("error", err.Error())
-	} else {
-		return properties, nil
+		panic(error_reporting_go.ExaError("E-ERA-7").Message("application properties validation failed. {{error|uq}}").
+			Parameter("error", err.Error()).Error())
 	}
+	return &properties
+}
+
+func readApplicationProperties() (ApplicationProperties, error) {
+	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
+	propertiesPath := os.Getenv(applicationPropertiesPathKey)
+	if propertiesPath != "" {
+		return readApplicationPropertiesFromFile(propertiesPath)
+	} else {
+		return readApplicationPropertiesFromEnvironmentVariables()
+	}
+}
+
+func readApplicationPropertiesFromFile(propertiesFilePath string) (ApplicationProperties, error) {
+	properties, err := getPropertiesFromFile(propertiesFilePath)
+	if err != nil {
+		return properties, error_reporting_go.ExaError("E-ERA-6").
+			Message("cannot read properties from specified file: {{file path}}. {{error|uq}}").
+			Parameter("file path", propertiesFilePath).Parameter("error", err.Error())
+	} else {
+		return getPropertiesFromFile(propertiesFilePath)
+	}
+}
+
+func readApplicationPropertiesFromEnvironmentVariables() (ApplicationProperties, error) {
+	return ApplicationProperties{}, nil
 }
 
 func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues() {
