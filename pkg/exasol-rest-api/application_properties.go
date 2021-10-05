@@ -18,15 +18,15 @@ const UseTLSKey string = "EXASOL_TLS"
 
 // ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
-	APITokens                 []string `yaml:"api-tokens"`
-	ApplicationServer         string   `yaml:"server-address"`
-	ExasolUser                string   `yaml:"exasol-user"`
-	ExasolPassword            string   `yaml:"exasol-password"`
-	ExasolHost                string   `yaml:"exasol-host"`
-	ExasolPort                int      `yaml:"exasol-port"`
-	ExasolWebsocketAPIVersion int      `yaml:"exasol-websocket-api-version"`
-	Encryption                bool     `yaml:"encryption"`
-	UseTLS                    bool     `yaml:"use-tls"`
+	APITokens                 []string `yaml:"API_TOKENS"`
+	ApplicationServer         string   `yaml:"SERVER_ADDRESS"`
+	ExasolUser                string   `yaml:"EXASOL_USER"`
+	ExasolPassword            string   `yaml:"EXASOL_PASSWORD"`
+	ExasolHost                string   `yaml:"EXASOL_HOST"`
+	ExasolPort                int      `yaml:"EXASOL_PORT"`
+	ExasolWebsocketAPIVersion int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
+	Encryption                bool     `yaml:"EXASOL_ENCRYPTION"`
+	UseTLS                    bool     `yaml:"EXASOL_TLS"`
 }
 
 // GetApplicationProperties creates an application properties.
