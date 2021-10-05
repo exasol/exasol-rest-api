@@ -6,6 +6,16 @@ import (
 	"os"
 )
 
+const APITokensKey string = "API_TOKENS"
+const ApplicationServerKey string = "SERVER_ADDRESS"
+const ExasolUserKey string = "EXASOL_USER"
+const ExasolPasswordKey string = "EXASOL_PASSWORD"
+const ExasolHostKey string = "EXASOL_HOST"
+const ExasolPortKey string = "EXASOL_PORT"
+const ExasolWebsocketAPIVersionKey string = "EXASOL_WEBSOCKET_API_VERSION"
+const EncryptionKey string = "EXASOL_ENCRYPTION"
+const UseTLSKey string = "EXASOL_TLS"
+
 // ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
 	APITokens                 []string `yaml:"api-tokens"`
@@ -21,12 +31,8 @@ type ApplicationProperties struct {
 
 // GetApplicationProperties creates an application properties.
 func GetApplicationProperties() *ApplicationProperties {
-	properties, err := readApplicationProperties()
-	if err != nil {
-		panic(err.Error())
-	}
-	properties.fillMissingWithDefaultValues()
-	err = properties.validate()
+	properties := readApplicationProperties()
+	err := properties.validate()
 	if err != nil {
 		panic(error_reporting_go.ExaError("E-ERA-7").Message("application properties validation failed. {{error|uq}}").
 			Parameter("error", err.Error()).Error())
@@ -34,29 +40,24 @@ func GetApplicationProperties() *ApplicationProperties {
 	return &properties
 }
 
-func readApplicationProperties() (ApplicationProperties, error) {
-	applicationPropertiesPathKey := "APPLICATION_PROPERTIES_PATH"
-	propertiesPath := os.Getenv(applicationPropertiesPathKey)
-	if propertiesPath != "" {
-		return readApplicationPropertiesFromFile(propertiesPath)
-	} else {
-		return readApplicationPropertiesFromEnvironmentVariables()
-	}
+func readApplicationProperties() ApplicationProperties {
+	properties := readApplicationPropertiesFromFile()
+	properties.setValuesFromEnvironmentVariables()
+	properties.fillMissingWithDefaultValues()
+	return properties
 }
 
-func readApplicationPropertiesFromFile(propertiesFilePath string) (ApplicationProperties, error) {
+func readApplicationPropertiesFromFile() ApplicationProperties {
+	propertiesFilePath := os.Getenv("APPLICATION_PROPERTIES_PATH")
 	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
-		return properties, error_reporting_go.ExaError("E-ERA-6").
+		errorLogger.Printf(error_reporting_go.ExaError("E-ERA-6").
 			Message("cannot read properties from specified file: {{file path}}. {{error|uq}}").
-			Parameter("file path", propertiesFilePath).Parameter("error", err.Error())
+			Parameter("file path", propertiesFilePath).Parameter("error", err.Error()).String())
+		return ApplicationProperties{}
 	} else {
-		return getPropertiesFromFile(propertiesFilePath)
+		return properties
 	}
-}
-
-func readApplicationPropertiesFromEnvironmentVariables() (ApplicationProperties, error) {
-	return ApplicationProperties{}, nil
 }
 
 func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues() {
