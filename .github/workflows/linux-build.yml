@@ -24,7 +24,7 @@ jobs:
         run: docker build --tag rest-api-test-image:latest .
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@latest
+        run: go install github.com/swaggo/swag/cmd/swag@v1.7.3
       - name: Setup Enviroment variable for Swagger
         run: export PATH=$(go env GOPATH)/bin:$PATH
       - name: Generate Swagger API Description

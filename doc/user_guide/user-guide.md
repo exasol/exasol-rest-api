@@ -43,21 +43,21 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 1. The properties from the YAML file are read.
 2. The configuration from environment variables are read, they override the configurations from the YAML file.
-3. The default values are added if they are not added
+3. The default values are added if they were not added in the previous steps.
 
 #### All Available Properties
 
-| Property                     |  Default          | Description                                          |
-| :--------------------------: | :---------------: | :--------------------------------------------------- |
-| API_TOKENS                   |                   | List of allowed API tokens for authorization.        |
-| SERVER_ADDRESS               |  "localhost:8080" | Address for the server to listen for new connection. |
-| EXASOL_USER                  |                   | Name of the Exasol service account.                  |
-| EXASOL_PASSWORD              |                   | Password of the Exasol service account.              |
-| EXASOL_HOST                  | "localhost"       | Exasol host.                                         |
-| EXASOL_PORT                  | 8563              | Exasol port.                                         |
-| EXASOL_WEBSOCKET_API_VERSION | 2                 | Version of Exasol Websocket API.                     |
-| EXASOL_ENCRYPTION            | false             | Automatic [Exasol connection encryption][1]. You can enable or disable it. |
-| EXASOL_TLS                   | false             | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
+| Property                     |  Default        | Description                                          |
+| :--------------------------: | :-------------: | :--------------------------------------------------- |
+| API_TOKENS                   |                 | List of allowed API tokens for authorization.        |
+| SERVER_ADDRESS               |  "0.0.0.0:8080" | Address for the server to listen for new connection. |
+| EXASOL_USER                  |                 | Name of the Exasol service account.                  |
+| EXASOL_PASSWORD              |                 | Password of the Exasol service account.              |
+| EXASOL_HOST                  | "localhost"     | Exasol host.                                         |
+| EXASOL_PORT                  | 8563            | Exasol port.                                         |
+| EXASOL_WEBSOCKET_API_VERSION | 2               | Version of Exasol Websocket API.                     |
+| EXASOL_ENCRYPTION            | false           | Automatic [Exasol connection encryption][1]. You can enable or disable it. |
+| EXASOL_TLS                   | false           | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
 
 ### Authorization
 
