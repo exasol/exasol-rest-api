@@ -23,10 +23,12 @@ Exasol service account described above and a list of API tokens (see [Authorizat
 EXASOL_USER: "api_service_account"
 EXASOL_PASSWORD: "secret_password"
 API_TOKENS:
-  - "fwe3cqzE9pQblAYbLFRmxtN03uMgJ2"
-  - "nKBwcSyMHr1BnYsV8kiaU0cxNY6iQr"
-  - "ubwl5sCao6RHE3iCqe72M6zJc1cHHQ"
+  - "abc"
+  - "bca"
+  - "cab"
 ```
+
+Please be aware of the API token length: only 30 or more characters are allowed.
 
 Before starting the application, you need to set an environment variable that points to the properties file:
 
@@ -62,7 +64,7 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 ### Authorization
 
 Add a list of API tokens to the configuration file (find an example above). 
-The tokens must have at least 30 alphanumeric characters. Only users with the tokens you listed can access secured API endpoints.
+The tokens must have **at least 30 alphanumeric** characters. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
 
