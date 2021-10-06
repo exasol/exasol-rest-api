@@ -11,7 +11,7 @@ import (
 
 // Run starts the REST API service.
 func Run() {
-	applicationProperties := GetApplicationProperties("APPLICATION_PROPERTIES_PATH")
+	applicationProperties := GetApplicationProperties()
 	application := Application{
 		Properties: applicationProperties,
 		Authorizer: &TokenAuthorizer{

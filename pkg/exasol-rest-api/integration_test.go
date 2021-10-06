@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/exasol/exasol-driver-go"
 	"github.com/stretchr/testify/suite"
@@ -223,7 +224,7 @@ func runExasolContainer(ctx context.Context) testcontainers.Container {
 	request := testcontainers.ContainerRequest{
 		Image:        "exasol/docker-db:7.0.10",
 		ExposedPorts: []string{"8563", "2580"},
-		WaitingFor:   wait.ForLog("All stages finished"),
+		WaitingFor:   wait.ForLog("All stages finished").WithStartupTimeout(time.Minute * 5),
 		Privileged:   true,
 	}
 	exasolContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{

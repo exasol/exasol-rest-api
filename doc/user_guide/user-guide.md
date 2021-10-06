@@ -12,29 +12,23 @@ GRANT CREATE SESSION TO api_service_account;
 GRANT SELECT ON SCHEMA my_schema TO api_service_account;
 ```
 
-### Configuration File
+### Properties
+
+#### Via YAML Configuration File
 
 The application needs a configuration file in yml format. The minimum required parameters are the credentials of the
-Exasol service account described above:
+Exasol service account described above and a list of API tokens (see [Authorization](#authorization)):
 
 ```yaml
-ExasolUser: "api_service_account"
-ExasolPassword: "secret_password"
+EXASOL_USER: "api_service_account"
+EXASOL_PASSWORD: "secret_password"
+API_TOKENS:
+  - "abc"
+  - "bca"
+  - "cab"
 ```
 
-You can also provide additional configurations:
-
-| Property                     |  Default          | Description                                          |
-| :--------------------------: | :---------------: | :--------------------------------------------------- |
-| api-tokens                   |                   | List of allowed API tokens for authorization.        |
-| server-address               |  "localhost:8080" | Address for the server to listen for new connection. |
-| exasol-user                  |                   | Name of the Exasol service account.                  |
-| exasol-password              |                   | Password of the Exasol service account.              |
-| exasol-host                  | "localhost"       | Exasol host.                                         |
-| exasol-port                  | 8563              | Exasol port.                                         |
-| exasol-websocket-api-version | 2                 | Version of Exasol Websocket API.                     |
-| encryption                   | false             | Automatic [Exasol connection encryption][1]. You can enable or disable it. |
-| use-tls                      | false             | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
+Please be aware of the API token length: only 30 or more characters are allowed.
 
 Before starting the application, you need to set an environment variable that points to the properties file:
 
@@ -42,19 +36,35 @@ Before starting the application, you need to set an environment variable that po
 APPLICATION_PROPERTIES_PATH=application-properties.yml
 ```
 
+#### Via Environment Variables
+
+You can set the properties via environment variables. Use the properties' names from the table below.
+For the API tokens' value use the following format: `token1,token2,token3,...`
+
+#### Properties Reading Chain
+
+1. The properties from the YAML file are read.
+2. The configuration from environment variables are read, they override the configurations from the YAML file.
+3. The default values are added if they were not added in the previous steps.
+
+#### All Available Properties
+
+| Property                     |  Default        | Description                                          |
+| :--------------------------: | :-------------: | :--------------------------------------------------- |
+| API_TOKENS                   |                 | List of allowed API tokens for authorization.        |
+| SERVER_ADDRESS               |  "0.0.0.0:8080" | Address for the server to listen for new connection. |
+| EXASOL_USER                  |                 | Name of the Exasol service account.                  |
+| EXASOL_PASSWORD              |                 | Password of the Exasol service account.              |
+| EXASOL_HOST                  | "localhost"     | Exasol host.                                         |
+| EXASOL_PORT                  | 8563            | Exasol port.                                         |
+| EXASOL_WEBSOCKET_API_VERSION | 2               | Version of Exasol Websocket API.                     |
+| EXASOL_ENCRYPTION            | false           | Automatic [Exasol connection encryption][1]. You can enable or disable it. |
+| EXASOL_TLS                   | false           | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
+
 ### Authorization
 
-Add a list of API tokens to the configuration file. Example:
-
-```yaml
-api-tokens:
-  - "fwe3cqzE9pQblAYbLFRmxtN03uMgJ2"
-  - "nKBwcSyMHr1BnYsV8kiaU0cxNY6iQr"
-  - "ubwl5sCao6RHE3iCqe72M6zJc1cHHQ"
-```
-
-The tokens must have at least 30 alphanumeric characters.
-Only users with the tokens you listed can access secured API endpoints.
+Add a list of API tokens to the configuration file (find an example above). 
+The tokens must have **at least 30 alphanumeric** characters. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
 

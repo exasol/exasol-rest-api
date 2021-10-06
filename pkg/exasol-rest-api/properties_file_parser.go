@@ -7,10 +7,10 @@ import (
 	"os"
 )
 
-func getPropertiesFromFile(filepath string) (*ApplicationProperties, error) {
+func getPropertiesFromFile(filepath string) (ApplicationProperties, error) {
 	propertiesFile, err := openFile(filepath)
 	if err != nil {
-		return nil, err
+		return ApplicationProperties{}, err
 	}
 
 	defer closeFile(propertiesFile)
@@ -30,17 +30,17 @@ func openFile(filepath string) (*os.File, error) {
 	}
 }
 
-func decodePropertiesFile(propertiesFile *os.File) (*ApplicationProperties, error) {
+func decodePropertiesFile(propertiesFile *os.File) (ApplicationProperties, error) {
 	decoder := yaml.NewDecoder(propertiesFile)
 	properties := ApplicationProperties{}
 
 	err := decoder.Decode(&properties)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-13").Message("cannot decode properties file. {{error|uq}}.").
+		return ApplicationProperties{}, error_reporting_go.ExaError("E-ERA-13").Message("cannot decode properties file. {{error|uq}}.").
 			Parameter("error", err.Error()).
 			Mitigation("Please make sure that file is not empty and contains correct properties.")
 	} else {
-		return &properties, nil
+		return properties, nil
 	}
 }
 

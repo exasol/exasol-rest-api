@@ -6,54 +6,57 @@ import (
 	"os"
 )
 
+const APITokensKey string = "API_TOKENS"
+const ApplicationServerKey string = "SERVER_ADDRESS"
+const ExasolUserKey string = "EXASOL_USER"
+const ExasolPasswordKey string = "EXASOL_PASSWORD"
+const ExasolHostKey string = "EXASOL_HOST"
+const ExasolPortKey string = "EXASOL_PORT"
+const ExasolWebsocketAPIVersionKey string = "EXASOL_WEBSOCKET_API_VERSION"
+const EncryptionKey string = "EXASOL_ENCRYPTION"
+const UseTLSKey string = "EXASOL_TLS"
+
 // ApplicationProperties for Exasol REST API service.
 type ApplicationProperties struct {
-	APITokens                 []string `yaml:"api-tokens"`
-	ApplicationServer         string   `yaml:"server-address"`
-	ExasolUser                string   `yaml:"exasol-user"`
-	ExasolPassword            string   `yaml:"exasol-password"`
-	ExasolHost                string   `yaml:"exasol-host"`
-	ExasolPort                int      `yaml:"exasol-port"`
-	ExasolWebsocketAPIVersion int      `yaml:"exasol-websocket-api-version"`
-	Encryption                bool     `yaml:"encryption"`
-	UseTLS                    bool     `yaml:"use-tls"`
+	APITokens                 []string `yaml:"API_TOKENS"`
+	ApplicationServer         string   `yaml:"SERVER_ADDRESS"`
+	ExasolUser                string   `yaml:"EXASOL_USER"`
+	ExasolPassword            string   `yaml:"EXASOL_PASSWORD"`
+	ExasolHost                string   `yaml:"EXASOL_HOST"`
+	ExasolPort                int      `yaml:"EXASOL_PORT"`
+	ExasolWebsocketAPIVersion int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
+	Encryption                bool     `yaml:"EXASOL_ENCRYPTION"`
+	UseTLS                    bool     `yaml:"EXASOL_TLS"`
 }
 
 // GetApplicationProperties creates an application properties.
-func GetApplicationProperties(applicationPropertiesPathKey string) *ApplicationProperties {
-	propertiesPath := os.Getenv(applicationPropertiesPathKey)
-	if propertiesPath == "" {
-		panic(error_reporting_go.ExaError("E-ERA-4").Message("missing environment variable: {{env}}.").
-			Parameter("env", applicationPropertiesPathKey).
-			Mitigation("please set the variable according to the user guide.").String())
-	}
-
-	properties, err := readApplicationProperties(propertiesPath)
+func GetApplicationProperties() *ApplicationProperties {
+	properties := readApplicationProperties()
+	err := properties.validate()
 	if err != nil {
-		panic(error_reporting_go.ExaError("E-ERA-5").
-			Message("application properties are missing or incorrect. {{error|uq}}").
-			Parameter("error", err.Error()).String())
+		panic(error_reporting_go.ExaError("E-ERA-7").Message("application properties validation failed. {{error|uq}}").
+			Parameter("error", err.Error()).Error())
 	}
+	return &properties
+}
 
+func readApplicationProperties() ApplicationProperties {
+	properties := readApplicationPropertiesFromFile()
+	properties.setValuesFromEnvironmentVariables()
+	properties.fillMissingWithDefaultValues()
 	return properties
 }
 
-func readApplicationProperties(propertiesFilePath string) (*ApplicationProperties, error) {
+func readApplicationPropertiesFromFile() ApplicationProperties {
+	propertiesFilePath := os.Getenv("APPLICATION_PROPERTIES_PATH")
 	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-6").
+		errorLogger.Printf(error_reporting_go.ExaError("E-ERA-6").
 			Message("cannot read properties from specified file: {{file path}}. {{error|uq}}").
-			Parameter("file path", propertiesFilePath).Parameter("error", err.Error())
-	}
-
-	properties.fillMissingWithDefaultValues()
-
-	err = properties.validate()
-	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-7").Message("properties file validation failed. {{error|uq}}").
-			Parameter("error", err.Error())
+			Parameter("file path", propertiesFilePath).Parameter("error", err.Error()).String())
+		return ApplicationProperties{}
 	} else {
-		return properties, nil
+		return properties
 	}
 }
 
@@ -93,7 +96,7 @@ func (applicationProperties *ApplicationProperties) validate() error {
 
 func getDefaultProperties() *ApplicationProperties {
 	return &ApplicationProperties{
-		ApplicationServer:         "localhost:8080",
+		ApplicationServer:         "0.0.0.0:8080",
 		ExasolHost:                "localhost",
 		ExasolPort:                8563,
 		ExasolWebsocketAPIVersion: 2,
