@@ -21,7 +21,6 @@ type DockerImageTestSuite struct {
 	defaultAuthTokens     string
 	exasolPort            int
 	exasolHost            string
-	appProperties         map[string]string
 }
 
 func TestDockerImageSuite(t *testing.T) {
