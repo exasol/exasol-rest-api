@@ -25,10 +25,8 @@ jobs:
 
       - name: Install Swag
         run: go install github.com/swaggo/swag/cmd/swag@v1.7.3
-      - name: Setup Enviroment variable for Swagger
-        run: export PATH=$(go env GOPATH)/bin:$PATH
       - name: Generate Swagger API Description
-        run: bash generate-swagger-docs
+        run: ./generate-swagger-docs
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2

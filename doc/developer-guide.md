@@ -19,14 +19,8 @@ Please don't forget to change that version.
 3. Run the following script to generate Swagger documentation:
 
     ```shell
-    bash generate-swagger-docs
+    ./generate-swagger-docs
     ```
-
-Hint: If you installed swag, but the script doesn't work because swag is missing, try setting the following environment variable:
-
-```shell
-export PATH=$(go env GOPATH)/bin:$PATH
-```
 
 ### Building Docker Image Locally
 
