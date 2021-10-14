@@ -2,7 +2,7 @@ package exasol_rest_api_test
 
 import (
 	"context"
-	"github.com/testcontainers/testcontainers-go/wait"
+	"fmt"
 	"io/ioutil"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 type DockerImageTestSuite struct {
@@ -68,8 +69,9 @@ func (suite *DockerImageTestSuite) TestQuery() {
 }
 
 func runRestAPIContainer(env map[string]string) testcontainers.Container {
+	image := "rest-api-test-image:latest"
 	request := testcontainers.ContainerRequest{
-		Image:        "rest-api-test-image:latest",
+		Image:        image,
 		ExposedPorts: []string{"8080"},
 		WaitingFor:   wait.ForLog("Listening and serving HTTP"),
 		Env:          env,
@@ -78,6 +80,8 @@ func runRestAPIContainer(env map[string]string) testcontainers.Container {
 		ContainerRequest: request,
 		Started:          true,
 	})
-	onError(err)
+	if err != nil {
+		panic(fmt.Errorf("Failed to start docker image %q. Run 'docker build --tag %s .'", image, image))
+	}
 	return apiContainer
 }
