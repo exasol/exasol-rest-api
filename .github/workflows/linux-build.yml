@@ -7,13 +7,20 @@ on:
 
 jobs:
   build:
-    name: Build with Go
+    strategy:
+      matrix:
+        go: [ "1.16", "1.17" ]
+        db: [ "7.0.13", "7.1.1" ]
+    env:
+      DEFAULT_GO: "1.17"
+      DEFAULT_DB: "7.1.1"
+    name: Build with go ${{ matrix.go }} and ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: ${{ matrix.go }}
 
       - name: Check out code
         uses: actions/checkout@v2
@@ -46,10 +53,10 @@ jobs:
           skip-pkg-cache: true
 
       - name: test
-        run: go test -coverprofile=coverage.out ./...
+        run: go test -v -coverprofile=coverage.out ./...
 
       - name: SonarCloud Scan
-        if: github.repository_owner == 'exasol'
+        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
