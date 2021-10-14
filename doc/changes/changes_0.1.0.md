@@ -13,6 +13,10 @@ Code name:
 * #10: Added Error Reporting Go module, improved errors handling.
 * #20: Provided Dockerfile for building docker images.
 
+## Bug fixes
+
+* #14: Upgraded exasol-go-driver to support Exasol 7.1.0 and later.
+
 ## Documentation
 
 * #1: Added system requirements and design.

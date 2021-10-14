@@ -3,13 +3,16 @@ package exasol_rest_api_test
 import (
 	"context"
 	"database/sql"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"log"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/exasol/exasol-driver-go"
 	"github.com/stretchr/testify/suite"
@@ -70,7 +73,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 		query:          "SELECTFROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected IDENTIFIER_LIST_",
+		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected ",
 	}
 	suite.validateResponseBodyContains(&data)
 }
@@ -221,8 +224,12 @@ func (suite *IntegrationTestSuite) validateResponseBodyContains(data *testData) 
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
+	dbVersion := os.Getenv("DB_VERSION")
+	if dbVersion == "" {
+		dbVersion = "7.1.1"
+	}
 	request := testcontainers.ContainerRequest{
-		Image:        "exasol/docker-db:7.0.10",
+		Image:        fmt.Sprintf("exasol/docker-db:%s", dbVersion),
 		ExposedPorts: []string{"8563", "2580"},
 		WaitingFor:   wait.ForLog("All stages finished").WithStartupTimeout(time.Minute * 5),
 		Privileged:   true,
