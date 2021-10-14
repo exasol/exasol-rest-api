@@ -3,13 +3,14 @@ package exasol_rest_api_test
 import (
 	"context"
 	"database/sql"
-	"github.com/gin-gonic/gin"
 	"log"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/exasol/exasol-driver-go"
 	"github.com/stretchr/testify/suite"
@@ -222,7 +223,7 @@ func (suite *IntegrationTestSuite) validateResponseBodyContains(data *testData) 
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
 	request := testcontainers.ContainerRequest{
-		Image:        "exasol/docker-db:7.0.10",
+		Image:        "exasol/docker-db:7.1.1",
 		ExposedPorts: []string{"8563", "2580"},
 		WaitingFor:   wait.ForLog("All stages finished").WithStartupTimeout(time.Minute * 5),
 		Privileged:   true,
