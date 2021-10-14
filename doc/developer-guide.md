@@ -36,13 +36,22 @@ To start a docker container:
     docker build --tag my-rest-api-image:latest .
     ```
 
-4. Start a container:
+4. Generate one or more random tokens with at least 30 characters, e.g. by calling `uuidgen`:
+
+    ```shell
+    token1=$(uuidgen --random)
+    token2=$(uuidgen --random)
+    echo token1=$token1
+    echo token2=$token2
+    ```
+
+5. Start a container:
 
     ```shell
     docker run --name test-api-container \
                --env EXASOL_USER=sys \
                --env EXASOL_PASSWORD=secret \
-               --env API_TOKENS=token1,toekn2 \
+               --env API_TOKENS=$token1,$token2 \
                -p 8080:8080 \
                my-rest-api-image:latest
     ```
