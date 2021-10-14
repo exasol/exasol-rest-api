@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        go: [ "1.16", "1.17" ]
+        go: [ "1.17" ]
         db: [ "7.0.13", "7.1.1" ]
     env:
       DEFAULT_GO: "1.17"
@@ -47,6 +47,7 @@ jobs:
             oft-
 
       - name: Trace requirements
+        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
         run: ./trace-requirements.sh || true
 
       - name: Build Docker Image
