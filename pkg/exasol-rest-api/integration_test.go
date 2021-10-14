@@ -71,7 +71,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 		query:          "SELECTFROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected IDENTIFIER_LIST_",
+		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected ",
 	}
 	suite.validateResponseBodyContains(&data)
 }
