@@ -1,4 +1,6 @@
 #!/bin/bash
 
-PATH=$(go env GOPATH)/bin:$PATH
+gopath=$(go env GOPATH)
+echo "Using GOPATH $gopath"
+PATH=$gopath/bin:$PATH
 swag init --output ./doc/swagger
