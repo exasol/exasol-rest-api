@@ -22,6 +22,7 @@ func Run() {
 	swaggerURL := ginSwagger.URL("/swagger/doc.json")
 
 	router.GET("/api/v1/query/:query", application.Query)
+	router.GET("/api/v1/tables", application.GetTables)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, swaggerURL))
 	err := router.Run(applicationProperties.ApplicationServer)
 

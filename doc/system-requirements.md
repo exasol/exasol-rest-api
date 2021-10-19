@@ -65,6 +65,28 @@ Covers:
 
 Needs: dsn
 
+### Get Tables
+`req~get-tables~1`
+
+API users can get a list of table names by a schema name.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
+### Insert Raw
+`req~insert-row~1`
+
+API users can insert a single row into a table.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
 ### Support JSON Request and Response Format
 `req~support-json-request-and-response-format~1`
 

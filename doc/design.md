@@ -82,7 +82,7 @@ Needs: impl, itest
 #### Execute Query Headers
 `dsn~execute-query-headers~1`
 
-//TODO 
+The endpoint requires `Authorization` header with an API token to handle requests.
 
 Covers:
 
@@ -126,6 +126,110 @@ The result set has 1000 rows or fewer.
 Covers:
 
 * `req~execute-sql-query~1`
+
+Needs: impl, itest
+
+### Get Tables
+
+#### Get Tables Endpoint
+`dsn~get-tables-endpoint~1`
+
+ERA provide the following endpoint to the API users: `/api/v1/tables [get]`
+
+Covers:
+
+* `req~get-tables~1`
+
+Needs: impl, itest
+
+#### Get Tables Headers
+`dsn~get-tables-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~get-tables~1`
+
+Needs: impl, itest
+
+#### Get Tables Response Body
+`dsn~get-tables-response-body~1`
+
+See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+
+Covers:
+
+* `req~get-tables~1`
+
+Needs: impl, itest
+
+#### Get Tables Results Limitation
+`dsn~get-tables-results-limitation~1`
+
+The result set has 1000 rows or fewer.
+
+Covers:
+
+* `req~get-tables~1`
+
+Needs: impl, itest
+
+### Insert Row
+
+#### Insert Row Endpoint
+`dsn~insert-row-endpoint~1`
+
+ERA provide the following endpoint to the API users: `/api/v1/insert/ [post]`
+
+Covers:
+
+* `req~insert-row~1`
+
+Needs: impl, itest
+
+#### Insert Row Headers
+`dsn~insert-row-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~insert-row~1`
+
+Needs: impl, itest
+
+#### Insert Row Request Body
+`dsn~insert-row-request-body~1`
+
+ERA accepts the following format of the request body:
+
+```
+{
+     "schemaName": <string>,
+     "tableName": <string>,
+     "row": {
+        "<column name>" : "<value>",
+        "<column name>" : "<value>",
+        ...
+     }
+ }
+```
+
+Covers:
+
+* `req~insert-row~1`
+
+Needs: impl, itest
+
+#### Get Tables Response Body
+`dsn~insert-row-response-body~1`
+
+See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+
+Covers:
+
+* `req~insert-row~1`
 
 Needs: impl, itest
 

@@ -15,7 +15,7 @@ type Application struct {
 	Authorizer Authorizer
 }
 
-// @Summary Query the Exasol databse.
+// @Summary Query the Exasol database.
 // @Description provide a query and get a result set
 // @Accept  json
 // @Produce  json
@@ -26,11 +26,29 @@ type Application struct {
 // @Failure 403 {string} error code and error message
 // @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
+	application.executeStatement(context, context.Param("query"))
+}
+
+// @Summary GetTables that are available for the user.
+// @Description get a list of all available tables
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Success 200 {string} status and result set
+// @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
+// @Router /tables [get]
+func (application *Application) GetTables(context *gin.Context) {
+	statement := "SELECT * FROM EXA_USER_TABLES"
+	application.executeStatement(context, statement)
+}
+
+func (application *Application) executeStatement(context *gin.Context, query string) {
 	err := application.Authorizer.Authorize(context.Request)
 	if err != nil {
 		context.JSON(http.StatusForbidden, gin.H{"Error": err.Error()})
 	} else {
-		response, err := application.queryExasol(context.Param("query"))
+		response, err := application.queryExasol(query)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		} else {

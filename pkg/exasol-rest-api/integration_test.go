@@ -52,6 +52,7 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	router.GET("/api/v1/query/:query", application.Query)
+	router.GET("/api/v1/tables", application.GetTables)
 	suite.appProperties = application.Properties
 	return router
 }
@@ -64,7 +65,7 @@ func (suite *IntegrationTestSuite) TestQuery() {
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
 	}
-	suite.validateResponseBodyEquals(&data)
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestQueryWithTypo() {
@@ -75,7 +76,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected ",
 	}
-	suite.validateResponseBodyContains(&data)
+	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
@@ -86,7 +87,7 @@ func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"insufficient privileges for creating schema",
 	}
-	suite.validateResponseBodyContains(&data)
+	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege() {
@@ -109,7 +110,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 		expectedStatus: http.StatusBadRequest,
 		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}",
 	}
-	suite.validateResponseBodyEquals(&data)
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
@@ -128,7 +129,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		expectedStatus: http.StatusBadRequest,
 		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}",
 	}
-	suite.validateResponseBodyEquals(&data)
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
@@ -147,7 +148,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 		expectedStatus: http.StatusBadRequest,
 		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol:",
 	}
-	suite.validateResponseBodyContains(&data)
+	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
@@ -166,7 +167,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 		expectedStatus: http.StatusBadRequest,
 		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
 	}
-	suite.validateResponseBodyEquals(&data)
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
@@ -177,7 +178,7 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 		expectedStatus: http.StatusForbidden,
 		expectedBody:   "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
 	}
-	suite.validateResponseBodyEquals(&data)
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
@@ -188,7 +189,39 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 		expectedStatus: http.StatusForbidden,
 		expectedBody:   "{\"Error\":\"E-ERA-23: an authorization token has invalid length: 8. please only use tokens with the length longer or equal to 30.\"}",
 	}
-	suite.validateResponseBodyEquals(&data)
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetTables() {
+	data := testData{
+		application:    suite.createApplicationWithDefaultProperties(),
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":10,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OWNER\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OBJECT_ID\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"TABLE_IS_VIRTUAL\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_DISTRIBUTION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_PARTITION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_ROW_COUNT\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"DELETE_PERCENTAGE\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":4,\"scale\":1}},{\"name\":\"TABLE_COMMENT\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":2000,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
+	username := "USER_WITHOUT_OWNED_SCHEMA"
+	password := "secret"
+	suite.createExasolUserWithCreateSessionPrivilege(username, password)
+
+	application := suite.createApplication(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+	data := testData{
+		application:    application,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":10,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OWNER\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OBJECT_ID\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"TABLE_IS_VIRTUAL\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_DISTRIBUTION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_PARTITION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_ROW_COUNT\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"DELETE_PERCENTAGE\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":4,\"scale\":1}},{\"name\":\"TABLE_COMMENT\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":2000,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
 
 type testData struct {
@@ -199,26 +232,35 @@ type testData struct {
 	application    exasol_rest_api.Application
 }
 
-func (suite *IntegrationTestSuite) validateResponseBodyEquals(data *testData) {
-	router := suite.startServer(data.application)
+func (suite *IntegrationTestSuite) sendGetTables(data *testData) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/tables", nil)
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	return suite.sendHttpRequest(data, req)
+}
+
+func (suite *IntegrationTestSuite) sendQueryRequest(data *testData) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/"+data.query, nil)
 	req.Header.Set("Authorization", data.authToken)
 	onError(err)
+	return suite.sendHttpRequest(data, req)
+}
 
+func (suite *IntegrationTestSuite) sendHttpRequest(data *testData, req *http.Request) *httptest.ResponseRecorder {
+	router := suite.startServer(data.application)
 	responseRecorder := httptest.NewRecorder()
 	router.ServeHTTP(responseRecorder, req)
+	return responseRecorder
+}
+
+func (suite *IntegrationTestSuite) assertResponseBodyEquals(data *testData,
+	responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Equal(data.expectedBody, responseRecorder.Body.String())
 }
 
-func (suite *IntegrationTestSuite) validateResponseBodyContains(data *testData) {
-	router := suite.startServer(data.application)
-	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/"+data.query, nil)
-	req.Header.Set("Authorization", data.authToken)
-	onError(err)
-
-	responseRecorder := httptest.NewRecorder()
-	router.ServeHTTP(responseRecorder, req)
+func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData,
+	responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
 }
@@ -303,5 +345,15 @@ func (suite *IntegrationTestSuite) createExasolUser(username string, password st
 		Host(suite.exasolHost).Port(suite.exasolPort).String())
 	onError(err)
 	_, err = database.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
+	onError(err)
+}
+
+func (suite *IntegrationTestSuite) createExasolUserWithCreateSessionPrivilege(username string, password string) {
+	database, err := sql.Open("exasol", exasol.NewConfig("sys", "exasol").UseTLS(false).
+		Host(suite.exasolHost).Port(suite.exasolPort).String())
+	onError(err)
+	_, err = database.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
+	onError(err)
+	_, err = database.Exec("GRANT CREATE SESSION TO " + username)
 	onError(err)
 }
