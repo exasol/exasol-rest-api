@@ -180,7 +180,7 @@ Needs: impl, itest
 #### Insert Row Endpoint
 `dsn~insert-row-endpoint~1`
 
-ERA provide the following endpoint to the API users: `/api/v1/insert/ [post]`
+ERA provide the following endpoint to the API users: `/api/v1/row [post]`
 
 Covers:
 

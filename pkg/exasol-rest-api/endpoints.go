@@ -17,7 +17,6 @@ type Application struct {
 
 // @Summary Query the Exasol database.
 // @Description provide a query and get a result set
-// @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param   query     path    string     true        "SELECT query"
@@ -31,7 +30,6 @@ func (application *Application) Query(context *gin.Context) {
 
 // @Summary GetTables that are available for the user.
 // @Description get a list of all available tables
-// @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
 // @Success 200 {string} status and result set
@@ -41,6 +39,30 @@ func (application *Application) Query(context *gin.Context) {
 func (application *Application) GetTables(context *gin.Context) {
 	statement := "SELECT * FROM EXA_USER_TABLES"
 	application.executeStatement(context, statement)
+}
+
+// @Summary InsertRow to a table.
+// @Description insert a single row into an Exasol table
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param request-body body InsertRowRequest true "Request body"
+// @Success 200 {string} status and response
+// @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
+// @Router /row [post]
+func (application *Application) InsertRow(context *gin.Context) {
+	var request InsertRowRequest
+	err := context.BindJSON(&request)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+	} else {
+		schemaName := request.GetSchemaName()
+		tableName := request.GetTableName()
+		columnNames, values, _ := request.GetRow()
+		statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
+		application.executeStatement(context, statement)
+	}
 }
 
 func (application *Application) executeStatement(context *gin.Context, query string) {
