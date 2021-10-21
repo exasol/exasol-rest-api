@@ -48,3 +48,12 @@ func (request *InsertRowRequest) getStringFromValue(value interface{}) (string, 
 			Parameter("value", value)
 	}
 }
+
+func (request *InsertRowRequest) Validate() error {
+	if request.SchemaName == "" || request.TableName == "" || request.Row == nil {
+		return error_reporting_go.ExaError("E-ERA-17").
+			Message("insert row request has some missing parameters.").
+			Mitigation("Please specify schema name, table name and row")
+	}
+	return nil
+}

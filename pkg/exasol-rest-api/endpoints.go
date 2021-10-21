@@ -54,8 +54,11 @@ func (application *Application) GetTables(context *gin.Context) {
 func (application *Application) InsertRow(context *gin.Context) {
 	var request InsertRowRequest
 	err := context.BindJSON(&request)
+	validationError := request.Validate()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+	} else if validationError != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()

@@ -51,7 +51,7 @@ func (suite *InsertRowRequestSuite) TestGetRow() {
 	suite.Contains(values, "'3 12:50:10.123'")
 }
 
-func (suite *InsertRowRequestSuite) TestGetRowWithInvalidInterafce() {
+func (suite *InsertRowRequestSuite) TestGetRowWithInvalidInterface() {
 	request := exasol_rest_api.InsertRowRequest{
 		Row: map[string]interface{}{
 			"c1": nil,
@@ -62,4 +62,43 @@ func (suite *InsertRowRequestSuite) TestGetRowWithInvalidInterafce() {
 		"E-ERA-16: invalid row value type <nil> for value <nil> in the request")
 	suite.Equal(columns, "")
 	suite.Equal(values, "")
+}
+
+func (suite *InsertRowRequestSuite) TestValidateSuccess() {
+	request := exasol_rest_api.InsertRowRequest{
+		SchemaName: "MY_SCHEMA",
+		TableName:  "MY_TABLE",
+		Row:        map[string]interface{}{"key": "value"},
+	}
+	suite.NoError(request.Validate())
+}
+
+func (suite *InsertRowRequestSuite) TestValidateWithoutSchemaName() {
+	request := exasol_rest_api.InsertRowRequest{
+		TableName: "MY_TABLE",
+		Row:       map[string]interface{}{"key": "value"},
+	}
+	suite.EqualError(request.Validate(),
+		"E-ERA-17: insert row request has some missing parameters. "+
+			"Please specify schema name, table name and row")
+}
+
+func (suite *InsertRowRequestSuite) TestValidateWithoutTableName() {
+	request := exasol_rest_api.InsertRowRequest{
+		SchemaName: "MY_SCHEMA",
+		Row:        map[string]interface{}{"key": "value"},
+	}
+	suite.EqualError(request.Validate(),
+		"E-ERA-17: insert row request has some missing parameters. "+
+			"Please specify schema name, table name and row")
+}
+
+func (suite *InsertRowRequestSuite) TestValidateWithoutRow() {
+	request := exasol_rest_api.InsertRowRequest{
+		SchemaName: "MY_SCHEMA",
+		TableName:  "MY_TABLE",
+	}
+	suite.EqualError(request.Validate(),
+		"E-ERA-17: insert row request has some missing parameters. "+
+			"Please specify schema name, table name and row")
 }

@@ -76,7 +76,7 @@ Covers:
 
 Needs: dsn
 
-### Insert Raw
+### Insert Row
 `req~insert-row~1`
 
 API users can insert a single row into a table.
