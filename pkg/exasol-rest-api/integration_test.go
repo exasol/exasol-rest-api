@@ -286,14 +286,15 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	body, err := json.Marshal(insertRowRequest)
 	onError(err)
 	suite.assertResponseBodyEquals(&data, suite.sendInsertRow(&data, body))
-	suite.assertInsertRowValuesInTable(err, schemaName, tableName)
+	suite.assertInsertRowValuesInTable(schemaName, tableName)
 }
 
-func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(err error, schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
-	onError(err)
 	defer rows.Close()
+	onError(err)
 	rows.Next()
+
 	var c1, c2, c3, c4, c9, c10, c11, c12, c13, c14 string
 	var c5 int
 	var c6, c7 float64
