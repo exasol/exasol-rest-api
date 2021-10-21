@@ -59,7 +59,7 @@ func (suite *InsertRowRequestSuite) TestGetRowWithInvalidInterface() {
 	}
 	columns, values, err := request.GetRow()
 	suite.EqualError(err,
-		"E-ERA-16: invalid row value type <nil> for value <nil> in the request")
+		"E-ERA-16: invalid exasol literal type <nil> for value <nil> in the request")
 	suite.Equal(columns, "")
 	suite.Equal(values, "")
 }

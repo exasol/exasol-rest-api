@@ -24,6 +24,7 @@ func Run() {
 	router.GET("/api/v1/query/:query", application.Query)
 	router.GET("/api/v1/tables", application.GetTables)
 	router.POST("/api/v1/row", application.InsertRow)
+	router.DELETE("/api/v1/rows", application.DeleteRows)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, swaggerURL))
 	err := router.Run(applicationProperties.ApplicationServer)
 

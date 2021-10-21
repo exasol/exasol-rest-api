@@ -222,7 +222,7 @@ Covers:
 
 Needs: impl, itest
 
-#### Get Tables Response Body
+#### Insert Row Response Body
 `dsn~insert-row-response-body~1`
 
 See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
@@ -230,6 +230,64 @@ See a response format of [Exasol WebSocker API](https://github.com/exasol/websoc
 Covers:
 
 * `req~insert-row~1`
+
+Needs: impl, itest
+
+### Delete Row
+
+#### Delete Rows Endpoint
+`dsn~delete-rows-endpoint~1`
+
+ERA provide the following endpoint to the API users: `/api/v1/rows [delete]`
+
+Covers:
+
+* `req~delete-rows~1`
+
+Needs: impl, itest
+
+#### Delete Rows Headers
+`dsn~delete-rows-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~delete-rows~1`
+
+Needs: impl, itest
+
+#### Delete Rows Request Body
+`dsn~delete-rows-request-body~1`
+
+ERA accepts the following format of the request body:
+
+```
+{
+     "schemaName": <string>,
+     "tableName": <string>,
+     "condition": {
+        "columnName": <string>,
+        "columnValue": <value>,
+        "comparisonPredicate": "= or != or < or <= or > or >="
+     }
+ }
+```
+
+Covers:
+
+* `req~delete-rows~1`
+
+Needs: impl, itest
+
+#### Delete Rows Response Body
+`dsn~delete-rows-response-body~1`
+
+See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+
+Covers:
+
+* `req~delete-rows~1`
 
 Needs: impl, itest
 

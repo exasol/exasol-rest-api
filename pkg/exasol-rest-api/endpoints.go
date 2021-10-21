@@ -68,6 +68,37 @@ func (application *Application) InsertRow(context *gin.Context) {
 	}
 }
 
+// @Summary DeleteRows from a table based on a condition
+// @Description delete zero or more rows from a table providing a WHERE condition
+// @Accept  json
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param request-body body RowsRequest true "Request body"
+// @Success 200 {string} status and response
+// @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
+// @Router /rows [delete]
+func (application *Application) DeleteRows(context *gin.Context) {
+	var request RowsRequest
+	err := context.BindJSON(&request)
+	validationError := request.Validate()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+	} else if validationError != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+	} else {
+		schemaName := request.GetSchemaName()
+		tableName := request.GetTableName()
+		condition, err := request.GetCondition()
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		} else {
+			statement := "DELETE FROM " + schemaName + "." + tableName + " WHERE " + condition
+			application.executeStatement(context, statement)
+		}
+	}
+}
+
 func (application *Application) executeStatement(context *gin.Context, query string) {
 	err := application.Authorizer.Authorize(context.Request)
 	if err != nil {

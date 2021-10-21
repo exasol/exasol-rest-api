@@ -62,6 +62,7 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 	router.GET("/api/v1/query/:query", application.Query)
 	router.GET("/api/v1/tables", application.GetTables)
 	router.POST("/api/v1/row", application.InsertRow)
+	router.DELETE("/api/v1/rows", application.DeleteRows)
 	suite.appProperties = application.Properties
 	return router
 }
@@ -339,7 +340,7 @@ func (suite *IntegrationTestSuite) TestInsertRowAuthorizationError() {
 func (suite *IntegrationTestSuite) TestInsertRowMissingRequestParameter() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
-		authToken:      "badToken",
+		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
 		expectedBody: "{\"Error\":\"E-ERA-17: insert row request has some missing parameters. " +
 			"Please specify schema name, table name and row\"}",
@@ -353,12 +354,98 @@ func (suite *IntegrationTestSuite) TestInsertRowMissingRequestParameter() {
 	suite.assertResponseBodyEquals(&data, suite.sendInsertRow(&data, body))
 }
 
+func (suite *IntegrationTestSuite) TestDeleteRow() {
+	username := "DELETE_ROWS_USER"
+	password := "secret"
+	schemaName := "TEST_SCHEMA_DELETE_ROWS_1"
+	tableName := "TEST_TABLE"
+	columns := "C1 VARCHAR(100), C2 DECIMAL(5,0)"
+
+	suite.creatSchemaAndTable(schemaName, tableName, columns)
+	suite.insertRowIntoTable(schemaName, tableName, "'row1', 1")
+	suite.insertRowIntoTable(schemaName, tableName, "'row2', 2")
+	suite.insertRowIntoTable(schemaName, tableName, "'row3', 2")
+	suite.createExasolUser(username, password)
+	suite.grantToUser(username, "CREATE SESSION")
+	suite.grantToUser(username, "DELETE ON SCHEMA "+schemaName)
+
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+
+	data := testData{
+		server:         server,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":2}],\"numResults\":1}}",
+	}
+	deleteRowsRequest := exasol_rest_api.RowsRequest{
+		SchemaName: schemaName,
+		TableName:  tableName,
+		WhereCondition: exasol_rest_api.Condition{
+			ColumnName:  "C2",
+			ColumnValue: 2,
+		},
+	}
+	body, err := json.Marshal(deleteRowsRequest)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
+	suite.assertTableHasOnlyOneRow(err, schemaName, tableName)
+}
+
+func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      "12345678912345678912345678912345",
+		expectedStatus: http.StatusForbidden,
+		expectedBody: "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. " +
+			"please make sure you provided a valid token.\"}",
+	}
+	insertRowRequest := exasol_rest_api.RowsRequest{
+		SchemaName: "foo",
+		TableName:  "bar",
+		WhereCondition: exasol_rest_api.Condition{
+			ColumnName:  "C2",
+			ColumnValue: 2,
+		},
+	}
+	body, err := json.Marshal(insertRowRequest)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
+}
+
+func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody: "{\"Error\":\"E-ERA-19: request has some missing parameters. " +
+			"Please specify schema name, table name and condition: column name, value\"}",
+	}
+	request := exasol_rest_api.RowsRequest{}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
+}
+
 type testData struct {
 	query          string
 	authToken      string
 	expectedStatus int
 	expectedBody   string
 	server         exasol_rest_api.Application
+}
+
+func (suite *IntegrationTestSuite) sendDeleteRows(data *testData, body []byte) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodDelete, "/api/v1/rows", bytes.NewReader(body))
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	return suite.sendHttpRequest(data, req)
 }
 
 func (suite *IntegrationTestSuite) sendInsertRow(data *testData, body []byte) *httptest.ResponseRecorder {
@@ -399,6 +486,14 @@ func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData,
 	responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
+}
+
+func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(err error, schemaName string, tableName string) {
+	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
+	defer rows.Close()
+	onError(err)
+	suite.True(rows.Next())
+	suite.False(rows.Next())
 }
 
 func runExasolContainer(ctx context.Context) testcontainers.Container {
@@ -490,5 +585,10 @@ func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName string, tableN
 	_, err := suite.connection.Exec("CREATE SCHEMA " + schemaName)
 	onError(err)
 	_, err = suite.connection.Exec("CREATE TABLE " + schemaName + "." + tableName + "(" + columns + ")")
+	onError(err)
+}
+
+func (suite *IntegrationTestSuite) insertRowIntoTable(schemaName string, tableName string, values string) {
+	_, err := suite.connection.Exec("INSERT INTO " + schemaName + "." + tableName + " VALUES (" + values + ")")
 	onError(err)
 }
