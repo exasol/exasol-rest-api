@@ -62,6 +62,7 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 	router.GET("/api/v1/query/:query", application.Query)
 	router.GET("/api/v1/tables", application.GetTables)
 	router.POST("/api/v1/row", application.InsertRow)
+	router.PUT("/api/v1/rows", application.UpdateRows)
 	router.DELETE("/api/v1/rows", application.DeleteRows)
 	suite.appProperties = application.Properties
 	return router
@@ -392,8 +393,10 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 		SchemaName: schemaName,
 		TableName:  tableName,
 		WhereCondition: exasol_rest_api.Condition{
-			ColumnName:  "C2",
-			ColumnValue: 2,
+			CellValue: exasol_rest_api.Value{
+				ColumnName: "C2",
+				Value:      2,
+			},
 		},
 	}
 	body, err := json.Marshal(deleteRowsRequest)
@@ -414,8 +417,10 @@ func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
 		SchemaName: "foo",
 		TableName:  "bar",
 		WhereCondition: exasol_rest_api.Condition{
-			ColumnName:  "C2",
-			ColumnValue: 2,
+			CellValue: exasol_rest_api.Value{
+				ColumnName: "C2",
+				Value:      2,
+			},
 		},
 	}
 	body, err := json.Marshal(insertRowRequest)
@@ -428,7 +433,7 @@ func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody: "{\"Error\":\"E-ERA-19: request has some missing parameters. " +
+		expectedBody: "{\"Error\":\"E-ERA-19: delete rows request has some missing parameters. " +
 			"Please specify schema name, table name and condition: column name, value\"}",
 	}
 	request := exasol_rest_api.DeleteRowsRequest{}
@@ -437,12 +442,153 @@ func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
 }
 
+func (suite *IntegrationTestSuite) TestUpdateRows() {
+	username := "UPDATE_ROWS_USER"
+	password := "secret"
+	schemaName := "TEST_SCHEMA_UPDATE_ROWS_1"
+	tableName := "ALL_DATA_TYPES"
+	columns := "C1 VARCHAR(100), C2 DECIMAL(5,0), C3 BOOLEAN"
+
+	suite.creatSchemaAndTable(schemaName, tableName, columns)
+	suite.insertRowIntoTable(schemaName, tableName, "'row1', 1, true")
+	suite.insertRowIntoTable(schemaName, tableName, "'row2', 2, false")
+	suite.insertRowIntoTable(schemaName, tableName, "'row3', 3, false")
+	suite.createExasolUser(username, password)
+	suite.grantToUser(username, "CREATE SESSION")
+	suite.grantToUser(username, "UPDATE ON SCHEMA "+schemaName)
+
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+
+	data := testData{
+		server:         server,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":2}],\"numResults\":1}}",
+	}
+	request := exasol_rest_api.UpdateRowsRequest{
+		SchemaName: schemaName,
+		TableName:  tableName,
+		ValuesToUpdate: []exasol_rest_api.Value{
+			{ColumnName: "C1", Value: "updated row"},
+			{ColumnName: "C2", Value: 5},
+		},
+		WhereCondition: exasol_rest_api.Condition{
+			CellValue: exasol_rest_api.Value{
+				ColumnName: "C3",
+				Value:      true,
+			},
+			ComparisonPredicate: "!=",
+		},
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendUpdateRows(&data, body))
+	suite.assertUpdatedValuesInTable(schemaName, tableName)
+}
+
+func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName string, tableName string) {
+	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
+	onError(err)
+	defer rows.Close()
+
+	var c1 string
+	var c2 int
+	var c3 bool
+
+	suite.True(rows.Next())
+	err = rows.Scan(&c1, &c2, &c3)
+	onError(err)
+	suite.Equal("row1", c1)
+	suite.Equal(1, c2)
+	suite.Equal(true, c3)
+
+	suite.True(rows.Next())
+	err = rows.Scan(&c1, &c2, &c3)
+	onError(err)
+	suite.Equal("updated row", c1)
+	suite.Equal(5, c2)
+	suite.Equal(false, c3)
+
+	suite.True(rows.Next())
+	err = rows.Scan(&c1, &c2, &c3)
+	onError(err)
+	suite.Equal("updated row", c1)
+	suite.Equal(5, c2)
+	suite.Equal(false, c3)
+
+	suite.False(rows.Next())
+}
+
+func (suite *IntegrationTestSuite) TestUpdateRowsAuthorizationError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      "12345678912345678912345678912345",
+		expectedStatus: http.StatusForbidden,
+		expectedBody: "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. " +
+			"please make sure you provided a valid token.\"}",
+	}
+	request := exasol_rest_api.UpdateRowsRequest{
+		SchemaName: "foo",
+		TableName:  "bar",
+		ValuesToUpdate: []exasol_rest_api.Value{
+			{ColumnName: "C1", Value: "updated row"},
+		},
+		WhereCondition: exasol_rest_api.Condition{
+			CellValue: exasol_rest_api.Value{
+				ColumnName: "C3",
+				Value:      true,
+			},
+		},
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendUpdateRows(&data, body))
+}
+
+func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      "foo",
+		expectedStatus: http.StatusBadRequest,
+		expectedBody: "{\"Error\":\"E-ERA-20: update rows request has some missing parameters. " +
+			"Please specify schema name, table name, values to update and condition\"}",
+	}
+	request := exasol_rest_api.UpdateRowsRequest{
+		SchemaName:     "foo",
+		TableName:      "bar",
+		ValuesToUpdate: []exasol_rest_api.Value{},
+		WhereCondition: exasol_rest_api.Condition{
+			CellValue: exasol_rest_api.Value{
+				ColumnName: "C3",
+				Value:      true,
+			},
+		},
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendUpdateRows(&data, body))
+}
+
 type testData struct {
 	query          string
 	authToken      string
 	expectedStatus int
 	expectedBody   string
 	server         exasol_rest_api.Application
+}
+
+func (suite *IntegrationTestSuite) sendUpdateRows(data *testData, body []byte) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodPut, "/api/v1/rows", bytes.NewReader(body))
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	return suite.sendHttpRequest(data, req)
 }
 
 func (suite *IntegrationTestSuite) sendDeleteRows(data *testData, body []byte) *httptest.ResponseRecorder {

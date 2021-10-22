@@ -30,7 +30,7 @@ func (request *DeleteRowsRequest) GetCondition() (string, error) {
 func (request *DeleteRowsRequest) Validate() error {
 	if request.SchemaName == "" || request.TableName == "" || !request.WhereCondition.validate() {
 		return error_reporting_go.ExaError("E-ERA-19").
-			Message("request has some missing parameters.").
+			Message("delete rows request has some missing parameters.").
 			Mitigation("Please specify schema name, table name and condition: column name, value")
 	}
 	return nil

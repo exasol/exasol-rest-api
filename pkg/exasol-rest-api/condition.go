@@ -4,13 +4,12 @@ import error_reporting_go "github.com/exasol/error-reporting-go"
 
 // Condition represents a simple SQL WHERE condition.
 type Condition struct {
-	ColumnName          string      `json:"columnName"`
-	ColumnValue         interface{} `json:"columnValue"`
-	ComparisonPredicate string      `json:"comparisonPredicate"`
+	CellValue           Value  `json:"value"`
+	ComparisonPredicate string `json:"comparisonPredicate"`
 }
 
 func (whereCondition *Condition) getColumnName() string {
-	return ToExasolIdentifier(whereCondition.ColumnName)
+	return whereCondition.CellValue.getColumnName()
 }
 
 func (whereCondition *Condition) getComparisonPredicate() (string, error) {
@@ -28,10 +27,10 @@ func (whereCondition *Condition) getComparisonPredicate() (string, error) {
 		Mitigation("Please use one of the following values: =, !=, <, >, <=, >=")
 }
 
-func (whereCondition *Condition) getColumnValue() (string, error) {
-	return renderLiteral(whereCondition.ColumnValue)
+func (whereCondition *Condition) getValue() (string, error) {
+	return whereCondition.CellValue.getValue()
 }
 
 func (whereCondition *Condition) validate() bool {
-	return whereCondition.ColumnName != "" && whereCondition.ColumnValue != nil
+	return whereCondition.CellValue.validate()
 }

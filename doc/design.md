@@ -208,11 +208,17 @@ ERA accepts the following format of the request body:
 {
      "schemaName": <string>,
      "tableName": <string>,
-     "row": {
-        "<column name>" : "<value>",
-        "<column name>" : "<value>",
-        ...
-     }
+     "row": [
+     	{
+        	"columnName": <string>,
+     		"value": <value>
+     	},
+     	{
+        	"columnName": <string>,
+     		"value": <value>
+     	},
+     	...
+     ]
  }
 ```
 
@@ -233,7 +239,7 @@ Covers:
 
 Needs: impl, itest
 
-### Delete Row
+### Delete Rows
 
 #### Delete Rows Endpoint
 `dsn~delete-rows-endpoint~1`
@@ -268,7 +274,7 @@ ERA accepts the following format of the request body:
      "tableName": <string>,
      "condition": {
         "columnName": <string>,
-        "columnValue": <value>,
+        "value": <value>,
         "comparisonPredicate": "= or != or < or <= or > or >="
      }
  }
@@ -288,6 +294,123 @@ See a response format of [Exasol WebSocker API](https://github.com/exasol/websoc
 Covers:
 
 * `req~delete-rows~1`
+
+Needs: impl, itest
+
+### Get Rows
+
+#### Get Rows Endpoint
+`dsn~get-rows-endpoint~1`
+
+ERA provide the following endpoint to the API users: `/api/v1/rows [get]`
+
+Covers:
+
+* `req~get-rows~1`
+
+Needs: impl, itest
+
+#### Get Rows Headers
+`dsn~get-rows-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~get-rows~1`
+
+Needs: impl, itest
+
+#### Get Rows Request Body
+`dsn~get-rows-request-body~1`
+
+ERA accepts the following format of the request body:
+
+//TODO
+
+Covers:
+
+* `req~get-rows~1`
+
+Needs: impl, itest
+
+#### Get Rows Response Body
+`dsn~get-rows-response-body~1`
+
+See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+
+Covers:
+
+* `req~get-rows~1`
+
+Needs: impl, itest
+
+### Update Rows
+
+#### Update Rows Endpoint
+`dsn~update-rows-endpoint~1`
+
+ERA provide the following endpoint to the API users: `/api/v1/rows [put]`
+
+Covers:
+
+* `req~update-rows~1`
+
+Needs: impl, itest
+
+#### Update Rows Headers
+`dsn~update-rows-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~update-rows~1`
+
+Needs: impl, itest
+
+#### Update Rows Request Body
+`dsn~update-rows-request-body~1`
+
+ERA accepts the following format of the request body:
+
+```
+{
+     "schemaName": <string>,
+     "tableName": <string>,
+     "row": [
+     	{
+        	"columnName": <string>,
+     		"value": <value>
+     	},
+     	{
+        	"columnName": <string>,
+     		"value": <value>
+     	},
+     	...
+     ]
+     "condition": {
+        "columnName": <string>,
+        "value": <value>,
+        "comparisonPredicate": "= or != or < or <= or > or >="
+     }
+ }
+```
+
+Covers:
+
+* `req~update-rows~1`
+
+Needs: impl, itest
+
+#### Update Rows Response Body
+`dsn~update-rows-response-body~1`
+
+See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+
+Covers:
+
+* `req~update-rows~1`
 
 Needs: impl, itest
 

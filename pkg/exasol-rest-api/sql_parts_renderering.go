@@ -12,7 +12,7 @@ func renderCondition(condition Condition) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	columnValue, err := condition.getColumnValue()
+	columnValue, err := condition.getValue()
 	if err != nil {
 		return "", err
 	}
