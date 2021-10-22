@@ -402,7 +402,7 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 	body, err := json.Marshal(deleteRowsRequest)
 	onError(err)
 	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
-	suite.assertTableHasOnlyOneRow(err, schemaName, tableName)
+	suite.assertTableHasOnlyOneRow(schemaName, tableName)
 }
 
 func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
@@ -638,10 +638,10 @@ func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData,
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
 }
 
-func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(err error, schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
-	defer rows.Close()
 	onError(err)
+	defer rows.Close()
 	suite.True(rows.Next())
 	suite.False(rows.Next())
 }
