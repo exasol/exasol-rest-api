@@ -273,8 +273,10 @@ ERA accepts the following format of the request body:
      "schemaName": <string>,
      "tableName": <string>,
      "condition": {
-        "columnName": <string>,
-        "value": <value>,
+        value: {
+            "columnName": <string>,
+            "value": <value>,
+        }
         "comparisonPredicate": "= or != or < or <= or > or >="
      }
  }
@@ -390,8 +392,10 @@ ERA accepts the following format of the request body:
      	...
      ]
      "condition": {
-        "columnName": <string>,
-        "value": <value>,
+        value: {
+            "columnName": <string>,
+            "value": <value>,
+        }
         "comparisonPredicate": "= or != or < or <= or > or >="
      }
  }
