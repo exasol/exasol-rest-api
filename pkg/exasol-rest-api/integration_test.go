@@ -240,9 +240,9 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	password := "secret"
 	schemaName := "TEST_SCHEMA_INSERT_ROW_1"
 	tableName := "ALL_DATA_TYPES"
-	columns := "c1 VARCHAR(100), c2 VARCHAR(100) CHARACTER SET ASCII, c3 CHAR(10), c4 CHAR(10) CHARACTER SET ASCII, " +
-		"c5 DECIMAL(5,0), c6 DECIMAL(6,3), c7 DOUBLE, c8 BOOLEAN, c9 DATE, c10 TIMESTAMP, " +
-		"c11 TIMESTAMP WITH LOCAL TIME ZONE, c12 INTERVAL YEAR TO MONTH, c13 INTERVAL DAY TO SECOND, c14 GEOMETRY(3857)"
+	columns := "C1 VARCHAR(100), C2 VARCHAR(100) CHARACTER SET ASCII, C3 CHAR(10), C4 CHAR(10) CHARACTER SET ASCII, " +
+		"C5 DECIMAL(5,0), C6 DECIMAL(6,3), C7 DOUBLE, C8 BOOLEAN, C9 DATE, C10 TIMESTAMP, " +
+		"C11 TIMESTAMP WITH LOCAL TIME ZONE, C12 INTERVAL YEAR TO MONTH, C13 INTERVAL DAY TO SECOND, C14 GEOMETRY(3857)"
 
 	suite.creatSchemaAndTable(schemaName, tableName, columns)
 	suite.createExasolUser(username, password)
@@ -267,21 +267,21 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	insertRowRequest := exasol_rest_api.InsertRowRequest{
 		SchemaName: schemaName,
 		TableName:  tableName,
-		Row: map[string]interface{}{
-			"c1":  "Exa'sol",
-			"c2":  "b",
-			"c3":  "c",
-			"c4":  "d",
-			"c5":  3,
-			"c6":  123.456,
-			"c7":  2.2,
-			"c8":  false,
-			"c9":  "2016-08-01",
-			"c10": "2016-08-01 23:12:01.000",
-			"c11": "2016-08-01 00:00:02.000",
-			"c12": "4-6",
-			"c13": "3 12:50:10.123",
-			"c14": "POINT(2 5)",
+		Row: []exasol_rest_api.Value{
+			{ColumnName: "C1", Value: "Exa'sol"},
+			{ColumnName: "C2", Value: "b"},
+			{ColumnName: "C3", Value: "c"},
+			{ColumnName: "C4", Value: "d"},
+			{ColumnName: "C5", Value: 3},
+			{ColumnName: "C6", Value: 123.456},
+			{ColumnName: "C7", Value: 2.2},
+			{ColumnName: "C8", Value: false},
+			{ColumnName: "C9", Value: "2016-08-01"},
+			{ColumnName: "C10", Value: "2016-08-01 23:12:01.000"},
+			{ColumnName: "C11", Value: "2016-08-01 00:00:02.000"},
+			{ColumnName: "C12", Value: "4-6"},
+			{ColumnName: "C13", Value: "3 12:50:10.123"},
+			{ColumnName: "C14", Value: "POINT(2 5)"},
 		},
 	}
 	body, err := json.Marshal(insertRowRequest)
@@ -292,8 +292,8 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 
 func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
-	defer rows.Close()
 	onError(err)
+	defer rows.Close()
 	rows.Next()
 
 	var c1, c2, c3, c4, c9, c10, c11, c12, c13, c14 string
@@ -330,7 +330,9 @@ func (suite *IntegrationTestSuite) TestInsertRowAuthorizationError() {
 	insertRowRequest := exasol_rest_api.InsertRowRequest{
 		SchemaName: "foo",
 		TableName:  "bar",
-		Row:        map[string]interface{}{"key": "value"},
+		Row: []exasol_rest_api.Value{
+			{ColumnName: "key", Value: "value"},
+		},
 	}
 	body, err := json.Marshal(insertRowRequest)
 	onError(err)
@@ -347,7 +349,9 @@ func (suite *IntegrationTestSuite) TestInsertRowMissingRequestParameter() {
 	}
 	insertRowRequest := exasol_rest_api.InsertRowRequest{
 		TableName: "bar",
-		Row:       map[string]interface{}{"key": "value"},
+		Row: []exasol_rest_api.Value{
+			{ColumnName: "key", Value: "value"},
+		},
 	}
 	body, err := json.Marshal(insertRowRequest)
 	onError(err)
@@ -384,7 +388,7 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":2}],\"numResults\":1}}",
 	}
-	deleteRowsRequest := exasol_rest_api.RowsRequest{
+	deleteRowsRequest := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: schemaName,
 		TableName:  tableName,
 		WhereCondition: exasol_rest_api.Condition{
@@ -406,7 +410,7 @@ func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
 		expectedBody: "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. " +
 			"please make sure you provided a valid token.\"}",
 	}
-	insertRowRequest := exasol_rest_api.RowsRequest{
+	insertRowRequest := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: "foo",
 		TableName:  "bar",
 		WhereCondition: exasol_rest_api.Condition{
@@ -427,7 +431,7 @@ func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 		expectedBody: "{\"Error\":\"E-ERA-19: request has some missing parameters. " +
 			"Please specify schema name, table name and condition: column name, value\"}",
 	}
-	request := exasol_rest_api.RowsRequest{}
+	request := exasol_rest_api.DeleteRowsRequest{}
 	body, err := json.Marshal(request)
 	onError(err)
 	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))

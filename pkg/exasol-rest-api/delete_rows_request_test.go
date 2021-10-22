@@ -15,21 +15,21 @@ func TestRowsRequestSuite(t *testing.T) {
 }
 
 func (suite *RowsRequestSuite) TestGetSchemaName() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: "MY_SCHEMA",
 	}
 	suite.Equal("\"MY_SCHEMA\"", request.GetSchemaName())
 }
 
 func (suite *RowsRequestSuite) TestGetTableName() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		TableName: "MY_TABLE",
 	}
 	suite.Equal("\"MY_TABLE\"", request.GetTableName())
 }
 
 func (suite *RowsRequestSuite) TestGetCondition() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			ColumnName:          "MY_COLUMN",
 			ColumnValue:         100,
@@ -42,7 +42,7 @@ func (suite *RowsRequestSuite) TestGetCondition() {
 }
 
 func (suite *RowsRequestSuite) TestGetInvalidCondition() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			ColumnName:          "MY_COLUMN",
 			ColumnValue:         100,
@@ -56,7 +56,7 @@ func (suite *RowsRequestSuite) TestGetInvalidCondition() {
 }
 
 func (suite *RowsRequestSuite) TestGetInvalidCondition2() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			ColumnName:          "MY_COLUMN",
 			ColumnValue:         nil,
@@ -69,7 +69,7 @@ func (suite *RowsRequestSuite) TestGetInvalidCondition2() {
 }
 
 func (suite *RowsRequestSuite) TestGetConditionWithDefaultValue() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			ColumnName:  "MY_COLUMN",
 			ColumnValue: "value",
@@ -81,7 +81,7 @@ func (suite *RowsRequestSuite) TestGetConditionWithDefaultValue() {
 }
 
 func (suite *RowsRequestSuite) TestValidateSuccess() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: "MY_SCHEMA",
 		TableName:  "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
@@ -93,7 +93,7 @@ func (suite *RowsRequestSuite) TestValidateSuccess() {
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutSchemaName() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		TableName: "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
 			ColumnName:  "MY_COLUMN",
@@ -106,7 +106,7 @@ func (suite *RowsRequestSuite) TestValidateWithoutSchemaName() {
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutTableName() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: "MY_SCHEMA",
 		WhereCondition: exasol_rest_api.Condition{
 			ColumnName:  "MY_COLUMN",
@@ -119,7 +119,7 @@ func (suite *RowsRequestSuite) TestValidateWithoutTableName() {
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutColumnName() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: "MY_SCHEMA",
 		TableName:  "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
@@ -132,7 +132,7 @@ func (suite *RowsRequestSuite) TestValidateWithoutColumnName() {
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutColumnValue() {
-	request := exasol_rest_api.RowsRequest{
+	request := exasol_rest_api.DeleteRowsRequest{
 		SchemaName: "MY_SCHEMA",
 		TableName:  "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{

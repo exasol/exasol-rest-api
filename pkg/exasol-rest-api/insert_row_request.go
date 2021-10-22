@@ -8,9 +8,9 @@ import (
 
 // InsertRowRequest maps an InsertRow JSON request to a struct.
 type InsertRowRequest struct {
-	SchemaName string                 `json:"schemaName"`
-	TableName  string                 `json:"tableName"`
-	Row        map[string]interface{} `json:"row"`
+	SchemaName string  `json:"schemaName"`
+	TableName  string  `json:"tableName"`
+	Row        []Value `json:"row"`
 }
 
 // GetSchemaName returns a schema name.
@@ -28,16 +28,19 @@ func (request *InsertRowRequest) GetRow() (string, string, error) {
 	var columnNames strings.Builder
 	var values strings.Builder
 
-	for columnName, value := range request.Row {
-		value, err := ToExasolLiteral(value)
+	for index, value := range request.Row {
+		renderedValue, err := value.getValue()
 		if err != nil {
 			return "", "", err
 		}
-		values.WriteString(value)
-		values.WriteString(",")
-		columnNames.WriteString(fmt.Sprintf("%v,", columnName))
+		values.WriteString(renderedValue)
+		columnNames.WriteString(fmt.Sprintf("%v", value.getColumnName()))
+		if index < len(request.Row)-1 {
+			values.WriteString(",")
+			columnNames.WriteString(",")
+		}
 	}
-	return strings.TrimSuffix(columnNames.String(), ","), strings.TrimSuffix(values.String(), ","), nil
+	return columnNames.String(), values.String(), nil
 }
 
 // Validate validates the request.
