@@ -134,7 +134,7 @@ Needs: impl, itest
 #### Get Tables Endpoint
 `dsn~get-tables-endpoint~1`
 
-ERA provide the following endpoint to the API users: `/api/v1/tables [get]`
+ERA provides the following endpoint to the API users: `/api/v1/tables [get]`
 
 Covers:
 
@@ -156,7 +156,7 @@ Needs: impl, itest
 #### Get Tables Response Body
 `dsn~get-tables-response-body~1`
 
-See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
 
 Covers:
 
@@ -180,7 +180,7 @@ Needs: impl, itest
 #### Insert Row Endpoint
 `dsn~insert-row-endpoint~1`
 
-ERA provide the following endpoint to the API users: `/api/v1/row [post]`
+ERA provides the following endpoint to the API users: `/api/v1/row [post]`
 
 Covers:
 
@@ -204,7 +204,7 @@ Needs: impl, itest
 
 ERA accepts the following format of the request body:
 
-```
+```json
 {
      "schemaName": <string>,
      "tableName": <string>,
@@ -231,7 +231,7 @@ Needs: impl, itest
 #### Insert Row Response Body
 `dsn~insert-row-response-body~1`
 
-See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
 
 Covers:
 
@@ -268,7 +268,7 @@ Needs: impl, itest
 
 ERA accepts the following format of the request body:
 
-```
+```json
 {
      "schemaName": <string>,
      "tableName": <string>,
@@ -291,7 +291,7 @@ Needs: impl, itest
 #### Delete Rows Response Body
 `dsn~delete-rows-response-body~1`
 
-See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
 
 Covers:
 
@@ -304,7 +304,7 @@ Needs: impl, itest
 #### Get Rows Endpoint
 `dsn~get-rows-endpoint~1`
 
-ERA provide the following endpoint to the API users: `/api/v1/rows [get]`
+ERA provides the following endpoint to the API users: `/api/v1/rows [get]`
 
 Covers:
 
@@ -339,7 +339,7 @@ Needs: impl, itest
 #### Get Rows Response Body
 `dsn~get-rows-response-body~1`
 
-See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
 
 Covers:
 
@@ -352,7 +352,7 @@ Needs: impl, itest
 #### Update Rows Endpoint
 `dsn~update-rows-endpoint~1`
 
-ERA provide the following endpoint to the API users: `/api/v1/rows [put]`
+ERA provides the following endpoint to the API users: `/api/v1/rows [put]`
 
 Covers:
 
@@ -376,7 +376,7 @@ Needs: impl, itest
 
 ERA accepts the following format of the request body:
 
-```
+```json
 {
      "schemaName": <string>,
      "tableName": <string>,
@@ -410,7 +410,7 @@ Needs: impl, itest
 #### Update Rows Response Body
 `dsn~update-rows-response-body~1`
 
-See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
 
 Covers:
 

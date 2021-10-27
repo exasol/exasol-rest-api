@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// UpdateRowsRequest maps a UpdateRows JSON request to a struct.
+// UpdateRowsRequest maps an UpdateRows JSON request to a struct.
 type UpdateRowsRequest struct {
 	SchemaName     string    `json:"schemaName"`
 	TableName      string    `json:"tableName"`
@@ -24,12 +24,12 @@ func (request *UpdateRowsRequest) GetTableName() string {
 	return ToExasolIdentifier(request.TableName)
 }
 
-// GetCondition return a rendered condition.
+// GetCondition returns a rendered condition.
 func (request *UpdateRowsRequest) GetCondition() (string, error) {
 	return renderCondition(request.WhereCondition)
 }
 
-// GetCondition return a rendered condition.
+// GetCondition returns a rendered condition.
 func (request *UpdateRowsRequest) GetValuesToUpdate() (string, error) {
 	var valuesToUpdate strings.Builder
 

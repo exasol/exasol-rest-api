@@ -23,7 +23,7 @@ func (request *InsertRowRequest) GetTableName() string {
 	return ToExasolIdentifier(request.TableName)
 }
 
-//GetRow returns columns names and values of the row.
+// GetRow returns column names and values of the row.
 func (request *InsertRowRequest) GetRow() (string, string, error) {
 	var columnNames strings.Builder
 	var values strings.Builder
@@ -45,7 +45,7 @@ func (request *InsertRowRequest) GetRow() (string, string, error) {
 
 // Validate validates the request.
 func (request *InsertRowRequest) Validate() error {
-	if request.SchemaName == "" || request.TableName == "" || request.Row == nil {
+	if request.SchemaName == "" || request.TableName == "" || request.Row == nil || len(request.Row) == 0 {
 		return error_reporting_go.ExaError("E-ERA-17").
 			Message("insert row request has some missing parameters.").
 			Mitigation("Please specify schema name, table name and row")
