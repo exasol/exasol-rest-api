@@ -7,10 +7,10 @@ type Value struct {
 }
 
 func (value *Value) getColumnName() string {
-	return ToExasolIdentifier(value.ColumnName)
+	return toExasolIdentifier(value.ColumnName)
 }
 
-func (value *Value) getValue() (string, error) {
+func (value *Value) render() (string, error) {
 	return renderLiteral(value.Value)
 }
 

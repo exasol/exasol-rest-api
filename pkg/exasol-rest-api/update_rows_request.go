@@ -16,17 +16,17 @@ type UpdateRowsRequest struct {
 
 // GetSchemaName returns a schema name.
 func (request *UpdateRowsRequest) GetSchemaName() string {
-	return ToExasolIdentifier(request.SchemaName)
+	return toExasolIdentifier(request.SchemaName)
 }
 
 // GetTableName returns a table name.
 func (request *UpdateRowsRequest) GetTableName() string {
-	return ToExasolIdentifier(request.TableName)
+	return toExasolIdentifier(request.TableName)
 }
 
 // GetCondition returns a rendered condition.
 func (request *UpdateRowsRequest) GetCondition() (string, error) {
-	return renderCondition(request.WhereCondition)
+	return request.WhereCondition.render()
 }
 
 // GetCondition returns a rendered condition.
@@ -34,7 +34,7 @@ func (request *UpdateRowsRequest) GetValuesToUpdate() (string, error) {
 	var valuesToUpdate strings.Builder
 
 	for index, value := range request.ValuesToUpdate {
-		renderedValue, err := value.getValue()
+		renderedValue, err := value.render()
 		if err != nil {
 			return "", err
 		}

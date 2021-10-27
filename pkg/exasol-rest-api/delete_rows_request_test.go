@@ -54,9 +54,8 @@ func (suite *RowsRequestSuite) TestGetInvalidCondition() {
 		},
 	}
 	condition, err := request.GetCondition()
-	suite.Empty(condition)
-	suite.EqualError(err, "E-ERA-18: invalid predicate value: 'foo'. "+
-		"Please use one of the following values: =, !=, <, >, <=, >=")
+	suite.Equal("\"MY_COLUMN\" = 100", condition)
+	suite.NoError(err)
 }
 
 func (suite *RowsRequestSuite) TestGetInvalidCondition2() {

@@ -159,7 +159,7 @@ func (application *Application) queryExasol(query string) ([]byte, error) {
 
 	response, err := connection.executeQuery(query)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-3").Message("error while executing a query: {{error|uq}}").
+		return nil, error_reporting_go.ExaError("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
 

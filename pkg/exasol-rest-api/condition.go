@@ -1,6 +1,6 @@
 package exasol_rest_api
 
-import error_reporting_go "github.com/exasol/error-reporting-go"
+import "fmt"
 
 // Condition represents a simple SQL WHERE condition.
 type Condition struct {
@@ -12,25 +12,34 @@ func (whereCondition *Condition) getColumnName() string {
 	return whereCondition.CellValue.getColumnName()
 }
 
-func (whereCondition *Condition) getComparisonPredicate() (string, error) {
+func (whereCondition *Condition) getComparisonPredicate() string {
 	predicate := whereCondition.ComparisonPredicate
-	if predicate == "" {
-		return "=", nil
-	} else if predicate == "=" || predicate == "!=" ||
+	if predicate == "=" || predicate == "!=" ||
 		predicate == ">" || predicate == "<" ||
 		predicate == ">=" || predicate == "<=" {
-		return predicate, nil
+		return predicate
+	} else {
+		return "="
 	}
-	return "", error_reporting_go.ExaError("E-ERA-18").
-		Message("invalid predicate value: {{predicate}}.").
-		Parameter("predicate", predicate).
-		Mitigation("Please use one of the following values: =, !=, <, >, <=, >=")
 }
 
 func (whereCondition *Condition) getValue() (string, error) {
-	return whereCondition.CellValue.getValue()
+	return whereCondition.CellValue.render()
 }
 
 func (whereCondition *Condition) validate() bool {
-	return whereCondition.CellValue.validate()
+	return whereCondition.CellValue.validate() && (whereCondition.ComparisonPredicate == "" ||
+		whereCondition.ComparisonPredicate == "=" || whereCondition.ComparisonPredicate == "!=" ||
+		whereCondition.ComparisonPredicate == ">" || whereCondition.ComparisonPredicate == "<" ||
+		whereCondition.ComparisonPredicate == ">=" || whereCondition.ComparisonPredicate == "<=")
+}
+
+func (whereCondition *Condition) render() (string, error) {
+	columnName := whereCondition.getColumnName()
+	comparisonPredicate := whereCondition.getComparisonPredicate()
+	columnValue, err := whereCondition.getValue()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%v %v %v", columnName, comparisonPredicate, columnValue), nil
 }

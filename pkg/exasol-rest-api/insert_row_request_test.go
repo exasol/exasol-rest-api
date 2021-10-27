@@ -100,3 +100,14 @@ func (suite *InsertRowRequestSuite) TestValidateWithoutRow() {
 		"E-ERA-17: insert row request has some missing parameters. "+
 			"Please specify schema name, table name and row")
 }
+
+func (suite *InsertRowRequestSuite) TestValidateWithEmptyRow() {
+	request := exasol_rest_api.InsertRowRequest{
+		SchemaName: "MY_SCHEMA",
+		TableName:  "MY_TABLE",
+		Row:        []exasol_rest_api.Value{},
+	}
+	suite.EqualError(request.Validate(),
+		"E-ERA-17: insert row request has some missing parameters. "+
+			"Please specify schema name, table name and row")
+}

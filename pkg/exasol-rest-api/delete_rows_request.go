@@ -13,17 +13,17 @@ type DeleteRowsRequest struct {
 
 // GetSchemaName returns a schema name.
 func (request *DeleteRowsRequest) GetSchemaName() string {
-	return ToExasolIdentifier(request.SchemaName)
+	return toExasolIdentifier(request.SchemaName)
 }
 
 // GetTableName returns a table name.
 func (request *DeleteRowsRequest) GetTableName() string {
-	return ToExasolIdentifier(request.TableName)
+	return toExasolIdentifier(request.TableName)
 }
 
 // GetCondition return a rendered condition.
 func (request *DeleteRowsRequest) GetCondition() (string, error) {
-	return renderCondition(request.WhereCondition)
+	return request.WhereCondition.render()
 }
 
 // Validate validates the request.

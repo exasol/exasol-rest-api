@@ -59,11 +59,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Application) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	router.GET("/api/v1/query/:query", application.Query)
-	router.GET("/api/v1/tables", application.GetTables)
-	router.POST("/api/v1/row", application.InsertRow)
-	router.PUT("/api/v1/rows", application.UpdateRows)
-	router.DELETE("/api/v1/rows", application.DeleteRows)
+	exasol_rest_api.AddEndpoints(router, application)
 	suite.appProperties = application.Properties
 	return router
 }

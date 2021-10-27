@@ -15,12 +15,12 @@ type InsertRowRequest struct {
 
 // GetSchemaName returns a schema name.
 func (request *InsertRowRequest) GetSchemaName() string {
-	return ToExasolIdentifier(request.SchemaName)
+	return toExasolIdentifier(request.SchemaName)
 }
 
 // GetTableName returns a table name.
 func (request *InsertRowRequest) GetTableName() string {
-	return ToExasolIdentifier(request.TableName)
+	return toExasolIdentifier(request.TableName)
 }
 
 // GetRow returns column names and values of the row.
@@ -29,7 +29,7 @@ func (request *InsertRowRequest) GetRow() (string, string, error) {
 	var values strings.Builder
 
 	for index, value := range request.Row {
-		renderedValue, err := value.getValue()
+		renderedValue, err := value.render()
 		if err != nil {
 			return "", "", err
 		}

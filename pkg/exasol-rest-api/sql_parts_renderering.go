@@ -8,10 +8,7 @@ import (
 
 func renderCondition(condition Condition) (string, error) {
 	columnName := condition.getColumnName()
-	comparisonPredicate, err := condition.getComparisonPredicate()
-	if err != nil {
-		return "", err
-	}
+	comparisonPredicate := condition.getComparisonPredicate()
 	columnValue, err := condition.getValue()
 	if err != nil {
 		return "", err
