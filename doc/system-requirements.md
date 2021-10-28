@@ -65,6 +65,61 @@ Covers:
 
 Needs: dsn
 
+### Get Tables
+`req~get-tables~1`
+
+API users can get a list of table names by a schema name.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
+### Insert Row
+`req~insert-row~1`
+
+API users can insert a single row into a table.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
+### Delete Rows
+`req~delete-rows~1`
+
+API users can delete rows from a table based on a condition.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
+### Get Rows
+`req~get-rows~1`
+
+API users can get rows from a table based on a condition.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
+### Update Rows
+`req~update-rows~1`
+
+API users can update rows from a table based on a condition.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
 ### Support JSON Request and Response Format
 `req~support-json-request-and-response-format~1`
 

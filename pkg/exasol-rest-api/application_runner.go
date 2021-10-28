@@ -20,8 +20,7 @@ func Run() {
 	}
 	router := gin.Default()
 	swaggerURL := ginSwagger.URL("/swagger/doc.json")
-
-	router.GET("/api/v1/query/:query", application.Query)
+	AddEndpoints(router, application)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, swaggerURL))
 	err := router.Run(applicationProperties.ApplicationServer)
 
@@ -29,4 +28,13 @@ func Run() {
 		panic(error_reporting_go.ExaError("E-ERA-1").Message("error starting API server: {{error}}").
 			Parameter("error", err.Error()).String())
 	}
+}
+
+// AddEndpoints adds endpoints to the REST API.
+func AddEndpoints(router *gin.Engine, application Application) {
+	router.GET("/api/v1/query/:query", application.Query)
+	router.GET("/api/v1/tables", application.GetTables)
+	router.POST("/api/v1/row", application.InsertRow)
+	router.DELETE("/api/v1/rows", application.DeleteRows)
+	router.PUT("/api/v1/rows", application.UpdateRows)
 }

@@ -100,7 +100,7 @@ func (connection *websocketConnection) login() error {
 	password := []byte(connection.connProperties.ExasolPassword)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
-		return error_reporting_go.ExaError("F-ERA-16").
+		return error_reporting_go.ExaError("F-ERA-21").
 			Message("password encryption error during login via websockets connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -142,7 +142,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 		err = json.Unmarshal(message, result)
 
 		if err != nil {
-			return error_reporting_go.ExaError("F-ERA-20").
+			return error_reporting_go.ExaError("F-ERA-27").
 				Message("error converting JSON message from websockets into response struct: {{error|uq}}").
 				Parameter("error", err.Error())
 		}
@@ -162,7 +162,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 func (connection *websocketConnection) sendRequestWithStringResponse(request interface{}) ([]byte, error) {
 	requestJSON, err := json.Marshal(request)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("F-ERA-17").
+		return nil, error_reporting_go.ExaError("F-ERA-24").
 			Message("cannot convert request into JSON format: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -170,14 +170,14 @@ func (connection *websocketConnection) sendRequestWithStringResponse(request int
 	messageType := websocket.TextMessage
 	err = connection.websocket.WriteMessage(messageType, requestJSON)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("F-ERA-18").
+		return nil, error_reporting_go.ExaError("F-ERA-25").
 			Message("error writing a message via websocket connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
 
 	_, message, err := connection.websocket.ReadMessage()
 	if err != nil {
-		return nil, error_reporting_go.ExaError("F-ERA-19").
+		return nil, error_reporting_go.ExaError("F-ERA-26").
 			Message("error reading a message from websocket: {{error|uq}}").
 			Parameter("error", err.Error())
 	}

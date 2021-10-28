@@ -6,17 +6,18 @@ import (
 	"net/http"
 )
 
-// Authorizer is responsible for the API users' authorization
+// Authorizer is responsible for the API users' authorization.
 type Authorizer interface {
 	// Authorize a token
 	Authorize(request *http.Request) error
 }
 
-// TokenAuthorizer is a token-based implementation of the Authorizer
+// TokenAuthorizer is a token-based implementation of the Authorizer.
 type TokenAuthorizer struct {
 	AllowedTokens map[string]bool
 }
 
+// Authorize validates a user request.
 func (auth *TokenAuthorizer) Authorize(request *http.Request) error {
 	tokens := request.Header["Authorization"]
 
