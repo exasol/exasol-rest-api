@@ -6,16 +6,6 @@ import (
 	"strings"
 )
 
-func renderCondition(condition Condition) (string, error) {
-	columnName := condition.getColumnName()
-	comparisonPredicate := condition.getComparisonPredicate()
-	columnValue, err := condition.getValue()
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%v %v %v", columnName, comparisonPredicate, columnValue), nil
-}
-
 func renderLiteral(value interface{}) (string, error) {
 	switch valueType := value.(type) {
 	case bool, float32, float64, int, int8, int16, int32, int64:
