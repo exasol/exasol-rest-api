@@ -90,15 +90,13 @@ Covers:
 
 Needs: impl, itest
 
-#### Execute Query Request Body
-`dsn~execute-query-request-body~1`
+#### Execute Query Request Parameters
+`dsn~execute-query-request-parameters~1`
 
-ERA accepts the following format of the request body:
+The endpoint accepts the following path parameter:
 
 ```
-{
-     "sqlText": <string>
- }
+<endpoint>/<query string>
 ```
 
 Covers:
@@ -273,10 +271,10 @@ ERA accepts the following format of the request body:
      "schemaName": <string>,
      "tableName": <string>,
      "condition": {
-        value: {
+        "value": {
             "columnName": <string>,
             "value": <value>,
-        }
+        },
         "comparisonPredicate": "= or != or < or <= or > or >="
      }
  }
@@ -323,12 +321,14 @@ Covers:
 
 Needs: impl, itest
 
-#### Get Rows Request Body
-`dsn~get-rows-request-body~1`
+#### Get Rows Request Parameters
+`dsn~get-rows-request-parameters~1`
 
-ERA accepts the following format of the request body:
+The endpoint accepts the following query string parameters:
 
-//TODO
+```
+<endpoint>?schemaName=<schema name>&tableName=<table name>&columnName=<column name>&value=<value>&valueType=<string/bool/int/float>&comparisonPredicate=<comparison predicate>
+```
 
 Covers:
 
@@ -390,12 +390,12 @@ ERA accepts the following format of the request body:
      		"value": <value>
      	},
      	...
-     ]
+     ],
      "condition": {
-        value: {
+        "value": {
             "columnName": <string>,
             "value": <value>,
-        }
+        },
         "comparisonPredicate": "= or != or < or <= or > or >="
      }
  }

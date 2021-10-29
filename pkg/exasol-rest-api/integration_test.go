@@ -385,7 +385,7 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":2}],\"numResults\":1}}",
 	}
-	deleteRowsRequest := exasol_rest_api.DeleteRowsRequest{
+	deleteRowsRequest := exasol_rest_api.RowsRequest{
 		SchemaName: schemaName,
 		TableName:  tableName,
 		WhereCondition: exasol_rest_api.Condition{
@@ -409,7 +409,7 @@ func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
 		expectedBody: "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. " +
 			"please make sure you provided a valid token.\"}",
 	}
-	insertRowRequest := exasol_rest_api.DeleteRowsRequest{
+	insertRowRequest := exasol_rest_api.RowsRequest{
 		SchemaName: "foo",
 		TableName:  "bar",
 		WhereCondition: exasol_rest_api.Condition{
@@ -429,10 +429,10 @@ func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody: "{\"Error\":\"E-ERA-19: delete rows request has some missing parameters. " +
+		expectedBody: "{\"Error\":\"E-ERA-19: request has some missing parameters. " +
 			"Please specify schema name, table name and condition: column name, value\"}",
 	}
-	request := exasol_rest_api.DeleteRowsRequest{}
+	request := exasol_rest_api.RowsRequest{}
 	body, err := json.Marshal(request)
 	onError(err)
 	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
@@ -572,12 +572,85 @@ func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 	suite.assertResponseBodyEquals(&data, suite.sendUpdateRows(&data, body))
 }
 
+func (suite *IntegrationTestSuite) TestGetRows() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"Error\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=&columnName=X&value=15&valueType=int&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"Error\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=foo&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"Error\":\"E-ERA-28: cannot decode value '15' with the provided value type 'foo': 'unsupported value type: foo'\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=aaa&valueType=int&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"Error\":\"E-ERA-28: cannot decode value 'aaa' with the provided value type 'int': 'strconv.Atoi: parsing \\\"aaa\\\": invalid syntax'\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
+		authToken:      "asfkndfkhjikfghsg48ghahe25nbasm32h",
+		expectedStatus: http.StatusForbidden,
+		expectedBody:   "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
 type testData struct {
 	query          string
 	authToken      string
 	expectedStatus int
 	expectedBody   string
 	server         exasol_rest_api.Application
+}
+
+func (suite *IntegrationTestSuite) sendGetRows(data *testData) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/rows?"+data.query, nil)
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	return suite.sendHttpRequest(data, req)
 }
 
 func (suite *IntegrationTestSuite) sendUpdateRows(data *testData, body []byte) *httptest.ResponseRecorder {
@@ -704,7 +777,7 @@ func createDefaultServiceUserWithAccess(user string, password string, host strin
 	schemaName := "TEST_SCHEMA_1"
 	_, err = database.Exec("CREATE SCHEMA " + schemaName)
 	onError(err)
-	_, err = database.Exec("CREATE TABLE " + schemaName + ".TEST_TABLE(x INT, y VARCHAR(100))")
+	_, err = database.Exec("CREATE TABLE " + schemaName + ".TEST_TABLE(X INT, Y VARCHAR(100))")
 	onError(err)
 	_, err = database.Exec("INSERT INTO " + schemaName + ".TEST_TABLE VALUES (15, 'test')")
 	onError(err)

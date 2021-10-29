@@ -15,21 +15,21 @@ func TestRowsRequestSuite(t *testing.T) {
 }
 
 func (suite *RowsRequestSuite) TestGetSchemaName() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		SchemaName: "MY_SCHEMA",
 	}
 	suite.Equal("\"MY_SCHEMA\"", request.GetSchemaName())
 }
 
 func (suite *RowsRequestSuite) TestGetTableName() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		TableName: "MY_TABLE",
 	}
 	suite.Equal("\"MY_TABLE\"", request.GetTableName())
 }
 
 func (suite *RowsRequestSuite) TestGetCondition() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			CellValue: exasol_rest_api.Value{
 				ColumnName: "MY_COLUMN",
@@ -44,7 +44,7 @@ func (suite *RowsRequestSuite) TestGetCondition() {
 }
 
 func (suite *RowsRequestSuite) TestGetInvalidCondition() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			CellValue: exasol_rest_api.Value{
 				ColumnName: "MY_COLUMN",
@@ -59,7 +59,7 @@ func (suite *RowsRequestSuite) TestGetInvalidCondition() {
 }
 
 func (suite *RowsRequestSuite) TestGetInvalidCondition2() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			CellValue: exasol_rest_api.Value{
 				ColumnName: "MY_COLUMN",
@@ -74,7 +74,7 @@ func (suite *RowsRequestSuite) TestGetInvalidCondition2() {
 }
 
 func (suite *RowsRequestSuite) TestGetConditionWithDefaultValue() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		WhereCondition: exasol_rest_api.Condition{
 			CellValue: exasol_rest_api.Value{
 				ColumnName: "MY_COLUMN",
@@ -88,7 +88,7 @@ func (suite *RowsRequestSuite) TestGetConditionWithDefaultValue() {
 }
 
 func (suite *RowsRequestSuite) TestValidateSuccess() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		SchemaName: "MY_SCHEMA",
 		TableName:  "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
@@ -102,7 +102,7 @@ func (suite *RowsRequestSuite) TestValidateSuccess() {
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutSchemaName() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		TableName: "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
 			CellValue: exasol_rest_api.Value{
@@ -112,12 +112,12 @@ func (suite *RowsRequestSuite) TestValidateWithoutSchemaName() {
 		},
 	}
 	suite.EqualError(request.Validate(),
-		"E-ERA-19: delete rows request has some missing parameters. "+
+		"E-ERA-19: request has some missing parameters. "+
 			"Please specify schema name, table name and condition: column name, value")
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutTableName() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		SchemaName: "MY_SCHEMA",
 		WhereCondition: exasol_rest_api.Condition{
 			CellValue: exasol_rest_api.Value{
@@ -127,12 +127,12 @@ func (suite *RowsRequestSuite) TestValidateWithoutTableName() {
 		},
 	}
 	suite.EqualError(request.Validate(),
-		"E-ERA-19: delete rows request has some missing parameters. "+
+		"E-ERA-19: request has some missing parameters. "+
 			"Please specify schema name, table name and condition: column name, value")
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutColumnName() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		SchemaName: "MY_SCHEMA",
 		TableName:  "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
@@ -142,12 +142,12 @@ func (suite *RowsRequestSuite) TestValidateWithoutColumnName() {
 		},
 	}
 	suite.EqualError(request.Validate(),
-		"E-ERA-19: delete rows request has some missing parameters. "+
+		"E-ERA-19: request has some missing parameters. "+
 			"Please specify schema name, table name and condition: column name, value")
 }
 
 func (suite *RowsRequestSuite) TestValidateWithoutColumnValue() {
-	request := exasol_rest_api.DeleteRowsRequest{
+	request := exasol_rest_api.RowsRequest{
 		SchemaName: "MY_SCHEMA",
 		TableName:  "MY_TABLE",
 		WhereCondition: exasol_rest_api.Condition{
@@ -157,6 +157,6 @@ func (suite *RowsRequestSuite) TestValidateWithoutColumnValue() {
 		},
 	}
 	suite.EqualError(request.Validate(),
-		"E-ERA-19: delete rows request has some missing parameters. "+
+		"E-ERA-19: request has some missing parameters. "+
 			"Please specify schema name, table name and condition: column name, value")
 }

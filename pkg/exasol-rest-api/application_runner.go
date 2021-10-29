@@ -34,6 +34,7 @@ func Run() {
 func AddEndpoints(router *gin.Engine, application Application) {
 	router.GET("/api/v1/query/:query", application.Query)
 	router.GET("/api/v1/tables", application.GetTables)
+	router.GET("/api/v1/rows", application.GetRows)
 	router.POST("/api/v1/row", application.InsertRow)
 	router.DELETE("/api/v1/rows", application.DeleteRows)
 	router.PUT("/api/v1/rows", application.UpdateRows)

@@ -4,9 +4,11 @@ Package exasol_rest_api contains Exasol REST API logic.
 package exasol_rest_api
 
 import (
+	"errors"
 	error_reporting_go "github.com/exasol/error-reporting-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // Application represents the REST API service.
@@ -73,13 +75,13 @@ func (application *Application) InsertRow(context *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Security ApiKeyAuth
-// @Param request-body body DeleteRowsRequest true "Request body"
+// @Param request-body body RowsRequest true "Request body"
 // @Success 200 {string} status and response
 // @Failure 400 {string} error code and error message
 // @Failure 403 {string} error code and error message
 // @Router /rows [delete]
 func (application *Application) DeleteRows(context *gin.Context) {
-	var request DeleteRowsRequest
+	var request RowsRequest
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
@@ -130,6 +132,69 @@ func (application *Application) UpdateRows(context *gin.Context) {
 			statement := "UPDATE " + schemaName + "." + tableName + " SET " + valuesToUpdate + " WHERE " + condition
 			application.executeStatement(context, statement)
 		}
+	}
+}
+
+// @Summary GetRows from a table based on a condition
+// @Description get zero or more rows from a table providing a WHERE condition
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param schemaName path string true "Exasol schema name"
+// @Param tableName path string true "Exasol table name"
+// @Param columnName path string true "Exasol column name for WHERE clause"
+// @Param comparisonPredicate path string true "Comparison predicate for WHERE clause"
+// @Param value path string true "Value of the specified Exasol column"
+// @Param valueType path string true "Type of the value: string, bool, int or float"
+// @Success 200 {string} status and response
+// @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
+// @Router /rows [get]
+func (application *Application) GetRows(context *gin.Context) {
+	value, err := getValueByType(context.Query("valueType"), context.Query("value"))
+	request := RowsRequest{
+		SchemaName: context.Query("schemaName"),
+		TableName:  context.Query("tableName"),
+		WhereCondition: Condition{
+			CellValue: Value{
+				Value:      value,
+				ColumnName: context.Query("columnName"),
+			},
+			ComparisonPredicate: context.Query("comparisonPredicate"),
+		},
+	}
+	validationError := request.Validate()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Error": error_reporting_go.ExaError("E-ERA-28").
+			Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
+			Parameter("value", context.Query("value")).
+			Parameter("value type", context.Query("valueType")).
+			Parameter("error", err.Error()).String()})
+	} else if validationError != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+	} else {
+		schemaName := request.GetSchemaName()
+		tableName := request.GetTableName()
+		condition, conditionError := request.GetCondition()
+		if conditionError != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"Error": conditionError.Error()})
+		} else {
+			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
+			application.executeStatement(context, statement)
+		}
+	}
+}
+
+func getValueByType(valueType string, valueAsString string) (interface{}, error) {
+	if valueType == "string" {
+		return valueAsString, nil
+	} else if valueType == "bool" {
+		return strconv.ParseBool(valueAsString)
+	} else if valueType == "int" {
+		return strconv.Atoi(valueAsString)
+	} else if valueType == "float" {
+		return strconv.ParseFloat(valueType, 64)
+	} else {
+		return "", errors.New("unsupported value type: " + valueType)
 	}
 }
 
