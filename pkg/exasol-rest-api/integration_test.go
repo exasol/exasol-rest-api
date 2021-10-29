@@ -648,8 +648,8 @@ type testData struct {
 
 func (suite *IntegrationTestSuite) sendGetRows(data *testData) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/rows?"+data.query, nil)
-	req.Header.Set("Authorization", data.authToken)
 	onError(err)
+	req.Header.Set("Authorization", data.authToken)
 	return suite.sendHttpRequest(data, req)
 }
 
