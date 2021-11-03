@@ -158,12 +158,12 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Description get zero or more rows from a table providing a WHERE condition
 // @Produce  json
 // @Security ApiKeyAuth
-// @Param schemaName path string true "Exasol schema name"
-// @Param tableName path string true "Exasol table name"
-// @Param columnName path string true "Exasol column name for WHERE clause"
-// @Param comparisonPredicate path string true "Comparison predicate for WHERE clause"
-// @Param value path string true "Value of the specified Exasol column"
-// @Param valueType path string true "Type of the value: string, bool, int or float"
+// @Param schemaName query string true "Exasol schema name"
+// @Param tableName query string true "Exasol table name"
+// @Param columnName query string true "Exasol column name for WHERE clause"
+// @Param comparisonPredicate query string true "Comparison predicate for WHERE clause"
+// @Param value query string true "Value of the specified Exasol column"
+// @Param valueType query string true "Type of the value: string, bool, int or float"
 // @Success 200 {string} status and response
 // @Failure 400 {string} error code and error message
 // @Failure 403 {string} error code and error message
