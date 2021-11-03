@@ -34,13 +34,32 @@ func (application *Application) Query(context *gin.Context) {
 // @Description get a list of all available tables
 // @Produce  json
 // @Security ApiKeyAuth
-// @Success 200 {string} status and result set
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {object} GetTablesResponse
+// @Failure 400 {object} GetTablesResponse
+// @Failure 403 {object} GetTablesResponse
 // @Router /tables [get]
 func (application *Application) GetTables(context *gin.Context) {
-	statement := "SELECT * FROM EXA_USER_TABLES"
-	application.executeStatement(context, statement)
+	statement := "SELECT TABLE_SCHEMA, TABLE_NAME FROM EXA_ALL_TABLES"
+	err := application.Authorizer.Authorize(context.Request)
+	if err != nil {
+		context.JSON(http.StatusForbidden, GetTablesResponse{Status: "error", Exception: err.Error()})
+	} else {
+		application.handleGetTablesRequest(context, statement)
+	}
+}
+
+func (application *Application) handleGetTablesRequest(context *gin.Context, statement string) {
+	response, err := application.queryExasol(statement)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, GetTablesResponse{Status: "error", Exception: err.Error()})
+	} else {
+		convertedResponse, err := ConvertToGetTablesResponse(response)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, GetTablesResponse{Status: "error", Exception: err.Error()})
+		} else {
+			context.JSON(http.StatusOK, convertedResponse)
+		}
+	}
 }
 
 // @Summary InsertRow to a table.

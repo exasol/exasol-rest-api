@@ -154,7 +154,22 @@ Needs: impl, itest
 #### Get Tables Response Body
 `dsn~get-tables-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSOn response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  "tablesList": [
+    {
+      "schemaName": "<schema>",
+      "tableName": "<table>"
+    },
+    ...
+  ],
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 

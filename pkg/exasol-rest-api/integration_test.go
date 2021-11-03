@@ -200,11 +200,30 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 }
 
 func (suite *IntegrationTestSuite) TestGetTables() {
+	username := "GET_TABLES_USER"
+	password := "secret"
+	schemaName := "TEST_SCHEMA_GET_TABLES_1"
+	columns := "C1 VARCHAR(100), C2 DECIMAL(5,0)"
+
+	suite.creatSchemaAndTable(schemaName, "TEST_TABLE_1", columns)
+	suite.creatSchemaAndTable(schemaName, "TEST_TABLE_2", columns)
+	suite.createExasolUser(username, password)
+	suite.grantToUser(username, "CREATE SESSION")
+	suite.grantToUser(username, "SELECT ON SCHEMA "+schemaName)
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+
 	data := testData{
-		server:         suite.createServerWithDefaultProperties(),
+		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":10,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OWNER\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OBJECT_ID\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"TABLE_IS_VIRTUAL\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_DISTRIBUTION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_PARTITION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_ROW_COUNT\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"DELETE_PERCENTAGE\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":4,\"scale\":1}},{\"name\":\"TABLE_COMMENT\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":2000,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[{\"tableName\":\"TEST_TABLE_1\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"},{\"tableName\":\"TEST_TABLE_2\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"}]}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
@@ -227,7 +246,36 @@ func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":10,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OWNER\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OBJECT_ID\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"TABLE_IS_VIRTUAL\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_DISTRIBUTION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_PARTITION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_ROW_COUNT\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"DELETE_PERCENTAGE\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":4,\"scale\":1}},{\"name\":\"TABLE_COMMENT\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":2000,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[]}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetTablesUnauthorizedAccess() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "some query",
+		authToken:      "OR6rq6KjWmhvGU770A9OTjpfH86nlkq",
+		expectedStatus: http.StatusForbidden,
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetTablesWithWrongAPIVersion() {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                suite.defaultServiceUsername,
+		ExasolPassword:            suite.defaultServicePassword,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 0,
+	})
+	data := testData{
+		server:         server,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
@@ -801,7 +849,7 @@ func (suite *IntegrationTestSuite) grantToUser(username string, privilege string
 }
 
 func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName string, tableName string, columns string) {
-	_, err := suite.connection.Exec("CREATE SCHEMA " + schemaName)
+	_, err := suite.connection.Exec("CREATE SCHEMA IF NOT EXISTS " + schemaName)
 	onError(err)
 	_, err = suite.connection.Exec("CREATE TABLE " + schemaName + "." + tableName + "(" + columns + ")")
 	onError(err)
