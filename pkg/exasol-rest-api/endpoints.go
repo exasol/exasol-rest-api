@@ -198,7 +198,30 @@ func (application *Application) GetRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{"Error": conditionError.Error()})
 		} else {
 			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
-			application.executeStatement(context, statement)
+			application.executeGetRowsStatement(context, statement)
+		}
+	}
+}
+
+func (application *Application) executeGetRowsStatement(context *gin.Context, statement string) {
+	err := application.Authorizer.Authorize(context.Request)
+	if err != nil {
+		context.JSON(http.StatusForbidden, GetTablesResponse{Status: "error", Exception: err.Error()})
+	} else {
+		application.handleGetRowsRequest(context, statement)
+	}
+}
+
+func (application *Application) handleGetRowsRequest(context *gin.Context, statement string) {
+	response, err := application.queryExasol(statement)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, GetTablesResponse{Status: "error", Exception: err.Error()})
+	} else {
+		convertedResponse, err := ConvertToGetRowsResponse(response)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, GetTablesResponse{Status: "error", Exception: err.Error()})
+		} else {
+			context.JSON(http.StatusOK, convertedResponse)
 		}
 	}
 }

@@ -154,7 +154,7 @@ Needs: impl, itest
 #### Get Tables Response Body
 `dsn~get-tables-response-body~1`
 
-The endpoint has the following JSOn response body format:
+The endpoint has the following JSON response body format:
 
 ```json
 {
@@ -354,8 +354,46 @@ Needs: impl, itest
 #### Get Rows Response Body
 `dsn~get-rows-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
 
+```json
+{
+  "status": <"ok"|"error">,
+  "rows": [
+    {
+      cells: [
+        {
+          "ColumnName":  "<string>",
+          "Value": "<value>
+        },
+        ...
+      ]
+    },
+    ...
+  ],
+  "meta": {
+    "columns": [
+      {
+        "name": <string>,
+        "dataType": {
+          "type": <string>,
+          "precision": <number>,
+          "scale": <number>,
+          "size": <number>,
+          "characterSet": <string>,
+          "withLocalTimeZone": <true
+          |
+          false>,
+          "fraction": <number>,
+          "srid": <number>
+        }
+      }
+    ]
+  },
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 Covers:
 
 * `req~get-rows~1`

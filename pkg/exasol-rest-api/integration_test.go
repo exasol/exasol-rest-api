@@ -626,7 +626,7 @@ func (suite *IntegrationTestSuite) TestGetRows() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"cells\":[{\"columnName\":\"X\",\"value\":15},{\"columnName\":\"Y\",\"value\":\"test\"}]}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -681,7 +681,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      "asfkndfkhjikfghsg48ghahe25nbasm32h",
 		expectedStatus: http.StatusForbidden,
-		expectedBody:   "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }

@@ -2,7 +2,7 @@ package exasol_rest_api_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	exasol_rest_api "main/pkg/exasol-rest-api"
+	. "main/pkg/exasol-rest-api"
 	"testing"
 )
 
@@ -15,10 +15,10 @@ func TestResponseConvertingSuite(t *testing.T) {
 }
 
 func (suite *ResponseConvertingSuite) TestConvertGetTablesResponse() {
-	converted, err := exasol_rest_api.ConvertToGetTablesResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":2,\"numRowsInMessage\":2,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}}],\"data\":[[\"TEST_SCHEMA_DELETE_ROWS_1\",\"TEST_SCHEMA_DELETE_ROWS_1\"],[\"TEST_TABLE\",\"TEST_TABLE_1\"]]}}],\"numResults\":1}}"))
-	expected := exasol_rest_api.GetTablesResponse{
+	converted, err := ConvertToGetTablesResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":2,\"numRowsInMessage\":2,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}}],\"data\":[[\"TEST_SCHEMA_DELETE_ROWS_1\",\"TEST_SCHEMA_DELETE_ROWS_1\"],[\"TEST_TABLE\",\"TEST_TABLE_1\"]]}}],\"numResults\":1}}"))
+	expected := GetTablesResponse{
 		Status: "ok",
-		TablesList: []exasol_rest_api.Table{
+		TablesList: []Table{
 			{
 				TableName:  "TEST_TABLE",
 				SchemaName: "TEST_SCHEMA_DELETE_ROWS_1",
@@ -34,21 +34,37 @@ func (suite *ResponseConvertingSuite) TestConvertGetTablesResponse() {
 }
 
 func (suite *ResponseConvertingSuite) TestConvertGetTablesResponseWithZeroTables() {
-	converted, err := exasol_rest_api.ConvertToGetTablesResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}"))
-	expected := exasol_rest_api.GetTablesResponse{
+	converted, err := ConvertToGetTablesResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}"))
+	expected := GetTablesResponse{
 		Status:     "ok",
-		TablesList: []exasol_rest_api.Table{},
+		TablesList: []Table{},
 	}
 	suite.Equal(expected, converted)
 	suite.NoError(err)
 }
 
 func (suite *ResponseConvertingSuite) TestConvertGetTablesResponseWithError() {
-	converted, err := exasol_rest_api.ConvertToGetTablesResponse([]byte("{\"status\":\"error\",\"exception\":{\"sqlCode\":\"1\",\"text\":\"message\"},\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}"))
-	expected := exasol_rest_api.GetTablesResponse{
+	converted, err := ConvertToGetTablesResponse([]byte("{\"status\":\"error\",\"exception\":{\"sqlCode\":\"1\",\"text\":\"message\"},\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}"))
+	expected := GetTablesResponse{
 		Status:     "error",
 		TablesList: nil,
 		Exception:  "1 message",
+	}
+	suite.Equal(expected, converted)
+	suite.NoError(err)
+}
+
+func (suite *ResponseConvertingSuite) TestConvertGetRowsResponse() {
+	converted, err := ConvertToGetRowsResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}"))
+	expected := GetRowsResponse{
+		Status: "ok",
+		Meta: Meta{
+			Columns: []Column{
+				{Name: "X", DataType: DataType{Type: "DECIMAL", Precision: int64(18), Scale: int64(0)}},
+				{Name: "Y", DataType: DataType{Type: "VARCHAR", Size: int64(100), CharacterSet: "UTF8"}},
+			},
+		},
+		Rows: []Row{{Cells: []Cell{{"X", float64(15)}, {"Y", "test"}}}},
 	}
 	suite.Equal(expected, converted)
 	suite.NoError(err)

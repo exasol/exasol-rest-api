@@ -16,6 +16,22 @@ type Table struct {
 	SchemaName string `json:"schemaName"`
 }
 
+type GetRowsResponse struct {
+	Status    string `json:"status"`
+	Rows      []Row  `json:"rows"`
+	Meta      Meta   `json:"meta"`
+	Exception string `json:"exception,omitempty"`
+}
+
+type Row struct {
+	Cells []Cell `json:"cells"`
+}
+
+type Cell struct {
+	ColumnName string      `json:"columnName"`
+	Value      interface{} `json:"value"`
+}
+
 type responseData struct {
 	NumResults int               `json:"numResults"`
 	Results    []json.RawMessage `json:"results"`
@@ -31,24 +47,28 @@ type resultSet struct {
 	NumColumns       int             `json:"numColumns,omitempty"`
 	NumRows          int             `json:"numRows"`
 	NumRowsInMessage int             `json:"numRowsInMessage"`
-	Columns          []column        `json:"columns,omitempty"`
+	Columns          []Column        `json:"columns,omitempty"`
 	Data             [][]interface{} `json:"data"`
 }
 
-type column struct {
-	Name     string   `json:"name"`
-	DataType dataType `json:"dataType"`
+type Meta struct {
+	Columns []Column `json:"columns,omitempty"`
 }
 
-type dataType struct {
-	Type              string  `json:"type"`
-	Precision         *int64  `json:"precision,omitempty"`
-	Scale             *int64  `json:"scale,omitempty"`
-	Size              *int64  `json:"size,omitempty"`
-	CharacterSet      *string `json:"characterSet,omitempty"`
-	WithLocalTimeZone *bool   `json:"withLocalTimeZone,omitempty"`
-	Fraction          *int    `json:"fraction,omitempty"`
-	SRID              *int    `json:"srid,omitempty"`
+type Column struct {
+	Name     string   `json:"name"`
+	DataType DataType `json:"dataType"`
+}
+
+type DataType struct {
+	Type              string `json:"type"`
+	Precision         int64  `json:"precision,omitempty"`
+	Scale             int64  `json:"scale,omitempty"`
+	Size              int64  `json:"size,omitempty"`
+	CharacterSet      string `json:"characterSet,omitempty"`
+	WithLocalTimeZone bool   `json:"withLocalTimeZone,omitempty"`
+	Fraction          int    `json:"fraction,omitempty"`
+	SRID              int    `json:"srid,omitempty"`
 }
 
 type baseResponse struct {
@@ -102,6 +122,48 @@ func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 					TableName:  fmt.Sprintf("%v", data[1][row]),
 				})
 			}
+		}
+	}
+	return convertedResponse, nil
+}
+
+func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
+	base := &baseResponse{}
+	err := json.Unmarshal(response, base)
+	if err != nil {
+		return err, nil
+	}
+
+	responseData := &responseData{}
+	err = json.Unmarshal(base.ResponseData, responseData)
+	if err != nil {
+		return err, nil
+	}
+
+	results := &results{}
+	err = json.Unmarshal(responseData.Results[0], results)
+	if err != nil {
+		return err, nil
+	}
+
+	convertedResponse := GetRowsResponse{
+		Status: base.Status,
+	}
+	if base.Exception != nil {
+		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
+	} else {
+		convertedResponse.Meta = Meta{Columns: results.ResultSet.Columns}
+		convertedResponse.Rows = []Row{}
+		data := results.ResultSet.Data
+		if data != nil && len(data) > 0 {
+			row := Row{Cells: []Cell{}}
+			for rowIndex := range data[0] {
+				for colIndex := range data {
+					value := data[colIndex][rowIndex]
+					row.Cells = append(row.Cells, Cell{convertedResponse.Meta.Columns[colIndex].Name, value})
+				}
+			}
+			convertedResponse.Rows = append(convertedResponse.Rows, row)
 		}
 	}
 	return convertedResponse, nil
