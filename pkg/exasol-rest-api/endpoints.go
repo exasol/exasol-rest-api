@@ -164,9 +164,9 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Param comparisonPredicate query string true "Comparison predicate for WHERE clause"
 // @Param value query string true "Value of the specified Exasol column"
 // @Param valueType query string true "Type of the value: string, bool, int or float"
-// @Success 200 {string} status and response
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {object} GetRowsResponse
+// @Success 400 {object} GetRowsResponse
+// @Failure 403 {object} GetRowsResponse
 // @Router /rows [get]
 func (application *Application) GetRows(context *gin.Context) {
 	value, err := getValueByType(context.Query("valueType"), context.Query("value"))
@@ -183,19 +183,20 @@ func (application *Application) GetRows(context *gin.Context) {
 	}
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": error_reporting_go.ExaError("E-ERA-28").
-			Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
-			Parameter("value", context.Query("value")).
-			Parameter("value type", context.Query("valueType")).
-			Parameter("error", err.Error()).String()})
+		context.JSON(http.StatusBadRequest,
+			GetTablesResponse{Status: "error", Exception: error_reporting_go.ExaError("E-ERA-28").
+				Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
+				Parameter("value", context.Query("value")).
+				Parameter("value type", context.Query("valueType")).
+				Parameter("error", err.Error()).String()})
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+		context.JSON(http.StatusBadRequest, GetTablesResponse{Status: "error", Exception: validationError.Error()})
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
 		condition, conditionError := request.GetCondition()
 		if conditionError != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"Error": conditionError.Error()})
+			context.JSON(http.StatusBadRequest, GetTablesResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
 			application.executeGetRowsStatement(context, statement)

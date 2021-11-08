@@ -637,7 +637,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 		query:          "tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -648,7 +648,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -659,7 +659,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=foo&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-28: cannot decode value '15' with the provided value type 'foo': 'unsupported value type: foo'\"}",
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-28: cannot decode value '15' with the provided value type 'foo': 'unsupported value type: foo'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -670,7 +670,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=aaa&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-28: cannot decode value 'aaa' with the provided value type 'int': 'strconv.Atoi: parsing \\\"aaa\\\": invalid syntax'\"}",
+		expectedBody:   "{\"status\":\"error\",\"tablesList\":null,\"exception\":\"E-ERA-28: cannot decode value 'aaa' with the provided value type 'int': 'strconv.Atoi: parsing \\\"aaa\\\": invalid syntax'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }

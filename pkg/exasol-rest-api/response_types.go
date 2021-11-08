@@ -115,7 +115,7 @@ func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 	} else {
 		convertedResponse.TablesList = []Table{}
 		data := results.ResultSet.Data
-		if data != nil && len(data) > 0 {
+		if len(data) > 0 {
 			for row := range data[0] {
 				convertedResponse.TablesList = append(convertedResponse.TablesList, Table{
 					SchemaName: fmt.Sprintf("%v", data[0][row]),
@@ -155,7 +155,7 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 		convertedResponse.Meta = Meta{Columns: results.ResultSet.Columns}
 		convertedResponse.Rows = []Row{}
 		data := results.ResultSet.Data
-		if data != nil && len(data) > 0 {
+		if len(data) > 0 {
 			row := Row{Cells: []Cell{}}
 			for rowIndex := range data[0] {
 				for colIndex := range data {
