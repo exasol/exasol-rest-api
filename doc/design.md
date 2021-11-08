@@ -235,6 +235,7 @@ ERA accepts the following format of the request body:
  }
 ```
 
+
 Covers:
 
 * `req~insert-row~1`
@@ -244,7 +245,15 @@ Needs: impl, itest
 #### Insert Row Response Body
 `dsn~insert-row-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
@@ -304,7 +313,15 @@ Needs: impl, itest
 #### Delete Rows Response Body
 `dsn~delete-rows-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
@@ -361,13 +378,9 @@ The endpoint has the following JSON response body format:
   "status": <"ok"|"error">,
   "rows": [
     {
-      cells: [
-        {
-          "ColumnName":  "<string>",
-          "Value": "<value>
-        },
-        ...
-      ]
+      "columnName" : <value>, 
+      "columnName2" : <value>,
+      ...
     },
     ...
   ],
@@ -394,6 +407,7 @@ The endpoint has the following JSON response body format:
   "exception": "<error code and message>"
 }
 ```
+
 Covers:
 
 * `req~get-rows~1`
@@ -463,7 +477,15 @@ Needs: impl, itest
 #### Update Rows Response Body
 `dsn~update-rows-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 

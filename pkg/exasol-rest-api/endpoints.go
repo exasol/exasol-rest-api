@@ -164,9 +164,9 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Param comparisonPredicate query string true "Comparison predicate for WHERE clause"
 // @Param value query string true "Value of the specified Exasol column"
 // @Param valueType query string true "Type of the value: string, bool, int or float"
-// @Success 200 {object} GetRowsResponse
-// @Success 400 {object} GetRowsResponse
-// @Failure 403 {object} GetRowsResponse
+// @Success 200 {string} status and response
+// @Failure 400 {string} error code and error message
+// @Failure 403 {string} error code and error message
 // @Router /rows [get]
 func (application *Application) GetRows(context *gin.Context) {
 	value, err := getValueByType(context.Query("valueType"), context.Query("value"))

@@ -1,5 +1,7 @@
 package exasol_rest_api
 
+import "github.com/tidwall/sjson"
+
 import (
 	"encoding/json"
 	"fmt"
@@ -17,19 +19,10 @@ type Table struct {
 }
 
 type GetRowsResponse struct {
-	Status    string `json:"status"`
-	Rows      []Row  `json:"rows"`
-	Meta      Meta   `json:"meta"`
-	Exception string `json:"exception,omitempty"`
-}
-
-type Row struct {
-	Cells []Cell `json:"cells"`
-}
-
-type Cell struct {
-	ColumnName string      `json:"columnName"`
-	Value      interface{} `json:"value"`
+	Status    string          `json:"status"`
+	Rows      json.RawMessage `json:"rows"`
+	Meta      Meta            `json:"meta"`
+	Exception string          `json:"exception,omitempty"`
 }
 
 type responseData struct {
@@ -153,17 +146,22 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
 	} else {
 		convertedResponse.Meta = Meta{Columns: results.ResultSet.Columns}
-		convertedResponse.Rows = []Row{}
 		data := results.ResultSet.Data
 		if len(data) > 0 {
-			row := Row{Cells: []Cell{}}
+			rows := "["
 			for rowIndex := range data[0] {
+				row := ""
 				for colIndex := range data {
 					value := data[colIndex][rowIndex]
-					row.Cells = append(row.Cells, Cell{convertedResponse.Meta.Columns[colIndex].Name, value})
+					row, _ = sjson.Set(row, convertedResponse.Meta.Columns[colIndex].Name, value)
+				}
+				rows += row
+				if rowIndex < len(data[0])-1 {
+					rows += ","
 				}
 			}
-			convertedResponse.Rows = append(convertedResponse.Rows, row)
+			rows += "]"
+			convertedResponse.Rows = json.RawMessage(rows)
 		}
 	}
 	return convertedResponse, nil

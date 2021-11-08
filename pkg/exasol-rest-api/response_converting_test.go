@@ -1,6 +1,7 @@
 package exasol_rest_api_test
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/suite"
 	. "main/pkg/exasol-rest-api"
 	"testing"
@@ -55,7 +56,7 @@ func (suite *ResponseConvertingSuite) TestConvertGetTablesResponseWithError() {
 }
 
 func (suite *ResponseConvertingSuite) TestConvertGetRowsResponse() {
-	converted, err := ConvertToGetRowsResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}"))
+	converted, err := ConvertToGetRowsResponse([]byte("{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":2,\"numRowsInMessage\":2,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15,10],[\"test\",\"foo\"]]}}],\"numResults\":1}}"))
 	expected := GetRowsResponse{
 		Status: "ok",
 		Meta: Meta{
@@ -64,7 +65,7 @@ func (suite *ResponseConvertingSuite) TestConvertGetRowsResponse() {
 				{Name: "Y", DataType: DataType{Type: "VARCHAR", Size: int64(100), CharacterSet: "UTF8"}},
 			},
 		},
-		Rows: []Row{{Cells: []Cell{{"X", float64(15)}, {"Y", "test"}}}},
+		Rows: json.RawMessage("[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"foo\"}]"),
 	}
 	suite.Equal(expected, converted)
 	suite.NoError(err)

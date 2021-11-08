@@ -626,7 +626,7 @@ func (suite *IntegrationTestSuite) TestGetRows() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"cells\":[{\"columnName\":\"X\",\"value\":15},{\"columnName\":\"Y\",\"value\":\"test\"}]}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
