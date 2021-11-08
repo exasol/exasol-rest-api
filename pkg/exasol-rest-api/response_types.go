@@ -20,8 +20,8 @@ type Table struct {
 
 type GetRowsResponse struct {
 	Status    string          `json:"status"`
-	Rows      json.RawMessage `json:"rows"`
-	Meta      Meta            `json:"meta"`
+	Rows      json.RawMessage `json:"rows,omitempty"`
+	Meta      Meta            `json:"meta,omitempty"`
 	Exception string          `json:"exception,omitempty"`
 }
 
@@ -64,7 +64,12 @@ type DataType struct {
 	SRID              int    `json:"srid,omitempty"`
 }
 
-type baseResponse struct {
+type APIBaseResponse struct {
+	Status    string `json:"status"`
+	Exception string `json:"exception,omitempty"`
+}
+
+type webSocketsBaseResponse struct {
 	Status       string          `json:"status"`
 	ResponseData json.RawMessage `json:"responseData"`
 	Exception    *exception      `json:"exception"`
@@ -82,7 +87,7 @@ type publicKeyResponse struct {
 }
 
 func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
-	base := &baseResponse{}
+	base := &webSocketsBaseResponse{}
 	err := json.Unmarshal(response, base)
 	if err != nil {
 		return err, nil
@@ -121,20 +126,8 @@ func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 }
 
 func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
-	base := &baseResponse{}
+	base := &webSocketsBaseResponse{}
 	err := json.Unmarshal(response, base)
-	if err != nil {
-		return err, nil
-	}
-
-	responseData := &responseData{}
-	err = json.Unmarshal(base.ResponseData, responseData)
-	if err != nil {
-		return err, nil
-	}
-
-	results := &results{}
-	err = json.Unmarshal(responseData.Results[0], results)
 	if err != nil {
 		return err, nil
 	}
@@ -145,6 +138,18 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 	if base.Exception != nil {
 		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
 	} else {
+		responseData := &responseData{}
+		err = json.Unmarshal(base.ResponseData, responseData)
+		if err != nil {
+			return err, nil
+		}
+
+		results := &results{}
+		err = json.Unmarshal(responseData.Results[0], results)
+		if err != nil {
+			return err, nil
+		}
+
 		convertedResponse.Meta = Meta{Columns: results.ResultSet.Columns}
 		data := results.ResultSet.Data
 		if len(data) > 0 {
@@ -162,6 +167,34 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 			}
 			rows += "]"
 			convertedResponse.Rows = json.RawMessage(rows)
+		}
+	}
+	return convertedResponse, nil
+}
+
+func ConvertToBaseResponse(response []byte) (interface{}, error) {
+	base := &webSocketsBaseResponse{}
+	err := json.Unmarshal(response, base)
+	if err != nil {
+		return err, nil
+	}
+
+	convertedResponse := APIBaseResponse{
+		Status: base.Status,
+	}
+	if base.Exception != nil {
+		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
+	} else {
+		responseData := &responseData{}
+		err = json.Unmarshal(base.ResponseData, responseData)
+		if err != nil {
+			return err, nil
+		}
+
+		results := &results{}
+		err = json.Unmarshal(responseData.Results[0], results)
+		if err != nil {
+			return err, nil
 		}
 	}
 	return convertedResponse, nil
