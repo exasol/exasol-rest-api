@@ -93,7 +93,7 @@ func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 		return err, nil
 	}
 
-	results, err := getResults(err, base)
+	results, err := getResults(base)
 	if err != nil {
 		return err, nil
 	}
@@ -131,7 +131,7 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 	if base.Exception != nil {
 		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
 	} else {
-		results, err := getResults(err, base)
+		results, err := getResults(base)
 		if err != nil {
 			return err, nil
 		}
@@ -158,9 +158,9 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 	return convertedResponse, nil
 }
 
-func getResults(err error, base *webSocketsBaseResponse) (*results, error) {
+func getResults(base *webSocketsBaseResponse) (*results, error) {
 	responseData := &responseData{}
-	err = json.Unmarshal(base.ResponseData, responseData)
+	err := json.Unmarshal(base.ResponseData, responseData)
 	if err != nil {
 		return nil, err
 	}
