@@ -93,14 +93,7 @@ func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 		return err, nil
 	}
 
-	responseData := &responseData{}
-	err = json.Unmarshal(base.ResponseData, responseData)
-	if err != nil {
-		return err, nil
-	}
-
-	results := &results{}
-	err = json.Unmarshal(responseData.Results[0], results)
+	results, err := getResults(err, base)
 	if err != nil {
 		return err, nil
 	}
@@ -138,14 +131,7 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 	if base.Exception != nil {
 		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
 	} else {
-		responseData := &responseData{}
-		err = json.Unmarshal(base.ResponseData, responseData)
-		if err != nil {
-			return err, nil
-		}
-
-		results := &results{}
-		err = json.Unmarshal(responseData.Results[0], results)
+		results, err := getResults(err, base)
 		if err != nil {
 			return err, nil
 		}
@@ -172,6 +158,21 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 	return convertedResponse, nil
 }
 
+func getResults(err error, base *webSocketsBaseResponse) (*results, error) {
+	responseData := &responseData{}
+	err = json.Unmarshal(base.ResponseData, responseData)
+	if err != nil {
+		return nil, err
+	}
+
+	results := &results{}
+	err = json.Unmarshal(responseData.Results[0], results)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
 func ConvertToBaseResponse(response []byte) (interface{}, error) {
 	base := &webSocketsBaseResponse{}
 	err := json.Unmarshal(response, base)
@@ -184,18 +185,6 @@ func ConvertToBaseResponse(response []byte) (interface{}, error) {
 	}
 	if base.Exception != nil {
 		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
-	} else {
-		responseData := &responseData{}
-		err = json.Unmarshal(base.ResponseData, responseData)
-		if err != nil {
-			return err, nil
-		}
-
-		results := &results{}
-		err = json.Unmarshal(responseData.Results[0], results)
-		if err != nil {
-			return err, nil
-		}
 	}
 	return convertedResponse, nil
 }

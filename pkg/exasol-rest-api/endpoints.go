@@ -27,8 +27,30 @@ type Application struct {
 // @Failure 403 {object} APIBaseResponse
 // @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
-	context.JSON(application.executeStatement(ConvertToGetRowsResponse, context.Request,
+	context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request,
 		context.Param("query")))
+}
+
+// @Summary ExecuteStatement on the Exasol database.
+// @Description execute a statement without a result set
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param request-body body ExecuteStatementRequest true "Request body"
+// @Success 200 {string} APIBaseResponse
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
+// @Router /statement [post]
+func (application *Application) ExecuteStatement(context *gin.Context) {
+	var request ExecuteStatementRequest
+	err := context.BindJSON(&request)
+	validationError := request.Validate()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+	} else if validationError != nil {
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+	} else {
+		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, request.GetStatement()))
+	}
 }
 
 // @Summary GetTables that are available for the user.
@@ -41,7 +63,7 @@ func (application *Application) Query(context *gin.Context) {
 // @Router /tables [get]
 func (application *Application) GetTables(context *gin.Context) {
 	statement := "SELECT TABLE_SCHEMA, TABLE_NAME FROM EXA_ALL_TABLES"
-	context.JSON(application.executeStatement(ConvertToGetTablesResponse, context.Request, statement))
+	context.JSON(application.handleRequest(ConvertToGetTablesResponse, context.Request, statement))
 }
 
 // @Summary InsertRow to a table.
@@ -67,7 +89,7 @@ func (application *Application) InsertRow(context *gin.Context) {
 		tableName := request.GetTableName()
 		columnNames, values, _ := request.GetRow()
 		statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
-		context.JSON(application.executeStatement(ConvertToBaseResponse, context.Request, statement))
+		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 	}
 }
 
@@ -97,7 +119,7 @@ func (application *Application) DeleteRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 		} else {
 			statement := "DELETE FROM " + schemaName + "." + tableName + " WHERE " + condition
-			context.JSON(application.executeStatement(ConvertToBaseResponse, context.Request, statement))
+			context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 		}
 	}
 }
@@ -131,7 +153,7 @@ func (application *Application) UpdateRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "UPDATE " + schemaName + "." + tableName + " SET " + valuesToUpdate + " WHERE " + condition
-			context.JSON(application.executeStatement(ConvertToBaseResponse, context.Request, statement))
+			context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 		}
 	}
 }
@@ -152,17 +174,7 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Router /rows [get]
 func (application *Application) GetRows(context *gin.Context) {
 	value, err := getValueByType(context.Query("valueType"), context.Query("value"))
-	request := RowsRequest{
-		SchemaName: context.Query("schemaName"),
-		TableName:  context.Query("tableName"),
-		WhereCondition: Condition{
-			CellValue: Value{
-				Value:      value,
-				ColumnName: context.Query("columnName"),
-			},
-			ComparisonPredicate: context.Query("comparisonPredicate"),
-		},
-	}
+	request := buildGetRowsRequest(context, value)
 	validationError := request.Validate()
 	if err != nil {
 		context.JSON(http.StatusBadRequest,
@@ -181,22 +193,36 @@ func (application *Application) GetRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
-			context.JSON(application.executeStatement(ConvertToGetRowsResponse, context.Request, statement))
+			context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request, statement))
 		}
 	}
 }
 
-func (application *Application) executeStatement(convert func(toConvert []byte) (interface{}, error),
+func buildGetRowsRequest(context *gin.Context, value interface{}) RowsRequest {
+	return RowsRequest{
+		SchemaName: context.Query("schemaName"),
+		TableName:  context.Query("tableName"),
+		WhereCondition: Condition{
+			CellValue: Value{
+				Value:      value,
+				ColumnName: context.Query("columnName"),
+			},
+			ComparisonPredicate: context.Query("comparisonPredicate"),
+		},
+	}
+}
+
+func (application *Application) handleRequest(convert func(toConvert []byte) (interface{}, error),
 	request *http.Request, statement string) (int, interface{}) {
 	err := application.Authorizer.Authorize(request)
 	if err != nil {
 		return http.StatusForbidden, APIBaseResponse{Status: "error", Exception: err.Error()}
 	} else {
-		return application.handleRequest(statement, convert)
+		return application.SendRequestToWebSocketsAPI(statement, convert)
 	}
 }
 
-func (application *Application) handleRequest(statement string,
+func (application *Application) SendRequestToWebSocketsAPI(statement string,
 	convert func(toConvert []byte) (interface{}, error)) (int, interface{}) {
 	response, err := application.queryExasol(statement)
 	if err != nil {

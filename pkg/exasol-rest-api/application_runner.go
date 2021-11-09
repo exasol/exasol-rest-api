@@ -38,4 +38,5 @@ func AddEndpoints(router *gin.Engine, application Application) {
 	router.POST("/api/v1/row", application.InsertRow)
 	router.DELETE("/api/v1/rows", application.DeleteRows)
 	router.PUT("/api/v1/rows", application.UpdateRows)
+	router.POST("/api/v1/statement", application.ExecuteStatement)
 }

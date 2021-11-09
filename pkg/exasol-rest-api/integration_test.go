@@ -686,12 +686,83 @@ func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+func (suite *IntegrationTestSuite) TestExecuteStatement() {
+	username := "EXECUTE_STATEMENT_USER"
+	password := "secret"
+	schemaName := "TEST_SCHEMA_EXECUTE_STATEMENT_1"
+	columns := "C1 VARCHAR(100), C2 DECIMAL(5,0)"
+
+	suite.creatSchemaAndTable(schemaName, "TEST_TABLE_1", columns)
+	suite.createExasolUser(username, password)
+	suite.grantToUser(username, "CREATE SESSION")
+	suite.grantToUser(username, "CREATE ANY SCRIPT")
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+
+	data := testData{
+		server:         server,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\"}",
+	}
+	request := exasol_rest_api.ExecuteStatementRequest{
+		Statement: "CREATE LUA SCALAR SCRIPT " + schemaName + ".hello_world () RETURNS VARCHAR(100) AS\nfunction run(ctx)\n   return 'Hello World!'\nend\n;",
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendExecuteStatement(&data, body))
+}
+
+func (suite *IntegrationTestSuite) TestExecuteStatementAuthorizationError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      "12345678912345678912345678912345",
+		expectedStatus: http.StatusForbidden,
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. " +
+			"please make sure you provided a valid token.\"}",
+	}
+	request := exasol_rest_api.ExecuteStatementRequest{
+		Statement: "some statement",
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendExecuteStatement(&data, body))
+}
+
+func (suite *IntegrationTestSuite) TestExecuteStatementWithSyntaxError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"42000 syntax error",
+	}
+	request := exasol_rest_api.ExecuteStatementRequest{
+		Statement: "CREATE LUA SCALAR SCRIPT my_script;",
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyContains(&data, suite.sendExecuteStatement(&data, body))
+}
+
 type testData struct {
 	query          string
 	authToken      string
 	expectedStatus int
 	expectedBody   string
 	server         exasol_rest_api.Application
+}
+
+func (suite *IntegrationTestSuite) sendExecuteStatement(data *testData, body []byte) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodPost, "/api/v1/statement", bytes.NewReader(body))
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	return suite.sendHttpRequest(data, req)
 }
 
 func (suite *IntegrationTestSuite) sendGetRows(data *testData) *httptest.ResponseRecorder {

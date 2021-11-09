@@ -120,6 +120,15 @@ Covers:
 
 Needs: dsn
 
+### Execute Statement
+`req~execute-statement~1`
+
+API users can execute statements via REST API.
+
+Covers:
+
+* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+
 ### Support JSON Request and Response Format
 `req~support-json-request-and-response-format~1`
 

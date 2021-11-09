@@ -493,6 +493,65 @@ Covers:
 
 Needs: impl, itest
 
+### Execute Statement
+
+#### Execute Statement Endpoint
+`dsn~execute-statement-endpoint~1`
+
+ERA provides the following endpoint to the API users: `/api/v1/statement [post]`
+
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
+#### Execute Statement Headers
+`dsn~execute-statement-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
+#### Execute Statement Request Body
+`dsn~execute-statement-request-body~1`
+
+ERA accepts the following format of the request body:
+
+```json
+{
+     "sqlStatement": "<string>"
+ }
+```
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
+#### Execute Statement Response Body
+`dsn~execute-statement-response-body~1`
+
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
+
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
 # Cross-cutting Concerns
 
 # Design Decisions
