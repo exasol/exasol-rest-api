@@ -394,9 +394,7 @@ The endpoint has the following JSON response body format:
           "scale": <number>,
           "size": <number>,
           "characterSet": <string>,
-          "withLocalTimeZone": <true
-          |
-          false>,
+          "withLocalTimeZone": <true | false>,
           "fraction": <number>,
           "srid": <number>
         }
