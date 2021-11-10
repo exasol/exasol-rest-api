@@ -139,23 +139,28 @@ func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 		convertedResponse.Meta = Meta{Columns: results.ResultSet.Columns}
 		data := results.ResultSet.Data
 		if len(data) > 0 {
-			rows := "["
-			for rowIndex := range data[0] {
-				row := ""
-				for colIndex := range data {
-					value := data[colIndex][rowIndex]
-					row, _ = sjson.Set(row, convertedResponse.Meta.Columns[colIndex].Name, value)
-				}
-				rows += row
-				if rowIndex < len(data[0])-1 {
-					rows += ","
-				}
-			}
-			rows += "]"
+			rows := buildRowsString(data, convertedResponse)
 			convertedResponse.Rows = json.RawMessage(rows)
 		}
 	}
 	return convertedResponse, nil
+}
+
+func buildRowsString(data [][]interface{}, convertedResponse GetRowsResponse) string {
+	rows := "["
+	for rowIndex := range data[0] {
+		row := ""
+		for colIndex := range data {
+			value := data[colIndex][rowIndex]
+			row, _ = sjson.Set(row, convertedResponse.Meta.Columns[colIndex].Name, value)
+		}
+		rows += row
+		if rowIndex < len(data[0])-1 {
+			rows += ","
+		}
+	}
+	rows += "]"
+	return rows
 }
 
 func getResults(base *webSocketsBaseResponse) (*results, error) {

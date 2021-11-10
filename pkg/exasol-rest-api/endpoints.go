@@ -87,7 +87,10 @@ func (application *Application) InsertRow(context *gin.Context) {
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
-		columnNames, values, _ := request.GetRow()
+		columnNames, values, err := request.GetRow()
+		if err != nil {
+			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		}
 		statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
 		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 	}
