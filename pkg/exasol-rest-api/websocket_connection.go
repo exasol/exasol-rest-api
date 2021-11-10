@@ -138,7 +138,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 	}
 
 	return func(responseType interface{}) error {
-		result := &baseResponse{}
+		result := &webSocketsBaseResponse{}
 		err = json.Unmarshal(message, result)
 
 		if err != nil {

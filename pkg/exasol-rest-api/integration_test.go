@@ -70,7 +70,7 @@ func (suite *IntegrationTestSuite) TestQuery() {
 		query:          "SELECT * FROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -81,7 +81,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 		query:          "SELECTFROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"syntax error, unexpected ",
+		expectedBody:   "{\"status\":\"error\",\"meta\":{},\"exception\":\"42000 syntax error, unexpected ",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
@@ -92,7 +92,7 @@ func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 		query:          "CREATE SCHEMA not_allowed_schema",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"exception\":{\"text\":\"insufficient privileges for creating schema",
+		expectedBody:   "{\"status\":\"error\",\"meta\":{},\"exception\":\"42500 insufficient privileges for creating schema",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
@@ -115,7 +115,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -134,7 +134,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -153,7 +153,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol:",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol:",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
@@ -172,7 +172,7 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -183,7 +183,7 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 		query:          "some query",
 		authToken:      "OR6rq6KjWmhvGU770A9OTjpfH86nlkq",
 		expectedStatus: http.StatusForbidden,
-		expectedBody:   "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -194,17 +194,36 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 		query:          "some query",
 		authToken:      "tooshort",
 		expectedStatus: http.StatusForbidden,
-		expectedBody:   "{\"Error\":\"E-ERA-23: an authorization token has invalid length: 8. please only use tokens with the length longer or equal to 30.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-23: an authorization token has invalid length: 8. please only use tokens with the length longer or equal to 30.\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 func (suite *IntegrationTestSuite) TestGetTables() {
+	username := "GET_TABLES_USER"
+	password := "secret"
+	schemaName := "TEST_SCHEMA_GET_TABLES_1"
+	columns := "C1 VARCHAR(100), C2 DECIMAL(5,0)"
+
+	suite.creatSchemaAndTable(schemaName, "TEST_TABLE_1", columns)
+	suite.creatSchemaAndTable(schemaName, "TEST_TABLE_2", columns)
+	suite.createExasolUser(username, password)
+	suite.grantToUser(username, "CREATE SESSION")
+	suite.grantToUser(username, "SELECT ON SCHEMA "+schemaName)
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+
 	data := testData{
-		server:         suite.createServerWithDefaultProperties(),
+		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":10,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OWNER\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OBJECT_ID\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"TABLE_IS_VIRTUAL\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_DISTRIBUTION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_PARTITION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_ROW_COUNT\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"DELETE_PERCENTAGE\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":4,\"scale\":1}},{\"name\":\"TABLE_COMMENT\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":2000,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[{\"tableName\":\"TEST_TABLE_1\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"},{\"tableName\":\"TEST_TABLE_2\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"}]}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
@@ -227,7 +246,36 @@ func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":10,\"numRows\":0,\"numRowsInMessage\":0,\"columns\":[{\"name\":\"TABLE_SCHEMA\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_NAME\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OWNER\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":128,\"characterSet\":\"UTF8\"}},{\"name\":\"TABLE_OBJECT_ID\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"TABLE_IS_VIRTUAL\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_DISTRIBUTION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_HAS_PARTITION_KEY\",\"dataType\":{\"type\":\"BOOLEAN\"}},{\"name\":\"TABLE_ROW_COUNT\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"DELETE_PERCENTAGE\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":4,\"scale\":1}},{\"name\":\"TABLE_COMMENT\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":2000,\"characterSet\":\"UTF8\"}}]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[]}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetTablesUnauthorizedAccess() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "some query",
+		authToken:      "OR6rq6KjWmhvGU770A9OTjpfH86nlkq",
+		expectedStatus: http.StatusForbidden,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
+}
+
+func (suite *IntegrationTestSuite) TestGetTablesWithWrongAPIVersion() {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                suite.defaultServiceUsername,
+		ExasolPassword:            suite.defaultServicePassword,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 0,
+	})
+	data := testData{
+		server:         server,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
@@ -259,7 +307,7 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":1}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\"}",
 	}
 	insertRowRequest := exasol_rest_api.InsertRowRequest{
 		SchemaName: schemaName,
@@ -321,7 +369,7 @@ func (suite *IntegrationTestSuite) TestInsertRowAuthorizationError() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      "badToken",
 		expectedStatus: http.StatusForbidden,
-		expectedBody: "{\"Error\":\"E-ERA-23: an authorization token has invalid length: 8. " +
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-23: an authorization token has invalid length: 8. " +
 			"please only use tokens with the length longer or equal to 30.\"}",
 	}
 	insertRowRequest := exasol_rest_api.InsertRowRequest{
@@ -341,7 +389,7 @@ func (suite *IntegrationTestSuite) TestInsertRowMissingRequestParameter() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody: "{\"Error\":\"E-ERA-17: insert row request has some missing parameters. " +
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-17: insert row request has some missing parameters. " +
 			"Please specify schema name, table name and row\"}",
 	}
 	insertRowRequest := exasol_rest_api.InsertRowRequest{
@@ -383,7 +431,7 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":2}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\"}",
 	}
 	deleteRowsRequest := exasol_rest_api.RowsRequest{
 		SchemaName: schemaName,
@@ -406,7 +454,7 @@ func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      "12345678912345678912345678912345",
 		expectedStatus: http.StatusForbidden,
-		expectedBody: "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. " +
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. " +
 			"please make sure you provided a valid token.\"}",
 	}
 	insertRowRequest := exasol_rest_api.RowsRequest{
@@ -429,7 +477,7 @@ func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody: "{\"Error\":\"E-ERA-19: request has some missing parameters. " +
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-19: request has some missing parameters. " +
 			"Please specify schema name, table name and condition: column name, value\"}",
 	}
 	request := exasol_rest_api.RowsRequest{}
@@ -466,7 +514,7 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 		server:         server,
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"rowCount\",\"rowCount\":2}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\"}",
 	}
 	request := exasol_rest_api.UpdateRowsRequest{
 		SchemaName: schemaName,
@@ -527,7 +575,7 @@ func (suite *IntegrationTestSuite) TestUpdateRowsAuthorizationError() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      "12345678912345678912345678912345",
 		expectedStatus: http.StatusForbidden,
-		expectedBody: "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. " +
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. " +
 			"please make sure you provided a valid token.\"}",
 	}
 	request := exasol_rest_api.UpdateRowsRequest{
@@ -553,7 +601,7 @@ func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      "foo",
 		expectedStatus: http.StatusBadRequest,
-		expectedBody: "{\"Error\":\"E-ERA-20: update rows request has some missing parameters. " +
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-20: update rows request has some missing parameters. " +
 			"Please specify schema name, table name, values to update and condition\"}",
 	}
 	request := exasol_rest_api.UpdateRowsRequest{
@@ -578,7 +626,7 @@ func (suite *IntegrationTestSuite) TestGetRows() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"responseData\":{\"results\":[{\"resultType\":\"resultSet\",\"resultSet\":{\"numColumns\":2,\"numRows\":1,\"numRowsInMessage\":1,\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18,\"scale\":0}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}],\"data\":[[15],[\"test\"]]}}],\"numResults\":1}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -589,7 +637,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 		query:          "tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -600,7 +648,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-19: request has some missing parameters. Please specify schema name, table name and condition: column name, value\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -611,7 +659,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=foo&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-28: cannot decode value '15' with the provided value type 'foo': 'unsupported value type: foo'\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-28: cannot decode value '15' with the provided value type 'foo': 'unsupported value type: foo'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -622,7 +670,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=aaa&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"Error\":\"E-ERA-28: cannot decode value 'aaa' with the provided value type 'int': 'strconv.Atoi: parsing \\\"aaa\\\": invalid syntax'\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-28: cannot decode value 'aaa' with the provided value type 'int': 'strconv.Atoi: parsing \\\"aaa\\\": invalid syntax'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
@@ -633,9 +681,73 @@ func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      "asfkndfkhjikfghsg48ghahe25nbasm32h",
 		expectedStatus: http.StatusForbidden,
-		expectedBody:   "{\"Error\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+func (suite *IntegrationTestSuite) TestExecuteStatement() {
+	username := "EXECUTE_STATEMENT_USER"
+	password := "secret"
+	schemaName := "TEST_SCHEMA_EXECUTE_STATEMENT_1"
+	columns := "C1 VARCHAR(100), C2 DECIMAL(5,0)"
+
+	suite.creatSchemaAndTable(schemaName, "TEST_TABLE_1", columns)
+	suite.createExasolUser(username, password)
+	suite.grantToUser(username, "CREATE SESSION")
+	suite.grantToUser(username, "CREATE ANY SCRIPT")
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                 suite.defaultAuthTokens,
+		ExasolUser:                username,
+		ExasolPassword:            password,
+		ExasolHost:                suite.exasolHost,
+		ExasolPort:                suite.exasolPort,
+		ExasolWebsocketAPIVersion: 2,
+	})
+
+	data := testData{
+		server:         server,
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\"}",
+	}
+	request := exasol_rest_api.ExecuteStatementRequest{
+		Statement: "CREATE LUA SCALAR SCRIPT " + schemaName + ".hello_world () RETURNS VARCHAR(100) AS\nfunction run(ctx)\n   return 'Hello World!'\nend\n;",
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendExecuteStatement(&data, body))
+}
+
+func (suite *IntegrationTestSuite) TestExecuteStatementAuthorizationError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      "12345678912345678912345678912345",
+		expectedStatus: http.StatusForbidden,
+		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. " +
+			"please make sure you provided a valid token.\"}",
+	}
+	request := exasol_rest_api.ExecuteStatementRequest{
+		Statement: "some statement",
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyEquals(&data, suite.sendExecuteStatement(&data, body))
+}
+
+func (suite *IntegrationTestSuite) TestExecuteStatementWithSyntaxError() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"42000 syntax error",
+	}
+	request := exasol_rest_api.ExecuteStatementRequest{
+		Statement: "CREATE LUA SCALAR SCRIPT my_script;",
+	}
+	body, err := json.Marshal(request)
+	onError(err)
+	suite.assertResponseBodyContains(&data, suite.sendExecuteStatement(&data, body))
 }
 
 type testData struct {
@@ -644,6 +756,13 @@ type testData struct {
 	expectedStatus int
 	expectedBody   string
 	server         exasol_rest_api.Application
+}
+
+func (suite *IntegrationTestSuite) sendExecuteStatement(data *testData, body []byte) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodPost, "/api/v1/statement", bytes.NewReader(body))
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	return suite.sendHttpRequest(data, req)
 }
 
 func (suite *IntegrationTestSuite) sendGetRows(data *testData) *httptest.ResponseRecorder {
@@ -801,7 +920,7 @@ func (suite *IntegrationTestSuite) grantToUser(username string, privilege string
 }
 
 func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName string, tableName string, columns string) {
-	_, err := suite.connection.Exec("CREATE SCHEMA " + schemaName)
+	_, err := suite.connection.Exec("CREATE SCHEMA IF NOT EXISTS " + schemaName)
 	onError(err)
 	_, err = suite.connection.Exec("CREATE TABLE " + schemaName + "." + tableName + "(" + columns + ")")
 	onError(err)

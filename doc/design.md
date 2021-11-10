@@ -154,7 +154,22 @@ Needs: impl, itest
 #### Get Tables Response Body
 `dsn~get-tables-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  "tablesList": [
+    {
+      "schemaName": "<schema>",
+      "tableName": "<table>"
+    },
+    ...
+  ],
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
@@ -220,6 +235,7 @@ ERA accepts the following format of the request body:
  }
 ```
 
+
 Covers:
 
 * `req~insert-row~1`
@@ -229,7 +245,15 @@ Needs: impl, itest
 #### Insert Row Response Body
 `dsn~insert-row-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
@@ -289,7 +313,15 @@ Needs: impl, itest
 #### Delete Rows Response Body
 `dsn~delete-rows-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
@@ -339,7 +371,40 @@ Needs: impl, itest
 #### Get Rows Response Body
 `dsn~get-rows-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok"|"error">,
+  "rows": [
+    {
+      "columnName" : <value>, 
+      "columnName2" : <value>,
+      ...
+    },
+    ...
+  ],
+  "meta": {
+    "columns": [
+      {
+        "name": <string>,
+        "dataType": {
+          "type": <string>,
+          "precision": <number>,
+          "scale": <number>,
+          "size": <number>,
+          "characterSet": <string>,
+          "withLocalTimeZone": <true | false>,
+          "fraction": <number>,
+          "srid": <number>
+        }
+      }
+    ]
+  },
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
@@ -410,11 +475,78 @@ Needs: impl, itest
 #### Update Rows Response Body
 `dsn~update-rows-response-body~1`
 
-See a response format of [Exasol WebSocket API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
 * `req~update-rows~1`
+
+Needs: impl, itest
+
+### Execute Statement
+
+#### Execute Statement Endpoint
+`dsn~execute-statement-endpoint~1`
+
+ERA provides the following endpoint to the API users: `/api/v1/statement [post]`
+
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
+#### Execute Statement Headers
+`dsn~execute-statement-headers~1`
+
+The endpoint requires `Authorization` header with an API token to handle requests.
+
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
+#### Execute Statement Request Body
+`dsn~execute-statement-request-body~1`
+
+ERA accepts the following format of the request body:
+
+```json
+{
+     "sqlStatement": "<string>"
+ }
+```
+Covers:
+
+* `req~execute-statement~1`
+
+Needs: impl, itest
+
+#### Execute Statement Response Body
+`dsn~execute-statement-response-body~1`
+
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok" | "error">,
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
+
+Covers:
+
+* `req~execute-statement~1`
 
 Needs: impl, itest
 

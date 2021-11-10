@@ -22,25 +22,48 @@ type Application struct {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param   query     path    string     true        "SELECT query"
-// @Success 200 {string} status and result set
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {string} status and response
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
 // @Router /query/{query} [get]
 func (application *Application) Query(context *gin.Context) {
-	application.executeStatement(context, context.Param("query"))
+	context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request,
+		context.Param("query")))
+}
+
+// @Summary ExecuteStatement on the Exasol database.
+// @Description execute a statement without a result set
+// @Produce  json
+// @Security ApiKeyAuth
+// @Param request-body body ExecuteStatementRequest true "Request body"
+// @Success 200 {string} APIBaseResponse
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
+// @Router /statement [post]
+func (application *Application) ExecuteStatement(context *gin.Context) {
+	var request ExecuteStatementRequest
+	err := context.BindJSON(&request)
+	validationError := request.Validate()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+	} else if validationError != nil {
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+	} else {
+		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, request.GetStatement()))
+	}
 }
 
 // @Summary GetTables that are available for the user.
 // @Description get a list of all available tables
 // @Produce  json
 // @Security ApiKeyAuth
-// @Success 200 {string} status and result set
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {object} GetTablesResponse
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
 // @Router /tables [get]
 func (application *Application) GetTables(context *gin.Context) {
-	statement := "SELECT * FROM EXA_USER_TABLES"
-	application.executeStatement(context, statement)
+	statement := "SELECT TABLE_SCHEMA, TABLE_NAME FROM EXA_ALL_TABLES"
+	context.JSON(application.handleRequest(ConvertToGetTablesResponse, context.Request, statement))
 }
 
 // @Summary InsertRow to a table.
@@ -49,24 +72,27 @@ func (application *Application) GetTables(context *gin.Context) {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param request-body body InsertRowRequest true "Request body"
-// @Success 200 {string} status and response
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {object} APIBaseResponse
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
 // @Router /row [post]
 func (application *Application) InsertRow(context *gin.Context) {
 	var request InsertRowRequest
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
-		columnNames, values, _ := request.GetRow()
+		columnNames, values, err := request.GetRow()
+		if err != nil {
+			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		}
 		statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
-		application.executeStatement(context, statement)
+		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 	}
 }
 
@@ -76,27 +102,27 @@ func (application *Application) InsertRow(context *gin.Context) {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param request-body body RowsRequest true "Request body"
-// @Success 200 {string} status and response
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {object} APIBaseResponse
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
 // @Router /rows [delete]
 func (application *Application) DeleteRows(context *gin.Context) {
 	var request RowsRequest
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
 		condition, err := request.GetCondition()
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 		} else {
 			statement := "DELETE FROM " + schemaName + "." + tableName + " WHERE " + condition
-			application.executeStatement(context, statement)
+			context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 		}
 	}
 }
@@ -107,30 +133,30 @@ func (application *Application) DeleteRows(context *gin.Context) {
 // @Produce  json
 // @Security ApiKeyAuth
 // @Param request-body body UpdateRowsRequest true "Request body"
-// @Success 200 {string} status and response
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Success 200 {object} APIBaseResponse
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
 // @Router /rows [put]
 func (application *Application) UpdateRows(context *gin.Context) {
 	var request UpdateRowsRequest
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
 		valuesToUpdate, valuesError := request.GetValuesToUpdate()
 		condition, conditionError := request.GetCondition()
 		if valuesError != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"Error": valuesError.Error()})
+			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: valuesError.Error()})
 		} else if conditionError != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"Error": conditionError.Error()})
+			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "UPDATE " + schemaName + "." + tableName + " SET " + valuesToUpdate + " WHERE " + condition
-			application.executeStatement(context, statement)
+			context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 		}
 	}
 }
@@ -139,19 +165,44 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Description get zero or more rows from a table providing a WHERE condition
 // @Produce  json
 // @Security ApiKeyAuth
-// @Param schemaName path string true "Exasol schema name"
-// @Param tableName path string true "Exasol table name"
-// @Param columnName path string true "Exasol column name for WHERE clause"
-// @Param comparisonPredicate path string true "Comparison predicate for WHERE clause"
-// @Param value path string true "Value of the specified Exasol column"
-// @Param valueType path string true "Type of the value: string, bool, int or float"
+// @Param schemaName query string true "Exasol schema name"
+// @Param tableName query string true "Exasol table name"
+// @Param columnName query string true "Exasol column name for WHERE clause"
+// @Param comparisonPredicate query string true "Comparison predicate for WHERE clause"
+// @Param value query string true "Value of the specified Exasol column"
+// @Param valueType query string true "Type of the value: string, bool, int or float"
 // @Success 200 {string} status and response
-// @Failure 400 {string} error code and error message
-// @Failure 403 {string} error code and error message
+// @Failure 400 {object} APIBaseResponse
+// @Failure 403 {object} APIBaseResponse
 // @Router /rows [get]
 func (application *Application) GetRows(context *gin.Context) {
 	value, err := getValueByType(context.Query("valueType"), context.Query("value"))
-	request := RowsRequest{
+	request := buildGetRowsRequest(context, value)
+	validationError := request.Validate()
+	if err != nil {
+		context.JSON(http.StatusBadRequest,
+			APIBaseResponse{Status: "error", Exception: error_reporting_go.ExaError("E-ERA-28").
+				Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
+				Parameter("value", context.Query("value")).
+				Parameter("value type", context.Query("valueType")).
+				Parameter("error", err.Error()).String()})
+	} else if validationError != nil {
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+	} else {
+		schemaName := request.GetSchemaName()
+		tableName := request.GetTableName()
+		condition, conditionError := request.GetCondition()
+		if conditionError != nil {
+			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
+		} else {
+			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
+			context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request, statement))
+		}
+	}
+}
+
+func buildGetRowsRequest(context *gin.Context, value interface{}) RowsRequest {
+	return RowsRequest{
 		SchemaName: context.Query("schemaName"),
 		TableName:  context.Query("tableName"),
 		WhereCondition: Condition{
@@ -162,24 +213,29 @@ func (application *Application) GetRows(context *gin.Context) {
 			ComparisonPredicate: context.Query("comparisonPredicate"),
 		},
 	}
-	validationError := request.Validate()
+}
+
+func (application *Application) handleRequest(convert func(toConvert []byte) (interface{}, error),
+	request *http.Request, statement string) (int, interface{}) {
+	err := application.Authorizer.Authorize(request)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": error_reporting_go.ExaError("E-ERA-28").
-			Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
-			Parameter("value", context.Query("value")).
-			Parameter("value type", context.Query("valueType")).
-			Parameter("error", err.Error()).String()})
-	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": validationError.Error()})
+		return http.StatusForbidden, APIBaseResponse{Status: "error", Exception: err.Error()}
 	} else {
-		schemaName := request.GetSchemaName()
-		tableName := request.GetTableName()
-		condition, conditionError := request.GetCondition()
-		if conditionError != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"Error": conditionError.Error()})
+		return application.SendRequestToWebSocketsAPI(statement, convert)
+	}
+}
+
+func (application *Application) SendRequestToWebSocketsAPI(statement string,
+	convert func(toConvert []byte) (interface{}, error)) (int, interface{}) {
+	response, err := application.queryExasol(statement)
+	if err != nil {
+		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
+	} else {
+		convertedResponse, err := convert(response)
+		if err != nil {
+			return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
 		} else {
-			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
-			application.executeStatement(context, statement)
+			return http.StatusOK, convertedResponse
 		}
 	}
 }
@@ -195,20 +251,6 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 		return strconv.ParseFloat(valueType, 64)
 	} else {
 		return "", errors.New("unsupported value type: " + valueType)
-	}
-}
-
-func (application *Application) executeStatement(context *gin.Context, query string) {
-	err := application.Authorizer.Authorize(context.Request)
-	if err != nil {
-		context.JSON(http.StatusForbidden, gin.H{"Error": err.Error()})
-	} else {
-		response, err := application.queryExasol(query)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
-		} else {
-			context.Data(http.StatusOK, "application/json", response)
-		}
 	}
 }
 
