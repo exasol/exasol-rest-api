@@ -7,6 +7,7 @@ import (
 	"fmt"
 )
 
+// [impl->dsn~get-tables-response-body~1]
 type GetTablesResponse struct {
 	Status     string  `json:"status"`
 	TablesList []Table `json:"tablesList"`
@@ -18,6 +19,8 @@ type Table struct {
 	SchemaName string `json:"schemaName"`
 }
 
+// [impl->dsn~execute-query-response-body~1]
+// [impl->dsn~get-rows-response-body~1]
 type GetRowsResponse struct {
 	Status    string          `json:"status"`
 	Rows      json.RawMessage `json:"rows,omitempty"`
@@ -64,6 +67,10 @@ type DataType struct {
 	SRID              int    `json:"srid,omitempty"`
 }
 
+// [impl->dsn~insert-row-response-body~1]
+// [impl->dsn~delete-rows-response-body~1]
+// [impl->dsn~update-rows-response-body~1]
+// [impl->dsn~execute-statement-response-body~1]
 type APIBaseResponse struct {
 	Status    string `json:"status"`
 	Exception string `json:"exception,omitempty"`
@@ -86,6 +93,7 @@ type publicKeyResponse struct {
 	PublicKeyExponent string `json:"publicKeyExponent"`
 }
 
+// [impl->dsn~get-tables-response-body~1]
 func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 	base := &webSocketsBaseResponse{}
 	err := json.Unmarshal(response, base)
@@ -118,6 +126,7 @@ func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
 	return convertedResponse, nil
 }
 
+// [impl->dsn~execute-query-response-body~1]
 func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
 	base := &webSocketsBaseResponse{}
 	err := json.Unmarshal(response, base)

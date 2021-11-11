@@ -7,6 +7,7 @@ import (
 )
 
 // UpdateRowsRequest maps an UpdateRows JSON request to a struct.
+// [impl->dsn~update-rows-request-body~1]
 type UpdateRowsRequest struct {
 	SchemaName     string    `json:"schemaName"`
 	TableName      string    `json:"tableName"`

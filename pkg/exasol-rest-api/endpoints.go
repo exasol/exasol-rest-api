@@ -26,6 +26,8 @@ type Application struct {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /query/{query} [get]
+// [impl->dsn~execute-query-endpoint~1]
+// [impl->dsn~execute-query-request-parameters~1]
 func (application *Application) Query(context *gin.Context) {
 	context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request,
 		context.Param("query")))
@@ -40,6 +42,7 @@ func (application *Application) Query(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /statement [post]
+// [impl->dsn~execute-statement-endpoint~1]
 func (application *Application) ExecuteStatement(context *gin.Context) {
 	var request ExecuteStatementRequest
 	err := context.BindJSON(&request)
@@ -61,6 +64,7 @@ func (application *Application) ExecuteStatement(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /tables [get]
+// [impl->dsn~get-tables-endpoint~1]
 func (application *Application) GetTables(context *gin.Context) {
 	statement := "SELECT TABLE_SCHEMA, TABLE_NAME FROM EXA_ALL_TABLES"
 	context.JSON(application.handleRequest(ConvertToGetTablesResponse, context.Request, statement))
@@ -76,6 +80,7 @@ func (application *Application) GetTables(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /row [post]
+// [impl->dsn~insert-row-endpoint~1`]
 func (application *Application) InsertRow(context *gin.Context) {
 	var request InsertRowRequest
 	err := context.BindJSON(&request)
@@ -106,6 +111,7 @@ func (application *Application) InsertRow(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /rows [delete]
+// [impl->dsn~delete-rows-endpoint~1]
 func (application *Application) DeleteRows(context *gin.Context) {
 	var request RowsRequest
 	err := context.BindJSON(&request)
@@ -137,6 +143,7 @@ func (application *Application) DeleteRows(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /rows [put]
+// [impl->dsn~update-rows-endpoint~1`]
 func (application *Application) UpdateRows(context *gin.Context) {
 	var request UpdateRowsRequest
 	err := context.BindJSON(&request)
@@ -175,6 +182,8 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /rows [get]
+// [impl->dsn~get-rows-endpoint~1]
+// [impl->dsn~get-rows-request-parameters~1]
 func (application *Application) GetRows(context *gin.Context) {
 	value, err := getValueByType(context.Query("valueType"), context.Query("value"))
 	request := buildGetRowsRequest(context, value)
@@ -215,6 +224,13 @@ func buildGetRowsRequest(context *gin.Context, value interface{}) RowsRequest {
 	}
 }
 
+// [impl->dsn~execute-query-headers~1]
+// [impl->dsn~get-tables-headers~1]
+// [impl->dsn~insert-row-headers~1]
+// [impl->dsn~delete-rows-headers~1]
+// [impl->dsn~get-rows-headers~1]
+// [impl->dsn~update-rows-headers~1]
+// [impl->dsn~execute-statement-headers~1]
 func (application *Application) handleRequest(convert func(toConvert []byte) (interface{}, error),
 	request *http.Request, statement string) (int, interface{}) {
 	err := application.Authorizer.Authorize(request)

@@ -48,7 +48,7 @@ jobs:
 
       - name: Trace requirements
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
-        run: ./trace-requirements.sh || true
+        run: ./trace-requirements.sh
 
       - name: Build Docker Image
         run: docker build --tag rest-api-test-image:latest .

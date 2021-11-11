@@ -10,6 +10,7 @@ type UpdateRowsRequestSuite struct {
 	suite.Suite
 }
 
+// [utest->dsn~update-rows-request-body~1]
 func TestUpdateRowsRequestSuite(t *testing.T) {
 	suite.Run(t, new(UpdateRowsRequestSuite))
 }

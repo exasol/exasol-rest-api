@@ -17,6 +17,10 @@ Code name:
 
 * #14: Upgraded exasol-go-driver to support Exasol 7.1.0 and later.
 
+## Refactoring
+
+* #25: Added requirements coverage.
+
 ## Documentation
 
 * #1: Added system requirements and design.

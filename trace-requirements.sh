@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-oft_version="3.2.1"
+oft_version="3.3.0"
 tmp_dir="/tmp/oft/"
 tmp_file="$tmp_dir/openfasttrace-$oft_version.jar"
 
