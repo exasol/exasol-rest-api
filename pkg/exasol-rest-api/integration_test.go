@@ -655,7 +655,7 @@ func (suite *IntegrationTestSuite) TestUpdateRowsAuthorizationError() {
 func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
-		authToken:      "foo",
+		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
 		expectedBody: "{\"status\":\"error\",\"exception\":\"E-ERA-20: update rows request has some missing parameters. " +
 			"Please specify schema name, table name, values to update and condition\"}",

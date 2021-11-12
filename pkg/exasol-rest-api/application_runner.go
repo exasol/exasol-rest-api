@@ -2,11 +2,12 @@ package exasol_rest_api
 
 import (
 	"github.com/exasol/error-reporting-go"
+	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-
 	_ "main/doc/swagger" // importing Swagger-generated documentation
+	"net/http"
 )
 
 // Run starts the REST API service.
@@ -22,7 +23,7 @@ func Run() {
 	swaggerURL := ginSwagger.URL("/swagger/doc.json")
 	AddEndpoints(router, application)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, swaggerURL))
-	err := router.Run(applicationProperties.ApplicationServer)
+	err := autotls.Run(router, applicationProperties.ApplicationServer)
 
 	if err != nil {
 		panic(error_reporting_go.ExaError("E-ERA-1").Message("error starting API server: {{error}}").
@@ -30,8 +31,17 @@ func Run() {
 	}
 }
 
+func (application *Application) Auth(context *gin.Context) {
+	err := application.Authorizer.Authorize(context.Request)
+	if err != nil {
+		context.JSON(http.StatusForbidden, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.Abort()
+	}
+}
+
 // AddEndpoints adds endpoints to the REST API.
 func AddEndpoints(router *gin.Engine, application Application) {
+	router.Use(application.Auth)
 	router.GET("/api/v1/query/:query", application.Query)
 	router.GET("/api/v1/tables", application.GetTables)
 	router.GET("/api/v1/rows", application.GetRows)
