@@ -80,7 +80,7 @@ func (application *Application) GetTables(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /row [post]
-// [impl->dsn~insert-row-endpoint~1`]
+// [impl->dsn~insert-row-endpoint~1]
 func (application *Application) InsertRow(context *gin.Context) {
 	var request InsertRowRequest
 	err := context.BindJSON(&request)
@@ -143,7 +143,7 @@ func (application *Application) DeleteRows(context *gin.Context) {
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
 // @Router /rows [put]
-// [impl->dsn~update-rows-endpoint~1`]
+// [impl->dsn~update-rows-endpoint~1]
 func (application *Application) UpdateRows(context *gin.Context) {
 	var request UpdateRowsRequest
 	err := context.BindJSON(&request)
