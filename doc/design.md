@@ -38,9 +38,9 @@ ERA uses [Exasol WebSockets API](https://github.com/exasol/websocket-api) to pro
 
 Covers:
 
-* `req~execute-query~1`
+* `req~communication-with-exasol~1`
 
-Needs: impl, itest
+Needs: impl
 
 ### Service Account
 `dsn~service-account~1`
@@ -49,9 +49,9 @@ Exasol admins create a service account for the ERA proxy service.
 
 Covers:
 
-* `req~execute-query~1`
+* `req~communication-with-exasol~1`
 
-Needs: impl, itest
+Needs: impl
 
 ### Service Credentials
 `dsn~service-credentials~1`
@@ -60,9 +60,22 @@ Exasol admins configure the proxy service with the service account credentials.
 
 Covers:
 
-* `req~execute-query~1`
+* `req~communication-with-exasol~1`
 
-Needs: impl, itest
+Needs: impl
+
+#### Results Set Limitation
+`dsn~results-set-limitation~1`
+
+The result set has 1000 rows or fewer.
+
+Rationale:
+
+This is a limitation of the WebSockets API result sets.
+
+Covers:
+
+* `req~communication-with-exasol~1`
 
 ## REST API Endpoints
 
@@ -101,31 +114,53 @@ The endpoint accepts the following path parameter:
 
 Covers:
 
-* `req~execute-sql-query~1`
+* `req~execute-query~1`
 
 Needs: impl, itest
 
 #### Execute Query Response Body
 `dsn~execute-query-response-body~1`
 
-See a response format of [Exasol WebSocker API](https://github.com/exasol/websocket-api/blob/master/docs/commands/executeV1.md).
+The endpoint has the following JSON response body format:
+
+```json
+{
+  "status": <"ok"|"error">,
+  "rows": [
+    {
+      "columnName" : <value>, 
+      "columnName2" : <value>,
+      ...
+    },
+    ...
+  ],
+  "meta": {
+    "columns": [
+      {
+        "name": <string>,
+        "dataType": {
+          "type": <string>,
+          "precision": <number>,
+          "scale": <number>,
+          "size": <number>,
+          "characterSet": <string>,
+          "withLocalTimeZone": <true | false>,
+          "fraction": <number>,
+          "srid": <number>
+        }
+      }
+    ]
+  },
+  // in case of "error"
+  "exception": "<error code and message>"
+}
+```
 
 Covers:
 
-* `req~execute-sql-query~1`
+* `req~support-json-request-and-response-format~1`
 
-Needs: impl, itest
-
-#### Query Results Limitation
-`dsn~query-results-limitation~1`
-
-The result set has 1000 rows or fewer.
-
-Covers:
-
-* `req~execute-sql-query~1`
-
-Needs: impl, itest
+Needs: impl, utest, itest
 
 ### Get Tables
 
@@ -173,20 +208,9 @@ The endpoint has the following JSON response body format:
 
 Covers:
 
-* `req~get-tables~1`
+* `req~support-json-request-and-response-format~1`
 
-Needs: impl, itest
-
-#### Get Tables Results Limitation
-`dsn~get-tables-results-limitation~1`
-
-The result set has 1000 rows or fewer.
-
-Covers:
-
-* `req~get-tables~1`
-
-Needs: impl, itest
+Needs: impl, utest, itest
 
 ### Insert Row
 
@@ -238,9 +262,9 @@ ERA accepts the following format of the request body:
 
 Covers:
 
-* `req~insert-row~1`
+* `req~support-json-request-and-response-format~1`
 
-Needs: impl, itest
+Needs: impl, utest, itest
 
 #### Insert Row Response Body
 `dsn~insert-row-response-body~1`
@@ -257,7 +281,7 @@ The endpoint has the following JSON response body format:
 
 Covers:
 
-* `req~insert-row~1`
+* `req~support-json-request-and-response-format~1`
 
 Needs: impl, itest
 
@@ -306,9 +330,9 @@ ERA accepts the following format of the request body:
 
 Covers:
 
-* `req~delete-rows~1`
+* `req~support-json-request-and-response-format~1`
 
-Needs: impl, itest
+Needs: impl, utest, itest
 
 #### Delete Rows Response Body
 `dsn~delete-rows-response-body~1`
@@ -325,7 +349,7 @@ The endpoint has the following JSON response body format:
 
 Covers:
 
-* `req~delete-rows~1`
+* `req~support-json-request-and-response-format~1`
 
 Needs: impl, itest
 
@@ -366,7 +390,7 @@ Covers:
 
 * `req~get-rows~1`
 
-Needs: impl, itest
+Needs: impl, utest, itest
 
 #### Get Rows Response Body
 `dsn~get-rows-response-body~1`
@@ -408,9 +432,9 @@ The endpoint has the following JSON response body format:
 
 Covers:
 
-* `req~get-rows~1`
+* `req~support-json-request-and-response-format~1`
 
-Needs: impl, itest
+Needs: impl, utest, itest
 
 ### Update Rows
 
@@ -468,9 +492,9 @@ ERA accepts the following format of the request body:
 
 Covers:
 
-* `req~update-rows~1`
+* `req~support-json-request-and-response-format~1`
 
-Needs: impl, itest
+Needs: impl, utest, itest
 
 #### Update Rows Response Body
 `dsn~update-rows-response-body~1`
@@ -487,7 +511,7 @@ The endpoint has the following JSON response body format:
 
 Covers:
 
-* `req~update-rows~1`
+* `req~support-json-request-and-response-format~1`
 
 Needs: impl, itest
 
@@ -527,7 +551,7 @@ ERA accepts the following format of the request body:
 ```
 Covers:
 
-* `req~execute-statement~1`
+* `req~support-json-request-and-response-format~1`
 
 Needs: impl, itest
 
@@ -546,7 +570,7 @@ The endpoint has the following JSON response body format:
 
 Covers:
 
-* `req~execute-statement~1`
+* `req~support-json-request-and-response-format~1`
 
 Needs: impl, itest
 

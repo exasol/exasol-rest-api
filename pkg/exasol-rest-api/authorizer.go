@@ -18,6 +18,8 @@ type TokenAuthorizer struct {
 }
 
 // Authorize validates a user request.
+// [impl->dsn~execute-query-headers~1]
+// [impl->dsn~get-tables-headers~1]
 func (auth *TokenAuthorizer) Authorize(request *http.Request) error {
 	tokens := request.Header["Authorization"]
 

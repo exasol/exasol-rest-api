@@ -17,6 +17,8 @@ const EncryptionKey string = "EXASOL_ENCRYPTION"
 const UseTLSKey string = "EXASOL_TLS"
 
 // ApplicationProperties for Exasol REST API service.
+// [impl->dsn~service-account~1]
+// [impl->dsn~service-credentials~1]
 type ApplicationProperties struct {
 	APITokens                 []string `yaml:"API_TOKENS"`
 	ApplicationServer         string   `yaml:"SERVER_ADDRESS"`

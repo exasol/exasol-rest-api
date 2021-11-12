@@ -10,6 +10,8 @@ type RowsRequestSuite struct {
 	suite.Suite
 }
 
+// [utest->dsn~delete-rows-request-body~1]
+// [utest->dsn~get-rows-request-parameters~1]
 func TestRowsRequestSuite(t *testing.T) {
 	suite.Run(t, new(RowsRequestSuite))
 }

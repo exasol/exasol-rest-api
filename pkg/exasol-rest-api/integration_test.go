@@ -64,6 +64,8 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 	return router
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestQuery() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -75,6 +77,8 @@ func (suite *IntegrationTestSuite) TestQuery() {
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -86,6 +90,8 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -97,6 +103,8 @@ func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege() {
 	username := "user_without_session_privilege"
 	password := "secret"
@@ -120,6 +128,8 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
 		APITokens:                 suite.defaultAuthTokens,
@@ -139,6 +149,8 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
 		APITokens:                 suite.defaultAuthTokens,
@@ -158,6 +170,8 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
 		APITokens:                 suite.defaultAuthTokens,
@@ -177,6 +191,8 @@ func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -188,6 +204,8 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-endpoint~1]
+// [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -199,6 +217,8 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~get-tables-endpoint~1]
+// [itest->dsn~get-tables-response-body~1]
 func (suite *IntegrationTestSuite) TestGetTables() {
 	username := "GET_TABLES_USER"
 	password := "secret"
@@ -228,6 +248,8 @@ func (suite *IntegrationTestSuite) TestGetTables() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
 
+// [itest->dsn~get-tables-endpoint~1]
+// [itest->dsn~get-tables-response-body~1]
 func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 	username := "USER_WITHOUT_OWNED_SCHEMA"
 	password := "secret"
@@ -251,6 +273,8 @@ func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
 
+// [itest->dsn~get-tables-endpoint~1]
+// [itest->dsn~get-tables-response-body~1]
 func (suite *IntegrationTestSuite) TestGetTablesUnauthorizedAccess() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -262,6 +286,8 @@ func (suite *IntegrationTestSuite) TestGetTablesUnauthorizedAccess() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
 
+// [itest->dsn~get-tables-endpoint~1]
+// [itest->dsn~get-tables-response-body~1]
 func (suite *IntegrationTestSuite) TestGetTablesWithWrongAPIVersion() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
 		APITokens:                 suite.defaultAuthTokens,
@@ -280,6 +306,9 @@ func (suite *IntegrationTestSuite) TestGetTablesWithWrongAPIVersion() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
 
+// [itest->dsn~insert-row-endpoint~1]
+// [itest->dsn~insert-row-request-body~1]
+// [itest->dsn~insert-row-response-body~1]
 func (suite *IntegrationTestSuite) TestInsertRow() {
 	username := "INSERT_ROW_USER"
 	password := "secret"
@@ -335,6 +364,9 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	suite.assertInsertRowValuesInTable(schemaName, tableName)
 }
 
+// [itest->dsn~insert-row-endpoint~1]
+// [itest->dsn~insert-row-request-body~1]
+// [itest->dsn~insert-row-response-body~1]
 func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
@@ -364,6 +396,9 @@ func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName strin
 	suite.Equal("POINT (2 5)", c14)
 }
 
+// [itest->dsn~insert-row-endpoint~1]
+// [itest->dsn~insert-row-request-body~1]
+// [itest->dsn~insert-row-response-body~1]
 func (suite *IntegrationTestSuite) TestInsertRowAuthorizationError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -384,6 +419,9 @@ func (suite *IntegrationTestSuite) TestInsertRowAuthorizationError() {
 	suite.assertResponseBodyEquals(&data, suite.sendInsertRow(&data, body))
 }
 
+// [itest->dsn~insert-row-endpoint~1]
+// [itest->dsn~insert-row-request-body~1]
+// [itest->dsn~insert-row-response-body~1]
 func (suite *IntegrationTestSuite) TestInsertRowMissingRequestParameter() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -403,6 +441,9 @@ func (suite *IntegrationTestSuite) TestInsertRowMissingRequestParameter() {
 	suite.assertResponseBodyEquals(&data, suite.sendInsertRow(&data, body))
 }
 
+// [itest->dsn~delete-rows-endpoint~1]
+// [itest->dsn~delete-rows-request-body~1]
+// [itest->dsn~delete-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestDeleteRow() {
 	username := "DELETE_ROWS_USER"
 	password := "secret"
@@ -449,6 +490,9 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 	suite.assertTableHasOnlyOneRow(schemaName, tableName)
 }
 
+// [itest->dsn~delete-rows-endpoint~1]
+// [itest->dsn~delete-rows-request-body~1]
+// [itest->dsn~delete-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -472,6 +516,9 @@ func (suite *IntegrationTestSuite) TestDeleteRowsAuthorizationError() {
 	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
 }
 
+// [itest->dsn~delete-rows-endpoint~1]
+// [itest->dsn~delete-rows-request-body~1]
+// [itest->dsn~delete-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -486,6 +533,9 @@ func (suite *IntegrationTestSuite) TestDeleteRowsMissingRequestParameter() {
 	suite.assertResponseBodyEquals(&data, suite.sendDeleteRows(&data, body))
 }
 
+// [itest->dsn~update-rows-endpoint~1]
+// [itest->dsn~update-rows-request-body~1]
+// [itest->dsn~update-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestUpdateRows() {
 	username := "UPDATE_ROWS_USER"
 	password := "secret"
@@ -570,6 +620,9 @@ func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName string,
 	suite.False(rows.Next())
 }
 
+// [itest->dsn~update-rows-endpoint~1]
+// [itest->dsn~update-rows-request-body~1]
+// [itest->dsn~update-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestUpdateRowsAuthorizationError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -596,6 +649,9 @@ func (suite *IntegrationTestSuite) TestUpdateRowsAuthorizationError() {
 	suite.assertResponseBodyEquals(&data, suite.sendUpdateRows(&data, body))
 }
 
+// [itest->dsn~update-rows-endpoint~1]
+// [itest->dsn~update-rows-request-body~1]
+// [itest->dsn~update-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -620,6 +676,9 @@ func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 	suite.assertResponseBodyEquals(&data, suite.sendUpdateRows(&data, body))
 }
 
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRows() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -631,6 +690,9 @@ func (suite *IntegrationTestSuite) TestGetRows() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -642,6 +704,9 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -653,6 +718,9 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -664,6 +732,9 @@ func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -675,6 +746,9 @@ func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -686,6 +760,9 @@ func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
+// [itest->dsn~execute-statement-endpoint~1]
+// [itest->dsn~execute-statement-request-body~1]
+// [itest->dsn~execute-statement-response-body~1]
 func (suite *IntegrationTestSuite) TestExecuteStatement() {
 	username := "EXECUTE_STATEMENT_USER"
 	password := "secret"
@@ -719,6 +796,9 @@ func (suite *IntegrationTestSuite) TestExecuteStatement() {
 	suite.assertResponseBodyEquals(&data, suite.sendExecuteStatement(&data, body))
 }
 
+// [itest->dsn~execute-statement-endpoint~1]
+// [itest->dsn~execute-statement-request-body~1]
+// [itest->dsn~execute-statement-response-body~1]
 func (suite *IntegrationTestSuite) TestExecuteStatementAuthorizationError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -735,6 +815,9 @@ func (suite *IntegrationTestSuite) TestExecuteStatementAuthorizationError() {
 	suite.assertResponseBodyEquals(&data, suite.sendExecuteStatement(&data, body))
 }
 
+// [itest->dsn~execute-statement-endpoint~1]
+// [itest->dsn~execute-statement-request-body~1]
+// [itest->dsn~execute-statement-response-body~1]
 func (suite *IntegrationTestSuite) TestExecuteStatementWithSyntaxError() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -758,6 +841,7 @@ type testData struct {
 	server         exasol_rest_api.Application
 }
 
+// [itest->dsn~execute-statement-headers~1]
 func (suite *IntegrationTestSuite) sendExecuteStatement(data *testData, body []byte) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/statement", bytes.NewReader(body))
 	req.Header.Set("Authorization", data.authToken)
@@ -765,6 +849,7 @@ func (suite *IntegrationTestSuite) sendExecuteStatement(data *testData, body []b
 	return suite.sendHttpRequest(data, req)
 }
 
+// [itest->dsn~get-rows-headers~1]
 func (suite *IntegrationTestSuite) sendGetRows(data *testData) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/rows?"+data.query, nil)
 	onError(err)
@@ -772,6 +857,7 @@ func (suite *IntegrationTestSuite) sendGetRows(data *testData) *httptest.Respons
 	return suite.sendHttpRequest(data, req)
 }
 
+// [itest->dsn~update-rows-headers~1]
 func (suite *IntegrationTestSuite) sendUpdateRows(data *testData, body []byte) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodPut, "/api/v1/rows", bytes.NewReader(body))
 	req.Header.Set("Authorization", data.authToken)
@@ -779,6 +865,7 @@ func (suite *IntegrationTestSuite) sendUpdateRows(data *testData, body []byte) *
 	return suite.sendHttpRequest(data, req)
 }
 
+// [itest->dsn~delete-rows-headers~1]
 func (suite *IntegrationTestSuite) sendDeleteRows(data *testData, body []byte) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodDelete, "/api/v1/rows", bytes.NewReader(body))
 	req.Header.Set("Authorization", data.authToken)
@@ -786,6 +873,7 @@ func (suite *IntegrationTestSuite) sendDeleteRows(data *testData, body []byte) *
 	return suite.sendHttpRequest(data, req)
 }
 
+// [itest->dsn~insert-row-headers~1]
 func (suite *IntegrationTestSuite) sendInsertRow(data *testData, body []byte) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodPost, "/api/v1/row", bytes.NewReader(body))
 	req.Header.Set("Authorization", data.authToken)
@@ -793,6 +881,7 @@ func (suite *IntegrationTestSuite) sendInsertRow(data *testData, body []byte) *h
 	return suite.sendHttpRequest(data, req)
 }
 
+// [itest->dsn~get-tables-headers~1]
 func (suite *IntegrationTestSuite) sendGetTables(data *testData) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/tables", nil)
 	req.Header.Set("Authorization", data.authToken)
@@ -800,6 +889,8 @@ func (suite *IntegrationTestSuite) sendGetTables(data *testData) *httptest.Respo
 	return suite.sendHttpRequest(data, req)
 }
 
+// [itest->dsn~execute-query-request-parameters~1]
+// [itest->dsn~execute-query-headers~1]
 func (suite *IntegrationTestSuite) sendQueryRequest(data *testData) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/"+data.query, nil)
 	req.Header.Set("Authorization", data.authToken)

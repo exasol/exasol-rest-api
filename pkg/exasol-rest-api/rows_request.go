@@ -5,6 +5,8 @@ import (
 )
 
 // RowsRequest maps DeleteRows and GetRows requests to a struct.
+// [impl->dsn~delete-rows-request-body~1]
+// [impl->dsn~get-rows-request-parameters~1]
 type RowsRequest struct {
 	SchemaName     string    `json:"schemaName"`
 	TableName      string    `json:"tableName"`

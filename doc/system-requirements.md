@@ -42,13 +42,24 @@ The following list gives you an overview of terms and abbreviations commonly use
 Features are the highest level requirements in this document that describe the main functionality of ERA.
 
 ### Exasol REST Endpoints
-`feat~row-rest-endpoints~1`
+`feat~exasol-rest-endpoints~1`
 
 ERA provides REST API endpoints that allow API Users to interact with the Exasol database. 
 
 Needs: req
 
 ## Functional Requirements
+
+### Communication with Exasol
+`req~communication-with-exasol~1`
+
+ERA allows users communicate with Exasol database: send requests and receive responses.
+
+Covers:
+
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
 
 ### Execute Query
 `req~execute-query~1`
@@ -61,7 +72,7 @@ Query is a request to access data from a database. If we support queries - we co
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn
 
@@ -72,7 +83,7 @@ API users can get a list of table names by a schema name.
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn
 
@@ -83,7 +94,7 @@ API users can insert a single row into a table.
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn
 
@@ -94,7 +105,7 @@ API users can delete rows from a table based on a condition.
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn
 
@@ -105,7 +116,7 @@ API users can get rows from a table based on a condition.
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn
 
@@ -116,7 +127,7 @@ API users can update rows from a table based on a condition.
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn
 
@@ -127,7 +138,9 @@ API users can execute statements via REST API.
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
 
 ### Support JSON Request and Response Format
 `req~support-json-request-and-response-format~1`
@@ -140,6 +153,6 @@ JSON is the most common format for sending and receiving data through a REST API
 
 Covers:
 
-* [feat~row-rest-endpoints~1](#exasol-rest-endpoints)
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
 
 Needs: dsn

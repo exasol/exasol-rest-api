@@ -11,6 +11,9 @@ type ResponseConvertingSuite struct {
 	suite.Suite
 }
 
+// [utest->dsn~get-tables-response-body~1]
+// [utest->dsn~get-rows-response-body~1]
+// [utest->dsn~execute-query-response-body~1]
 func TestResponseConvertingSuite(t *testing.T) {
 	suite.Run(t, new(ResponseConvertingSuite))
 }

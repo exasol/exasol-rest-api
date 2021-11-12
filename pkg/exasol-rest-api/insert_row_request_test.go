@@ -10,6 +10,7 @@ type InsertRowRequestSuite struct {
 	suite.Suite
 }
 
+// [utest->dsn~insert-row-request-body~1]
 func TestInsertRowRequestSuite(t *testing.T) {
 	suite.Run(t, new(InsertRowRequestSuite))
 }

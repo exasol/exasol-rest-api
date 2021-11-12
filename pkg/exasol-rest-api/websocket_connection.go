@@ -23,6 +23,7 @@ type websocketConnection struct {
 	websocket      *websocket.Conn
 }
 
+// [impl->dsn~communicate-with-database~1]
 func (connection *websocketConnection) connect() error {
 	uri := fmt.Sprintf("%s:%d", connection.connProperties.ExasolHost, connection.connProperties.ExasolPort)
 	exaURL := url.URL{

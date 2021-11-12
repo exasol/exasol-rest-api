@@ -7,6 +7,7 @@ import (
 )
 
 // InsertRowRequest maps an InsertRow JSON request to a struct.
+// [impl->dsn~insert-row-request-body~1]
 type InsertRowRequest struct {
 	SchemaName string  `json:"schemaName"`
 	TableName  string  `json:"tableName"`

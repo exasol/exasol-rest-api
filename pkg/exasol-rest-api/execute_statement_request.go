@@ -3,6 +3,7 @@ package exasol_rest_api
 import error_reporting_go "github.com/exasol/error-reporting-go"
 
 // ExecuteStatementRequest maps an ExecuteStatement JSON request to a struct.
+// [impl->dsn~execute-statement-request-body~1]
 type ExecuteStatementRequest struct {
 	Statement string `json:"sqlStatement"`
 }
