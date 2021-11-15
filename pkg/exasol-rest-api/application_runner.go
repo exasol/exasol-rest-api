@@ -2,7 +2,6 @@ package exasol_rest_api
 
 import (
 	"github.com/exasol/error-reporting-go"
-	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -23,7 +22,7 @@ func Run() {
 	swaggerURL := ginSwagger.URL("/swagger/doc.json")
 	AddEndpoints(router, application)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, swaggerURL))
-	err := autotls.Run(router, applicationProperties.ApplicationServer)
+	err := router.Run(applicationProperties.ApplicationServer)
 
 	if err != nil {
 		panic(error_reporting_go.ExaError("E-ERA-1").Message("error starting API server: {{error}}").
