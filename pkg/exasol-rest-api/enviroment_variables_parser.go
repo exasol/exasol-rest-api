@@ -80,7 +80,7 @@ func logEnvironmentVariableParsingError(variableName string, err error) {
 func (applicationProperties *ApplicationProperties) setEncryption() {
 	exasolEncryption := os.Getenv(EncryptionKey)
 	if exasolEncryption != "" {
-		encryption, err := strconv.ParseBool(exasolEncryption)
+		encryption, err := strconv.Atoi(exasolEncryption)
 		if err != nil {
 			logEnvironmentVariableParsingError(EncryptionKey, err)
 		} else {
@@ -92,7 +92,7 @@ func (applicationProperties *ApplicationProperties) setEncryption() {
 func (applicationProperties *ApplicationProperties) setTLS() {
 	exasolTLS := os.Getenv(UseTLSKey)
 	if exasolTLS != "" {
-		tls, err := strconv.ParseBool(exasolTLS)
+		tls, err := strconv.Atoi(exasolTLS)
 		if err != nil {
 			logEnvironmentVariableParsingError(UseTLSKey, err)
 		} else {

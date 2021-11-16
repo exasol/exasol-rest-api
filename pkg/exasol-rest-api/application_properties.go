@@ -27,8 +27,8 @@ type ApplicationProperties struct {
 	ExasolHost                string   `yaml:"EXASOL_HOST"`
 	ExasolPort                int      `yaml:"EXASOL_PORT"`
 	ExasolWebsocketAPIVersion int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
-	Encryption                bool     `yaml:"EXASOL_ENCRYPTION"`
-	UseTLS                    bool     `yaml:"EXASOL_TLS"`
+	Encryption                int      `yaml:"EXASOL_ENCRYPTION"`
+	UseTLS                    int      `yaml:"EXASOL_TLS"`
 }
 
 // GetApplicationProperties creates an application properties.
@@ -76,6 +76,12 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 	if applicationProperties.ExasolWebsocketAPIVersion == 0 {
 		applicationProperties.ExasolWebsocketAPIVersion = defaultProperties.ExasolWebsocketAPIVersion
 	}
+	if applicationProperties.Encryption != -1 && applicationProperties.Encryption != 1 {
+		applicationProperties.Encryption = defaultProperties.Encryption
+	}
+	if applicationProperties.UseTLS != -1 && applicationProperties.UseTLS != 1 {
+		applicationProperties.UseTLS = defaultProperties.UseTLS
+	}
 }
 
 func (applicationProperties *ApplicationProperties) validate() error {
@@ -102,5 +108,7 @@ func getDefaultProperties() *ApplicationProperties {
 		ExasolHost:                "localhost",
 		ExasolPort:                8563,
 		ExasolWebsocketAPIVersion: 2,
+		Encryption:                1,
+		UseTLS:                    1,
 	}
 }

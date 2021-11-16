@@ -29,8 +29,7 @@ type Application struct {
 // [impl->dsn~execute-query-endpoint~1]
 // [impl->dsn~execute-query-request-parameters~1]
 func (application *Application) Query(context *gin.Context) {
-	context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request,
-		context.Param("query")))
+	context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Param("query")))
 }
 
 // @Summary ExecuteStatement on the Exasol database.
@@ -52,7 +51,7 @@ func (application *Application) ExecuteStatement(context *gin.Context) {
 	} else if validationError != nil {
 		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
 	} else {
-		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, request.GetStatement()))
+		context.JSON(application.handleRequest(ConvertToBaseResponse, request.GetStatement()))
 	}
 }
 
@@ -67,7 +66,7 @@ func (application *Application) ExecuteStatement(context *gin.Context) {
 // [impl->dsn~get-tables-endpoint~1]
 func (application *Application) GetTables(context *gin.Context) {
 	statement := "SELECT TABLE_SCHEMA, TABLE_NAME FROM EXA_ALL_TABLES"
-	context.JSON(application.handleRequest(ConvertToGetTablesResponse, context.Request, statement))
+	context.JSON(application.handleRequest(ConvertToGetTablesResponse, statement))
 }
 
 // @Summary InsertRow to a table.
@@ -95,9 +94,10 @@ func (application *Application) InsertRow(context *gin.Context) {
 		columnNames, values, err := request.GetRow()
 		if err != nil {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		} else {
+			statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
+			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
 		}
-		statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
-		context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
 	}
 }
 
@@ -128,7 +128,7 @@ func (application *Application) DeleteRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 		} else {
 			statement := "DELETE FROM " + schemaName + "." + tableName + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
+			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
 		}
 	}
 }
@@ -163,7 +163,7 @@ func (application *Application) UpdateRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "UPDATE " + schemaName + "." + tableName + " SET " + valuesToUpdate + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToBaseResponse, context.Request, statement))
+			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
 		}
 	}
 }
@@ -205,7 +205,7 @@ func (application *Application) GetRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToGetRowsResponse, context.Request, statement))
+			context.JSON(application.handleRequest(ConvertToGetRowsResponse, statement))
 		}
 	}
 }
@@ -232,17 +232,7 @@ func buildGetRowsRequest(context *gin.Context, value interface{}) RowsRequest {
 // [impl->dsn~update-rows-headers~1]
 // [impl->dsn~execute-statement-headers~1]
 func (application *Application) handleRequest(convert func(toConvert []byte) (interface{}, error),
-	request *http.Request, statement string) (int, interface{}) {
-	err := application.Authorizer.Authorize(request)
-	if err != nil {
-		return http.StatusForbidden, APIBaseResponse{Status: "error", Exception: err.Error()}
-	} else {
-		return application.SendRequestToWebSocketsAPI(statement, convert)
-	}
-}
-
-func (application *Application) SendRequestToWebSocketsAPI(statement string,
-	convert func(toConvert []byte) (interface{}, error)) (int, interface{}) {
+	statement string) (int, interface{}) {
 	response, err := application.queryExasol(statement)
 	if err != nil {
 		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
