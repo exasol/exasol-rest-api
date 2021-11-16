@@ -5,8 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/ulule/limiter/v3"
+	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
+	"github.com/ulule/limiter/v3/drivers/store/memory"
 	_ "main/doc/swagger" // importing Swagger-generated documentation
 	"net/http"
+	"time"
 )
 
 // Run starts the REST API service.
@@ -40,12 +44,16 @@ func (application *Application) Auth(context *gin.Context) {
 
 // AddEndpoints adds endpoints to the REST API.
 func AddEndpoints(router *gin.Engine, application Application) {
-	router.Use(application.Auth)
-	router.GET("/api/v1/query/:query", application.Query)
-	router.GET("/api/v1/tables", application.GetTables)
-	router.GET("/api/v1/rows", application.GetRows)
-	router.POST("/api/v1/row", application.InsertRow)
-	router.DELETE("/api/v1/rows", application.DeleteRows)
-	router.PUT("/api/v1/rows", application.UpdateRows)
-	router.POST("/api/v1/statement", application.ExecuteStatement)
+	rate := limiter.Rate{Period: 1 * time.Minute, Limit: 30}
+	rateLimiterMiddleware := mgin.NewMiddleware(limiter.New(memory.NewStore(), rate))
+
+	router.ForwardedByClientIP = true
+	router.Use(rateLimiterMiddleware)
+	router.GET("/api/v1/query/:query", application.Auth, application.Query)
+	router.GET("/api/v1/tables", application.Auth, application.GetTables)
+	router.GET("/api/v1/rows", application.Auth, application.GetRows)
+	router.POST("/api/v1/row", application.Auth, application.InsertRow)
+	router.DELETE("/api/v1/rows", application.Auth, application.DeleteRows)
+	router.PUT("/api/v1/rows", application.Auth, application.UpdateRows)
+	router.POST("/api/v1/statement", application.Auth, application.ExecuteStatement)
 }

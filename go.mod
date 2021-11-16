@@ -16,6 +16,7 @@ require (
 	github.com/swaggo/swag v1.7.3
 	github.com/testcontainers/testcontainers-go v0.11.1
 	github.com/tidwall/sjson v1.2.3
+	github.com/ulule/limiter/v3 v3.8.0
 	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e // indirect
 	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect
 	golang.org/x/text v0.3.7 // indirect

@@ -833,6 +833,40 @@ func (suite *IntegrationTestSuite) TestExecuteStatementWithSyntaxError() {
 	suite.assertResponseBodyContains(&data, suite.sendExecuteStatement(&data, body))
 }
 
+func (suite *IntegrationTestSuite) TestRateLimiter() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "SELECT * FROM TEST_SCHEMA_1.TEST_TABLE",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+	}
+	router := suite.startServer(data.server)
+
+	for i := 0; i < 30; i++ {
+		suite.assertResponseBodyEquals(&data, suite.sendQueryRequestWithReusableServer(&data, router))
+	}
+
+	throttledData := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "SELECT * FROM TEST_SCHEMA_1.TEST_TABLE",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusTooManyRequests,
+		expectedBody:   "Limit exceeded",
+	}
+	suite.assertResponseBodyEquals(&throttledData, suite.sendQueryRequestWithReusableServer(&throttledData, router))
+}
+
+func (suite *IntegrationTestSuite) sendQueryRequestWithReusableServer(data *testData,
+	router *gin.Engine) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/query/"+data.query, nil)
+	req.Header.Set("Authorization", data.authToken)
+	onError(err)
+	responseRecorder := httptest.NewRecorder()
+	router.ServeHTTP(responseRecorder, req)
+	return responseRecorder
+}
+
 type testData struct {
 	query          string
 	authToken      string
