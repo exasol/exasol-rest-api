@@ -46,6 +46,7 @@ func (suite *DockerImageTestSuite) TestQuery() {
 		exasol_rest_api.ExasolUserKey:     suite.defaultExasolUsername,
 		exasol_rest_api.ExasolPasswordKey: suite.defaultExasolPassword,
 		exasol_rest_api.ExasolHostKey:     suite.exasolHost,
+		exasol_rest_api.UseTLSKey:         "-1",
 	}
 	apiContainer := runRestAPIContainer(properties)
 	ip, err := apiContainer.ContainerIP(context.Background())
