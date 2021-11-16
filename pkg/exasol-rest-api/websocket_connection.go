@@ -31,7 +31,7 @@ func (connection *websocketConnection) connect() error {
 		Host:   uri,
 	}
 	dialer := *websocket.DefaultDialer
-	dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: !connection.connProperties.UseTLS}
+	dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: getInsecureConnection(connection)}
 
 	websocketConnection, _, err := dialer.DialContext(context.Background(), exaURL.String(), nil)
 	if err == nil {
@@ -45,6 +45,10 @@ func (connection *websocketConnection) connect() error {
 	}
 }
 
+func getInsecureConnection(connection *websocketConnection) bool {
+	return connection.connProperties.UseTLS != 1
+}
+
 func (connection *websocketConnection) close() {
 	err := connection.send(&command{Command: "disconnect"}, nil)
 	connection.websocket.Close()
@@ -55,7 +59,7 @@ func (connection *websocketConnection) close() {
 }
 
 func (connection *websocketConnection) getURIScheme() string {
-	if connection.connProperties.Encryption {
+	if connection.connProperties.Encryption == 1 {
 		return "wss"
 	} else {
 		return "ws"

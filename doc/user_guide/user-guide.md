@@ -58,8 +58,8 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 | EXASOL_HOST                  | "localhost"     | Exasol host.                                         |
 | EXASOL_PORT                  | 8563            | Exasol port.                                         |
 | EXASOL_WEBSOCKET_API_VERSION | 2               | Version of Exasol Websocket API.                     |
-| EXASOL_ENCRYPTION            | false           | Automatic [Exasol connection encryption][1]. You can enable or disable it. |
-| EXASOL_TLS                   | false           | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side).  |
+| EXASOL_ENCRYPTION            | 1               | Automatic [Exasol connection encryption][1]. Use 1 to enable it and -1 to disable. |
+| EXASOL_TLS                   | 1               | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side). Use 1 to enable it and -1 to disable. |
 
 ### Authorization
 
