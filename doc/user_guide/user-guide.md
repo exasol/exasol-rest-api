@@ -97,3 +97,14 @@ You can also access the Swagger documentation. Here is an example with the defau
 ### Rate Limitation
 
 The service allows 30 requests per minute for all API endpoints. The limitation is based on the sender's IP address.
+
+### Using Secured Connection (HTTPS)
+
+We strongly recommend setting up an HTTPS when deploying the API service.
+A recommended way is setting up a publicly accessible proxy server that [terminates SSL](https://en.wikipedia.org/wiki/TLS_termination_proxy) and forwards the request to the API service.
+
+Here are a few examples of services you could use:
+
+* For a local setup: [NGINX](https://docs.nginx.com/nginx/admin-guide/security-controls/terminating-ssl-http/)
+* For AWS setup: [Application Load Balancer](https://aws.amazon.com/elasticloadbalancing/)
+* For Azure setup: [Azure Front Door](https://docs.microsoft.com/en-us/azure/frontdoor/front-door-overview)
