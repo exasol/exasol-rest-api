@@ -18,6 +18,7 @@ Code name: Initial implementation
 ## Refactoring
 
 * #25: Added requirements coverage.
+* #39: Allowed getRows without filter.
 
 ## Documentation
 

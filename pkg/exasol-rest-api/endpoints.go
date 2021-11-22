@@ -174,10 +174,10 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Security ApiKeyAuth
 // @Param schemaName query string true "Exasol schema name"
 // @Param tableName query string true "Exasol table name"
-// @Param columnName query string true "Exasol column name for WHERE clause"
-// @Param comparisonPredicate query string true "Comparison predicate for WHERE clause"
-// @Param value query string true "Value of the specified Exasol column"
-// @Param valueType query string true "Type of the value: string, bool, int or float"
+// @Param columnName query string false "Exasol column name for WHERE clause"
+// @Param comparisonPredicate query false true "Comparison predicate for WHERE clause"
+// @Param value query string false "Value of the specified Exasol column"
+// @Param valueType query string false "Type of the value: string, bool, int or float"
 // @Success 200 {string} status and response
 // @Failure 400 {object} APIBaseResponse
 // @Failure 403 {object} APIBaseResponse
@@ -185,42 +185,65 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // [impl->dsn~get-rows-endpoint~1]
 // [impl->dsn~get-rows-request-parameters~1]
 func (application *Application) GetRows(context *gin.Context) {
-	value, err := getValueByType(context.Query("valueType"), context.Query("value"))
-	request := buildGetRowsRequest(context, value)
-	validationError := request.Validate()
+	request, err := buildGetRowsRequest(context)
+	validationError := request.ValidateWithOptionalCondition()
 	if err != nil {
-		context.JSON(http.StatusBadRequest,
-			APIBaseResponse{Status: "error", Exception: error_reporting_go.ExaError("E-ERA-28").
-				Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
-				Parameter("value", context.Query("value")).
-				Parameter("value type", context.Query("valueType")).
-				Parameter("error", err.Error()).String()})
+		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 	} else if validationError != nil {
 		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
-		condition, conditionError := request.GetCondition()
-		if conditionError != nil {
-			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
-		} else {
-			statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
+		if !request.HasWhereClause() {
+			statement := "SELECT * FROM " + schemaName + "." + tableName
 			context.JSON(application.handleRequest(ConvertToGetRowsResponse, statement))
+		} else {
+			condition, conditionError := request.GetCondition()
+			if conditionError != nil {
+				context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
+			} else {
+				statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
+				context.JSON(application.handleRequest(ConvertToGetRowsResponse, statement))
+			}
 		}
 	}
 }
 
-func buildGetRowsRequest(context *gin.Context, value interface{}) RowsRequest {
-	return RowsRequest{
-		SchemaName: context.Query("schemaName"),
-		TableName:  context.Query("tableName"),
-		WhereCondition: Condition{
-			CellValue: Value{
-				Value:      value,
-				ColumnName: context.Query("columnName"),
+func buildGetRowsRequest(context *gin.Context) (RowsRequest, error) {
+	value, err := getRenderedValue(context)
+	if err != nil {
+		return RowsRequest{}, err
+	} else {
+		return RowsRequest{
+			SchemaName: context.Query("schemaName"),
+			TableName:  context.Query("tableName"),
+			WhereCondition: Condition{
+				CellValue: Value{
+					Value:      value,
+					ColumnName: context.Query("columnName"),
+				},
+				ComparisonPredicate: context.Query("comparisonPredicate"),
 			},
-			ComparisonPredicate: context.Query("comparisonPredicate"),
-		},
+		}, nil
+	}
+}
+
+func getRenderedValue(context *gin.Context) (interface{}, error) {
+	valueType := context.Query("valueType")
+	value := context.Query("value")
+	if valueType != "" && value != "" {
+		whereConditionValue, err := getValueByType(valueType, value)
+		if err != nil {
+			return nil, error_reporting_go.ExaError("E-ERA-28").
+				Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
+				Parameter("value", context.Query("value")).
+				Parameter("value type", context.Query("valueType")).
+				Parameter("error", err.Error())
+		} else {
+			return whereConditionValue, nil
+		}
+	} else {
+		return "", nil
 	}
 }
 
