@@ -72,6 +72,7 @@ func (connection *websocketConnection) executeQuery(query string) ([]byte, error
 		SQLText: query,
 		Attributes: attributes{
 			ResultSetMaxRows: 1000,
+			Autocommit:       true,
 		},
 	}
 

@@ -10,7 +10,8 @@ type loginCommand struct {
 }
 
 type attributes struct {
-	ResultSetMaxRows int `json:"resultSetMaxRows,omitempty"`
+	Autocommit       bool `json:"autocommit,omitempty"`
+	ResultSetMaxRows int  `json:"resultSetMaxRows,omitempty"`
 }
 
 type authCommand struct {

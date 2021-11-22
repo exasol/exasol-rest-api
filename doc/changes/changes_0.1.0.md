@@ -13,6 +13,7 @@ Code name: Initial implementation
 ## Bug fixes
 
 * #14: Upgraded exasol-go-driver to support Exasol 7.1.0 and later.
+* #37: Fixed the problem with database commits for Exasol 7.0.* and lower.
 
 ## Refactoring
 
