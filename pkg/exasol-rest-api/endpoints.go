@@ -210,7 +210,27 @@ func (application *Application) GetRows(context *gin.Context) {
 }
 
 func buildGetRowsRequest(context *gin.Context) (RowsRequest, error) {
-	value, err := getRenderedValue(context)
+	valueType := context.Query("valueType")
+	value := context.Query("value")
+	columnName := context.Query("columnName")
+	comparisonPredicate := context.Query("comparisonPredicate")
+
+	if valueType == "" && value == "" && columnName == "" && comparisonPredicate == "" {
+		return RowsRequest{
+			SchemaName: context.Query("schemaName"),
+			TableName:  context.Query("tableName"),
+		}, nil
+	} else if valueType != "" && value != "" && columnName != "" {
+		return createRowsRequestWithCondition(context, valueType, value, columnName, comparisonPredicate)
+	} else {
+		return RowsRequest{}, error_reporting_go.ExaError("E-ERA-30").
+			Message("incomplete condition in the request.").
+			Mitigation("provide 'columnName', 'valueType' and 'value' for the condition or remove the condition")
+	}
+}
+
+func createRowsRequestWithCondition(context *gin.Context, valueType string, value string, columnName string, comparisonPredicate string) (RowsRequest, error) {
+	renderedValue, err := getRenderedValue(context, valueType, value)
 	if err != nil {
 		return RowsRequest{}, err
 	} else {
@@ -219,18 +239,16 @@ func buildGetRowsRequest(context *gin.Context) (RowsRequest, error) {
 			TableName:  context.Query("tableName"),
 			WhereCondition: Condition{
 				CellValue: Value{
-					Value:      value,
-					ColumnName: context.Query("columnName"),
+					Value:      renderedValue,
+					ColumnName: columnName,
 				},
-				ComparisonPredicate: context.Query("comparisonPredicate"),
+				ComparisonPredicate: comparisonPredicate,
 			},
 		}, nil
 	}
 }
 
-func getRenderedValue(context *gin.Context) (interface{}, error) {
-	valueType := context.Query("valueType")
-	value := context.Query("value")
+func getRenderedValue(context *gin.Context, valueType string, value string) (interface{}, error) {
 	if valueType != "" && value != "" {
 		whereConditionValue, err := getValueByType(valueType, value)
 		if err != nil {

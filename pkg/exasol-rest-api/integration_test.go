@@ -707,6 +707,48 @@ func (suite *IntegrationTestSuite) TestGetRowsWithoutPredicate() {
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
 // [itest->dsn~get-rows-response-body~1]
+func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutColumnName() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&value=15&valueType=int&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-30: incomplete condition in the request. provide 'columnName', 'valueType' and 'value' for the condition or remove the condition\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
+func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValue() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&valueType=int&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-30: incomplete condition in the request. provide 'columnName', 'valueType' and 'value' for the condition or remove the condition\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
+func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValueType() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=10",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusBadRequest,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-30: incomplete condition in the request. provide 'columnName', 'valueType' and 'value' for the condition or remove the condition\"}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~1]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
