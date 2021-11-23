@@ -175,7 +175,7 @@ func (application *Application) UpdateRows(context *gin.Context) {
 // @Param schemaName query string true "Exasol schema name"
 // @Param tableName query string true "Exasol table name"
 // @Param columnName query string false "Exasol column name for WHERE clause"
-// @Param comparisonPredicate query false true "Comparison predicate for WHERE clause"
+// @Param comparisonPredicate query string false "Comparison predicate for WHERE clause"
 // @Param value query string false "Value of the specified Exasol column"
 // @Param valueType query string false "Type of the value: string, bool, int or float"
 // @Success 200 {string} status and response
