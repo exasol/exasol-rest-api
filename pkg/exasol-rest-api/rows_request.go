@@ -31,9 +31,26 @@ func (request *RowsRequest) GetCondition() (string, error) {
 // Validate validates the request.
 func (request *RowsRequest) Validate() error {
 	if request.SchemaName == "" || request.TableName == "" || !request.WhereCondition.validate() {
-		return error_reporting_go.ExaError("E-ERA-19").
-			Message("request has some missing parameters.").
+		return createValidationError().
 			Mitigation("Please specify schema name, table name and condition: column name, value")
+
 	}
 	return nil
+}
+
+func createValidationError() *error_reporting_go.ErrorMessageBuilder {
+	return error_reporting_go.ExaError("E-ERA-19").Message("request has some missing parameters.")
+}
+
+// Validate validates the request when the condition is optional.
+func (request *RowsRequest) ValidateWithOptionalCondition() error {
+	if request.SchemaName == "" || request.TableName == "" {
+		return createValidationError().
+			Mitigation("Please specify schema name and table name")
+	}
+	return nil
+}
+
+func (request *RowsRequest) HasWhereClause() bool {
+	return request.WhereCondition.validate()
 }
