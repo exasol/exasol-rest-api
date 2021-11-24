@@ -52,6 +52,7 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 | Property                     |  Default        | Description                                          |
 | :--------------------------: | :-------------: | :--------------------------------------------------- |
 | API_TOKENS                   |                 | List of allowed API tokens for authorization.        |
+| API_AUTH                     |  1              | API Authorization. Use 1 to enable it and -1 to disable. |
 | SERVER_ADDRESS               |  "0.0.0.0:8080" | Address for the server to listen for new connection. |
 | EXASOL_USER                  |                 | Name of the Exasol service account.                  |
 | EXASOL_PASSWORD              |                 | Password of the Exasol service account.              |

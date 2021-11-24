@@ -1056,6 +1056,7 @@ func (suite *IntegrationTestSuite) createServerWithDefaultProperties() exasol_re
 		ExasolPort:                suite.exasolPort,
 		Encryption:                -1,
 		ExasolWebsocketAPIVersion: 2,
+		APIAuth:                   1,
 	}
 	return suite.runApiServer(properties)
 }

@@ -7,6 +7,7 @@ import (
 )
 
 const APITokensKey string = "API_TOKENS"
+const APIAuthKey string = "API_AUTH"
 const ApplicationServerKey string = "SERVER_ADDRESS"
 const ExasolUserKey string = "EXASOL_USER"
 const ExasolPasswordKey string = "EXASOL_PASSWORD"
@@ -21,6 +22,7 @@ const UseTLSKey string = "EXASOL_TLS"
 // [impl->dsn~service-credentials~1]
 type ApplicationProperties struct {
 	APITokens                 []string `yaml:"API_TOKENS"`
+	APIAuth                   int      `yaml:"API_AUTH"`
 	ApplicationServer         string   `yaml:"SERVER_ADDRESS"`
 	ExasolUser                string   `yaml:"EXASOL_USER"`
 	ExasolPassword            string   `yaml:"EXASOL_PASSWORD"`
@@ -82,6 +84,9 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 	if applicationProperties.UseTLS != -1 && applicationProperties.UseTLS != 1 {
 		applicationProperties.UseTLS = defaultProperties.UseTLS
 	}
+	if applicationProperties.APIAuth != -1 && applicationProperties.APIAuth != 1 {
+		applicationProperties.APIAuth = defaultProperties.APIAuth
+	}
 }
 
 func (applicationProperties *ApplicationProperties) validate() error {
@@ -110,5 +115,6 @@ func getDefaultProperties() *ApplicationProperties {
 		ExasolWebsocketAPIVersion: 2,
 		Encryption:                1,
 		UseTLS:                    1,
+		APIAuth:                   1,
 	}
 }

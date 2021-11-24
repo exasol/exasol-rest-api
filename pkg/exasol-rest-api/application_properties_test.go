@@ -29,6 +29,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 		ExasolPort:                1234,
 		Encryption:                1,
 		UseTLS:                    1,
+		APIAuth:                   1,
 		ExasolWebsocketAPIVersion: 3,
 	}
 	suite.setPathToPropertiesFileEnv(expected)
@@ -52,6 +53,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 		ExasolPort:                8563,
 		Encryption:                1,
 		UseTLS:                    1,
+		APIAuth:                   1,
 		ExasolWebsocketAPIVersion: 2,
 	}
 	suite.Equal(expected, actual)
@@ -121,6 +123,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 		ExasolPort:                1234,
 		Encryption:                1,
 		UseTLS:                    -1,
+		APIAuth:                   1,
 		ExasolWebsocketAPIVersion: 3,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
@@ -167,6 +170,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolPort:                1234,
 		Encryption:                -1,
 		UseTLS:                    -1,
+		APIAuth:                   1,
 		ExasolWebsocketAPIVersion: 3,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
@@ -201,6 +205,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolPort:                4321,
 		Encryption:                -1,
 		UseTLS:                    -1,
+		APIAuth:                   -1,
 		ExasolWebsocketAPIVersion: 2,
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
@@ -213,6 +218,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolPort:                4321,
 		Encryption:                -1,
 		UseTLS:                    1,
+		APIAuth:                   -1,
 		ExasolWebsocketAPIVersion: 2,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")

@@ -49,6 +49,14 @@ func AddEndpoints(router *gin.Engine, application Application) {
 
 	router.ForwardedByClientIP = true
 	router.Use(rateLimiterMiddleware)
+	if application.Properties.APIAuth == 1 {
+		addEndpointsWithAuth(router, application)
+	} else {
+		addEndpointsWithoutAuth(router, application)
+	}
+}
+
+func addEndpointsWithAuth(router *gin.Engine, application Application) {
 	router.GET("/api/v1/query/:query", application.Auth, application.Query)
 	router.GET("/api/v1/tables", application.Auth, application.GetTables)
 	router.GET("/api/v1/rows", application.Auth, application.GetRows)
@@ -56,4 +64,14 @@ func AddEndpoints(router *gin.Engine, application Application) {
 	router.DELETE("/api/v1/rows", application.Auth, application.DeleteRows)
 	router.PUT("/api/v1/rows", application.Auth, application.UpdateRows)
 	router.POST("/api/v1/statement", application.Auth, application.ExecuteStatement)
+}
+
+func addEndpointsWithoutAuth(router *gin.Engine, application Application) {
+	router.GET("/api/v1/query/:query", application.Query)
+	router.GET("/api/v1/tables", application.GetTables)
+	router.GET("/api/v1/rows", application.GetRows)
+	router.POST("/api/v1/row", application.InsertRow)
+	router.DELETE("/api/v1/rows", application.DeleteRows)
+	router.PUT("/api/v1/rows", application.UpdateRows)
+	router.POST("/api/v1/statement", application.ExecuteStatement)
 }

@@ -17,6 +17,7 @@ func (applicationProperties *ApplicationProperties) setValuesFromEnvironmentVari
 	applicationProperties.setEncryption()
 	applicationProperties.setTLS()
 	applicationProperties.setAPITokens()
+	applicationProperties.setAPIAuth()
 }
 
 func (applicationProperties *ApplicationProperties) setExasolUser() {
@@ -105,5 +106,17 @@ func (applicationProperties *ApplicationProperties) setAPITokens() {
 	apiTokens := os.Getenv(APITokensKey)
 	if apiTokens != "" {
 		applicationProperties.APITokens = strings.Split(apiTokens, ",")
+	}
+}
+
+func (applicationProperties *ApplicationProperties) setAPIAuth() {
+	apiAuth := os.Getenv(APIAuthKey)
+	if apiAuth != "" {
+		auth, err := strconv.Atoi(apiAuth)
+		if err != nil {
+			logEnvironmentVariableParsingError(APIAuthKey, err)
+		} else {
+			applicationProperties.APIAuth = auth
+		}
 	}
 }
