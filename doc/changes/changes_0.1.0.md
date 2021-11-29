@@ -1,4 +1,4 @@
-# Exasol REST API 0.1.0, released 2021-11-??
+# Exasol REST API 0.1.0, released 2021-11-29
 
 Code name: Initial implementation
 
