@@ -2,8 +2,9 @@ package exasol_rest_api
 
 import (
 	"fmt"
-	error_reporting_go "github.com/exasol/error-reporting-go"
 	"os"
+
+	error_reporting_go "github.com/exasol/error-reporting-go"
 )
 
 const APITokensKey string = "API_TOKENS"
@@ -29,6 +30,9 @@ type ApplicationProperties struct {
 	ExasolWebsocketAPIVersion int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
 	Encryption                int      `yaml:"EXASOL_ENCRYPTION"`
 	UseTLS                    int      `yaml:"EXASOL_TLS"`
+	APIUseTLS                 bool     `yaml:"API_TLS"`
+	APITLSPrivateKeyPath      string   `yaml:"API_TLS_PKPATH"`
+	APITLSCertificatePath     string   `yaml:"API_TLS_CERTPATH"`
 }
 
 // GetApplicationProperties creates an application properties.

@@ -1,16 +1,17 @@
 package exasol_rest_api
 
 import (
-	"github.com/exasol/error-reporting-go"
+	_ "main/doc/swagger" // importing Swagger-generated documentation
+	"net/http"
+	"time"
+
+	error_reporting_go "github.com/exasol/error-reporting-go"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
-	_ "main/doc/swagger" // importing Swagger-generated documentation
-	"net/http"
-	"time"
 )
 
 // Run starts the REST API service.
@@ -26,7 +27,12 @@ func Run() {
 	swaggerURL := ginSwagger.URL("/swagger/doc.json")
 	AddEndpoints(router, application)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, swaggerURL))
-	err := router.Run(applicationProperties.ApplicationServer)
+	var err error
+	if applicationProperties.APIUseTLS {
+		err = router.RunTLS(applicationProperties.ApplicationServer, applicationProperties.APITLSCertificatePath, applicationProperties.APITLSPrivateKeyPath)
+	} else {
+		err = router.Run(applicationProperties.ApplicationServer)
+	}
 
 	if err != nil {
 		panic(error_reporting_go.ExaError("E-ERA-1").Message("error starting API server: {{error}}").
