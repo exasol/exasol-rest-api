@@ -107,7 +107,7 @@ We strongly recommend using HTTPS when deploying the API service.
 
 #### Enable TLS within the API itself
 
-You can enable HTTPS within the service itself using the `API_TLS` (set it to true to enable TLS), `API_TLS_PKPATH` (path to private key.perm file) and `API_TLS_CERTPATH` (path to certificate.pem file) configuration properties.
+You can enable HTTPS within the service itself using the `API_TLS` (set it to true to enable TLS), `API_TLS_PKPATH` (path to `private key.pem` file) and `API_TLS_CERTPATH` (path to `certificate.pem` file) configuration properties.
 
 ![image-20211201165901918](user-guide.assets/image-20211201165901918.png)
 
