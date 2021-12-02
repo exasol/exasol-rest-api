@@ -49,17 +49,20 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 #### All Available Properties
 
-| Property                     |  Default        | Description                                          |
-| :--------------------------: | :-------------: | :--------------------------------------------------- |
-| API_TOKENS                   |                 | List of allowed API tokens for authorization.        |
-| SERVER_ADDRESS               |  "0.0.0.0:8080" | Address for the server to listen for new connection. |
-| EXASOL_USER                  |                 | Name of the Exasol service account.                  |
-| EXASOL_PASSWORD              |                 | Password of the Exasol service account.              |
-| EXASOL_HOST                  | "localhost"     | Exasol host.                                         |
-| EXASOL_PORT                  | 8563            | Exasol port.                                         |
-| EXASOL_WEBSOCKET_API_VERSION | 2               | Version of Exasol Websocket API.                     |
-| EXASOL_ENCRYPTION            | 1               | Automatic [Exasol connection encryption][1]. Use 1 to enable it and -1 to disable. |
-| EXASOL_TLS                   | 1               | TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side). Use 1 to enable it and -1 to disable. |
+| Property                     |    Default     | Description                                                  |
+| :--------------------------- | :------------: | :----------------------------------------------------------- |
+| API_TOKENS                   |                | List of allowed API tokens for authorization.                |
+| SERVER_ADDRESS               | "0.0.0.0:8080" | Address for the server to listen for new connection.         |
+| EXASOL_USER                  |                | Name of the Exasol service account.                          |
+| EXASOL_PASSWORD              |                | Password of the Exasol service account.                      |
+| EXASOL_HOST                  |  "localhost"   | Exasol host.                                                 |
+| EXASOL_PORT                  |      8563      | Exasol port.                                                 |
+| EXASOL_WEBSOCKET_API_VERSION |       2        | Version of Exasol Websocket API.                             |
+| EXASOL_ENCRYPTION            |       1        | Automatic [Exasol connection encryption][1]. Use 1 to enable it and -1 to disable. |
+| EXASOL_TLS                   |       1        | Database TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side). Use 1 to enable it and -1 to disable. |
+| API_TLS                      |     false      | Enable API TLS/SSL.                                          |
+| API_TLS_PKPATH               |                | Path of the private key file.                                |
+| API_TLS_CERTPATH             |                | Path of the certificate file.                                |
 
 ### Authorization
 
@@ -100,8 +103,27 @@ The service allows 30 requests per minute for all API endpoints. The limitation 
 
 ### Using Secured Connection (HTTPS)
 
-We strongly recommend setting up an HTTPS when deploying the API service.
-A recommended way is setting up a publicly accessible proxy server that [terminates SSL](https://en.wikipedia.org/wiki/TLS_termination_proxy) and forwards the request to the API service.
+We strongly recommend using HTTPS when deploying the API service.
+
+#### Enable TLS within the API itself
+
+You can enable HTTPS within the service itself using the `API_TLS` (set it to true to enable TLS), `API_TLS_PKPATH` (path to `private key.pem` file) and `API_TLS_CERTPATH` (path to `certificate.pem` file) configuration properties.
+
+These entries would look like this in your configuration .yml file:
+
+> API_TLS: true
+>
+> API_TLS_PKPATH: "C:\\\tls\\\private.key.pem"
+>
+> API_TLS_CERTPATH: "C:\\\tls\\\domain.cert.pem"
+
+You might also want to change the listening port to port 443 (the default for SSL for browsers and many other applications). You can do this by changing the `SERVER_ADDRESS` to  "0.0.0.0:443".
+
+> SERVER_ADDRESS : "0.0.0.0:443"
+
+#### Using a proxy and SSL termination
+
+Another way is setting up a publicly accessible proxy server that [terminates SSL](https://en.wikipedia.org/wiki/TLS_termination_proxy) and forwards the request to the API service.
 
 Here are a few examples of services you could use:
 
