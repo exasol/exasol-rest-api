@@ -109,9 +109,17 @@ We strongly recommend using HTTPS when deploying the API service.
 
 You can enable HTTPS within the service itself using the `API_TLS` (set it to true to enable TLS), `API_TLS_PKPATH` (path to `private key.pem` file) and `API_TLS_CERTPATH` (path to `certificate.pem` file) configuration properties.
 
-![image-20211201165901918](user-guide.assets/image-20211201165901918.png)
+These entries would look like this in your configuration .yml file:
+
+> API_TLS: true
+>
+> API_TLS_PKPATH: "C:\\\tls\\\private.key.pem"
+>
+> API_TLS_CERTPATH: "C:\\\tls\\\domain.cert.pem"
 
 You might also want to change the listening port to port 443 (the default for SSL for browsers and many other applications). You can do this by changing the `SERVER_ADDRESS` to  "0.0.0.0:443".
+
+> SERVER_ADDRESS : "0.0.0.0:443"
 
 #### Using a proxy and SSL termination
 
