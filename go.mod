@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/exasol/error-reporting-go v0.0.0-20210928115847-09f31457c2bb
 	github.com/exasol/exasol-driver-go v0.0.0-20211014072629-7d551578a654
-	github.com/gin-gonic/gin v1.7.4
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/gorilla/websocket v1.4.2
