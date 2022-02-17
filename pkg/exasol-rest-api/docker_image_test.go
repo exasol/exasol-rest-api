@@ -35,7 +35,7 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	suite.defaultAuthTokens = "3J90XAv9loMIXzQdfYmtJrHAbopPsc,OR6rq6KjWmhvGU770A9OTjpfH86nlk"
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
-	suite.exasolPort = 8563
+	suite.exasolPort = getExasolPort(suite.exasolContainer, suite.ctx)
 	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost,
 		suite.exasolPort)
 }
