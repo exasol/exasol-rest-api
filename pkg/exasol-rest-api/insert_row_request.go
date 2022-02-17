@@ -2,8 +2,9 @@ package exasol_rest_api
 
 import (
 	"fmt"
-	error_reporting_go "github.com/exasol/error-reporting-go"
 	"strings"
+
+	exaerror "github.com/exasol/error-reporting-go"
 )
 
 // InsertRowRequest maps an InsertRow JSON request to a struct.
@@ -47,7 +48,7 @@ func (request *InsertRowRequest) GetRow() (string, string, error) {
 // Validate validates the request.
 func (request *InsertRowRequest) Validate() error {
 	if request.SchemaName == "" || request.TableName == "" || request.Row == nil || len(request.Row) == 0 {
-		return error_reporting_go.ExaError("E-ERA-17").
+		return exaerror.New("E-ERA-17").
 			Message("insert row request has some missing parameters.").
 			Mitigation("Please specify schema name, table name and row")
 	}

@@ -5,10 +5,11 @@ package exasol_rest_api
 
 import (
 	"errors"
-	error_reporting_go "github.com/exasol/error-reporting-go"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+
+	exaerror "github.com/exasol/error-reporting-go"
+	"github.com/gin-gonic/gin"
 )
 
 // Application represents the REST API service.
@@ -223,7 +224,7 @@ func buildGetRowsRequest(context *gin.Context) (RowsRequest, error) {
 	} else if valueType != "" && value != "" && columnName != "" {
 		return createRowsRequestWithCondition(context, valueType, value, columnName, comparisonPredicate)
 	} else {
-		return RowsRequest{}, error_reporting_go.ExaError("E-ERA-30").
+		return RowsRequest{}, exaerror.New("E-ERA-30").
 			Message("incomplete condition in the request.").
 			Mitigation("provide 'columnName', 'valueType' and 'value' for the condition or remove the condition")
 	}
@@ -252,7 +253,7 @@ func getRenderedValue(context *gin.Context, valueType string, value string) (int
 	if valueType != "" && value != "" {
 		whereConditionValue, err := getValueByType(valueType, value)
 		if err != nil {
-			return nil, error_reporting_go.ExaError("E-ERA-28").
+			return nil, exaerror.New("E-ERA-28").
 				Message("cannot decode value {{value}} with the provided value type {{value type}}: {{error}}").
 				Parameter("value", context.Query("value")).
 				Parameter("value type", context.Query("valueType")).
@@ -304,7 +305,7 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 func (application *Application) queryExasol(query string) ([]byte, error) {
 	connection, err := application.openConnection()
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-2").
+		return nil, exaerror.New("E-ERA-2").
 			Message("error while opening a connection with Exasol: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -313,7 +314,7 @@ func (application *Application) queryExasol(query string) ([]byte, error) {
 
 	response, err := connection.executeQuery(query)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
+		return nil, exaerror.New("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
 

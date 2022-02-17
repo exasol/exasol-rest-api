@@ -1,7 +1,7 @@
 package exasol_rest_api
 
 import (
-	error_reporting_go "github.com/exasol/error-reporting-go"
+	exaerror "github.com/exasol/error-reporting-go"
 )
 
 // RowsRequest maps DeleteRows and GetRows requests to a struct.
@@ -38,8 +38,8 @@ func (request *RowsRequest) Validate() error {
 	return nil
 }
 
-func createValidationError() *error_reporting_go.ErrorMessageBuilder {
-	return error_reporting_go.ExaError("E-ERA-19").Message("request has some missing parameters.")
+func createValidationError() *exaerror.ExaError {
+	return exaerror.New("E-ERA-19").Message("request has some missing parameters.")
 }
 
 // Validate validates the request when the condition is optional.

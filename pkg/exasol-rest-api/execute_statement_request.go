@@ -1,6 +1,6 @@
 package exasol_rest_api
 
-import error_reporting_go "github.com/exasol/error-reporting-go"
+import exaerror "github.com/exasol/error-reporting-go"
 
 // ExecuteStatementRequest maps an ExecuteStatement JSON request to a struct.
 // [impl->dsn~execute-statement-request-body~1]
@@ -16,7 +16,7 @@ func (request *ExecuteStatementRequest) GetStatement() string {
 // Validate validates the request.
 func (request *ExecuteStatementRequest) Validate() error {
 	if request.Statement == "" {
-		return error_reporting_go.ExaError("E-ERA-29").
+		return exaerror.New("E-ERA-29").
 			Message("execute statement request has a missing statement.").
 			Mitigation("Please add a statement to the request body")
 	}

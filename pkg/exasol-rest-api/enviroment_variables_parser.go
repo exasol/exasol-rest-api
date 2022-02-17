@@ -1,10 +1,11 @@
 package exasol_rest_api
 
 import (
-	error_reporting_go "github.com/exasol/error-reporting-go"
 	"os"
 	"strconv"
 	"strings"
+
+	exaerror "github.com/exasol/error-reporting-go"
 )
 
 func (applicationProperties *ApplicationProperties) setValuesFromEnvironmentVariables() {
@@ -72,7 +73,7 @@ func (applicationProperties *ApplicationProperties) setExasolWebsocketsAPIVersio
 }
 
 func logEnvironmentVariableParsingError(variableName string, err error) {
-	errorLogger.Printf(error_reporting_go.ExaError("E-ERA-5").
+	errorLogger.Printf(exaerror.New("E-ERA-5").
 		Message("cannot parse environment variable "+variableName+". {{error|uq}}").
 		Parameter("error", err.Error()).String())
 }

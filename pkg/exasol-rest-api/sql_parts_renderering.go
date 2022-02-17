@@ -2,8 +2,9 @@ package exasol_rest_api
 
 import (
 	"fmt"
-	error_reporting_go "github.com/exasol/error-reporting-go"
 	"strings"
+
+	exaerror "github.com/exasol/error-reporting-go"
 )
 
 func renderLiteral(value interface{}) (string, error) {
@@ -13,7 +14,7 @@ func renderLiteral(value interface{}) (string, error) {
 	case string:
 		return "'" + strings.ReplaceAll(fmt.Sprintf("%v", value), "'", "''") + "'", nil
 	default:
-		return "", error_reporting_go.ExaError("E-ERA-16").
+		return "", exaerror.New("E-ERA-16").
 			Message("invalid exasol literal type {{type|uq}} for value {{value|uq}} in the request").
 			Parameter("type", valueType).
 			Parameter("value", value)

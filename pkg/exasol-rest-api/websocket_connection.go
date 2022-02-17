@@ -9,13 +9,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	error_reporting_go "github.com/exasol/error-reporting-go"
-	"github.com/gorilla/websocket"
 	"math/big"
 	"net/url"
 	"os/user"
 	"runtime"
 	"strconv"
+
+	exaerror "github.com/exasol/error-reporting-go"
+	"github.com/gorilla/websocket"
 )
 
 type websocketConnection struct {
@@ -39,7 +40,7 @@ func (connection *websocketConnection) connect() error {
 		connection.websocket.EnableWriteCompression(false)
 		return nil
 	} else {
-		return error_reporting_go.ExaError("E-ERA-14").
+		return exaerror.New("E-ERA-14").
 			Message("error while establishing a websockets connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -88,7 +89,7 @@ func (connection *websocketConnection) login() error {
 
 	err := connection.send(loginCommand, loginResponse)
 	if err != nil {
-		return error_reporting_go.ExaError("E-ERA-15").
+		return exaerror.New("E-ERA-15").
 			Message("error while sending a login command via websockets connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -106,7 +107,7 @@ func (connection *websocketConnection) login() error {
 	password := []byte(connection.connProperties.ExasolPassword)
 	encPass, err := rsa.EncryptPKCS1v15(rand.Reader, &pubKey, password)
 	if err != nil {
-		return error_reporting_go.ExaError("F-ERA-21").
+		return exaerror.New("F-ERA-21").
 			Message("password encryption error during login via websockets connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -148,7 +149,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 		err = json.Unmarshal(message, result)
 
 		if err != nil {
-			return error_reporting_go.ExaError("F-ERA-27").
+			return exaerror.New("F-ERA-27").
 				Message("error converting JSON message from websockets into response struct: {{error|uq}}").
 				Parameter("error", err.Error())
 		}
@@ -168,7 +169,7 @@ func (connection *websocketConnection) sendRequestWithInterfaceResponse(request 
 func (connection *websocketConnection) sendRequestWithStringResponse(request interface{}) ([]byte, error) {
 	requestJSON, err := json.Marshal(request)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("F-ERA-24").
+		return nil, exaerror.New("F-ERA-24").
 			Message("cannot convert request into JSON format: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
@@ -176,14 +177,14 @@ func (connection *websocketConnection) sendRequestWithStringResponse(request int
 	messageType := websocket.TextMessage
 	err = connection.websocket.WriteMessage(messageType, requestJSON)
 	if err != nil {
-		return nil, error_reporting_go.ExaError("F-ERA-25").
+		return nil, exaerror.New("F-ERA-25").
 			Message("error writing a message via websocket connection: {{error|uq}}").
 			Parameter("error", err.Error())
 	}
 
 	_, message, err := connection.websocket.ReadMessage()
 	if err != nil {
-		return nil, error_reporting_go.ExaError("F-ERA-26").
+		return nil, exaerror.New("F-ERA-26").
 			Message("error reading a message from websocket: {{error|uq}}").
 			Parameter("error", err.Error())
 	}

@@ -49,7 +49,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.exasolPort = 8563
 	database, err := sql.Open("exasol",
 		exasol.NewConfig("sys",
-			"exasol").UseTLS(false).Host(suite.exasolHost).Port(suite.exasolPort).Autocommit(true).String())
+			"exasol").ValidateServerCertificate(false).Host(suite.exasolHost).Port(suite.exasolPort).Autocommit(true).String())
 	onError(err)
 	suite.connection = database
 	createDefaultServiceUserWithAccess(suite.defaultServiceUsername, suite.defaultServicePassword, suite.exasolHost,
@@ -1071,7 +1071,7 @@ func (suite *IntegrationTestSuite) runApiServer(properties *exasol_rest_api.Appl
 
 func createDefaultServiceUserWithAccess(user string, password string, host string, port int) {
 	database, err := sql.Open("exasol",
-		exasol.NewConfig("sys", "exasol").UseTLS(false).Host(host).Port(port).Autocommit(true).String())
+		exasol.NewConfig("sys", "exasol").ValidateServerCertificate(false).Host(host).Port(port).Autocommit(true).String())
 	onError(err)
 	schemaName := "TEST_SCHEMA_1"
 	_, err = database.Exec("CREATE SCHEMA " + schemaName)

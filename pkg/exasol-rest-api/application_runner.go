@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	error_reporting_go "github.com/exasol/error-reporting-go"
+	exaerror "github.com/exasol/error-reporting-go"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -35,7 +35,7 @@ func Run() {
 	}
 
 	if err != nil {
-		panic(error_reporting_go.ExaError("E-ERA-1").Message("error starting API server: {{error}}").
+		panic(exaerror.New("E-ERA-1").Message("error starting API server: {{error}}").
 			Parameter("error", err.Error()).String())
 	}
 }
