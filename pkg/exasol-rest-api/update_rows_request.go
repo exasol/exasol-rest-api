@@ -2,8 +2,9 @@ package exasol_rest_api
 
 import (
 	"fmt"
-	error_reporting_go "github.com/exasol/error-reporting-go"
 	"strings"
+
+	exaerror "github.com/exasol/error-reporting-go"
 )
 
 // UpdateRowsRequest maps an UpdateRows JSON request to a struct.
@@ -59,7 +60,7 @@ func (request *UpdateRowsRequest) Validate() error {
 
 	if request.SchemaName == "" || request.TableName == "" || !request.WhereCondition.validate() ||
 		request.ValuesToUpdate == nil || len(request.ValuesToUpdate) == 0 || !valuesValidation {
-		return error_reporting_go.ExaError("E-ERA-20").
+		return exaerror.New("E-ERA-20").
 			Message("update rows request has some missing parameters.").
 			Mitigation("Please specify schema name, table name, values to update and condition")
 	}
