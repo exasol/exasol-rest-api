@@ -1040,6 +1040,12 @@ func getExasolHost(exasolContainer testcontainers.Container, ctx context.Context
 	return host
 }
 
+func getExasolContainerIP(exasolContainer testcontainers.Container, ctx context.Context) string {
+	host, err := exasolContainer.ContainerIP(ctx)
+	onError(err)
+	return host
+}
+
 func getExasolPort(exasolContainer testcontainers.Container, ctx context.Context) int {
 	port, err := exasolContainer.MappedPort(ctx, "8563")
 	onError(err)

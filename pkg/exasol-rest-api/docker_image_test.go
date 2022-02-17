@@ -23,6 +23,7 @@ type DockerImageTestSuite struct {
 	defaultAuthTokens     string
 	exasolPort            int
 	exasolHost            string
+	exasolContainerIP     string
 }
 
 func TestDockerImageSuite(t *testing.T) {
@@ -37,6 +38,7 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
 	suite.exasolPort = getExasolPort(suite.exasolContainer, suite.ctx)
+	suite.exasolContainerIP = getExasolContainerIP(suite.exasolContainer, suite.ctx)
 	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost,
 		suite.exasolPort)
 }
@@ -46,8 +48,8 @@ func (suite *DockerImageTestSuite) TestQuery() {
 		exasol_rest_api.APITokensKey:      suite.defaultAuthTokens,
 		exasol_rest_api.ExasolUserKey:     suite.defaultExasolUsername,
 		exasol_rest_api.ExasolPasswordKey: suite.defaultExasolPassword,
-		exasol_rest_api.ExasolHostKey:     suite.exasolHost,
-		exasol_rest_api.ExasolPortKey:     strconv.Itoa(suite.exasolPort),
+		exasol_rest_api.ExasolHostKey:     suite.exasolContainerIP,
+		exasol_rest_api.ExasolPortKey:     "8563",
 		exasol_rest_api.EncryptionKey:     "-1",
 	}
 	apiContainer := runRestAPIContainer(properties)
@@ -57,7 +59,7 @@ func (suite *DockerImageTestSuite) TestQuery() {
 	port, err := apiContainer.MappedPort(suite.ctx, "8080")
 	onError(err)
 
-	baseUrl := "http://" + ip + ":" + port.Port()
+	baseUrl := "http://" + ip + ":" + strconv.Itoa(port.Int())
 	req, err := http.NewRequest(http.MethodGet, baseUrl+"/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
 	req.Header.Set("Authorization", "3J90XAv9loMIXzQdfYmtJrHAbopPsc")
 	onError(err)
