@@ -1,10 +1,8 @@
 # Exasol REST API 0.3.0, released 2022-02-??
 
-Code name: Add TLS certificate fingerprint support
+Code name:
 
 ## Features
-
-* #27: Added support for certificate fingerprints
 
 ## Upgrades
 
