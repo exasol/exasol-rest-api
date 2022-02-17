@@ -46,7 +46,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.defaultAuthTokens = []string{"3J90XAv9loMIXzQdfYmtJrHAbopPsc", "OR6rq6KjWmhvGU770A9OTjpfH86nlk"}
 	suite.exasolContainer = runExasolContainer(suite.ctx)
 	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
-	suite.exasolPort = 8563
+	suite.exasolPort = getExasolPort(suite.exasolContainer, suite.ctx)
 	database, err := sql.Open("exasol",
 		exasol.NewConfig("sys",
 			"exasol").ValidateServerCertificate(false).Host(suite.exasolHost).Port(suite.exasolPort).Autocommit(true).String())
@@ -1018,7 +1018,7 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 func runExasolContainer(ctx context.Context) testcontainers.Container {
 	dbVersion := os.Getenv("DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "7.1.1"
+		dbVersion = "7.1.6"
 	}
 	request := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("exasol/docker-db:%s", dbVersion),
@@ -1035,9 +1035,15 @@ func runExasolContainer(ctx context.Context) testcontainers.Container {
 }
 
 func getExasolHost(exasolContainer testcontainers.Container, ctx context.Context) string {
-	host, err := exasolContainer.ContainerIP(ctx)
+	host, err := exasolContainer.Host(ctx)
 	onError(err)
 	return host
+}
+
+func getExasolPort(exasolContainer testcontainers.Container, ctx context.Context) int {
+	port, err := exasolContainer.MappedPort(ctx, "8563")
+	onError(err)
+	return port.Int()
 }
 
 func onError(err error) {
