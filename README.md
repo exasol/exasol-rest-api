@@ -4,7 +4,7 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 
 **This project is at an early development stage.**
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/exasol/exasol-rest-api.svg)](https://pkg.go.dev/github.com/exasol/exasol-rest-api)
+[![Go Build](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml/badge.svg)](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml)
 
 ## Information for Users
 
