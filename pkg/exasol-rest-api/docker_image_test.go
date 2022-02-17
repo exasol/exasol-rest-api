@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -46,14 +47,18 @@ func (suite *DockerImageTestSuite) TestQuery() {
 		exasol_rest_api.ExasolUserKey:     suite.defaultExasolUsername,
 		exasol_rest_api.ExasolPasswordKey: suite.defaultExasolPassword,
 		exasol_rest_api.ExasolHostKey:     suite.exasolHost,
+		exasol_rest_api.ExasolPortKey:     strconv.Itoa(suite.exasolPort),
 		exasol_rest_api.EncryptionKey:     "-1",
 	}
 	apiContainer := runRestAPIContainer(properties)
-	ip, err := apiContainer.ContainerIP(context.Background())
+	ip, err := apiContainer.Host(context.Background())
 	onError(err)
 
-	req, err := http.NewRequest(http.MethodGet,
-		"http://"+ip+":8080/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
+	port, err := apiContainer.MappedPort(suite.ctx, "8080")
+	onError(err)
+
+	baseUrl := "http://" + ip + ":" + port.Port()
+	req, err := http.NewRequest(http.MethodGet, baseUrl+"/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
 	req.Header.Set("Authorization", "3J90XAv9loMIXzQdfYmtJrHAbopPsc")
 	onError(err)
 
