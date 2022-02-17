@@ -4,6 +4,10 @@ Code name:
 
 ## Features
 
+## Bugfixes
+
+* #53: Fixed build under macOS
+
 ## Upgrades
 
 ### Direct Dependencies
