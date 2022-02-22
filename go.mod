@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.4.1
-	github.com/swaggo/swag v1.7.9
+	github.com/swaggo/swag v1.8.0
 	github.com/testcontainers/testcontainers-go v0.12.0
 	github.com/tidwall/sjson v1.2.4
 	github.com/ulule/limiter/v3 v3.9.0
