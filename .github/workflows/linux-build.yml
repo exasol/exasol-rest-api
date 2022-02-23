@@ -66,6 +66,14 @@ jobs:
           skip-go-installation: true
           skip-pkg-cache: true
 
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+      - name: Nancy Security scanner
+        run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth
+
       - name: test
         run: go test -v -coverprofile=coverage.out ./...
 
