@@ -54,7 +54,7 @@ jobs:
         run: docker build --tag rest-api-test-image:latest .
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.7.3
+        run: go install github.com/swaggo/swag/cmd/swag@v1.8.0
 
       - name: Generate Swagger API Description
         run: ./generate-swagger-docs
