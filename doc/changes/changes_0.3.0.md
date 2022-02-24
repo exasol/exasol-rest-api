@@ -2,7 +2,9 @@
 
 Code name: Security- and bug fixes
 
-## Features
+## Summary
+
+In this release we fixed some security issues in dependencies and added [instructions](../user_guide/user-guide.md#accessing-the-service) how to try out the REST API on the command line.
 
 ## Bugfixes
 
