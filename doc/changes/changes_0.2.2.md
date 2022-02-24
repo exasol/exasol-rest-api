@@ -1,4 +1,4 @@
-# Exasol REST API 0.3.0, released 2022-02-25
+# Exasol REST API 0.2.2, released 2022-02-25
 
 Code name: Security- and bug fixes
 
