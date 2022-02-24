@@ -17,7 +17,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.12.0
 	github.com/tidwall/sjson v1.2.4
 	github.com/ulule/limiter/v3 v3.9.0
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/sys v0.0.0-20220224120231-95c6836cb0e7 // indirect
 	golang.org/x/tools v0.1.9 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
