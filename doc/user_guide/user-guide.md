@@ -64,6 +64,8 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 | API_TLS_PKPATH               |                | Path of the private key file.                                |
 | API_TLS_CERTPATH             |                | Path of the certificate file.                                |
 
+[1]: https://community.exasol.com/t5/database-features/database-connection-encryption-at-exasol/ta-p/2259
+
 ### Authorization
 
 Add a list of API tokens to the configuration file (find an example above). 
@@ -93,9 +95,20 @@ Windows Hint: If you start the application via a double-click on the file, when 
 
 You can access the service on the host and port you specified. For the default values: `http://localhost:8080/api/v1/<endpoint here>`.
 
-You can also access the Swagger documentation. Here is an example with the default values: `http://localhost:8080/swagger/index.html`
+The Swagger documentation of the API is available at `http://localhost:8080/swagger/index.html`. After authenticating with a token you can try out the requests.
 
-[1]: https://community.exasol.com/t5/database-features/database-connection-encryption-at-exasol/ta-p/2259
+You can also send requests via command line:
+
+```sh
+token="<token>"
+base_url="http://localhost:8080/api/v1"
+# List all tables
+curl --header "Authorization: $token" "$base_url/tables"
+# Execute a query. Spaces and other characters must be url-encoded.
+curl --header "Authorization: $token" "$base_url/query/select%201"
+```
+
+See the [design document](../design.md) for payload examples.
 
 ### Rate Limitation
 

@@ -1,0 +1,15 @@
+name: Dependencies Check
+
+on:
+  schedule:
+    - cron: "0 23 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Nancy Security scanner
+        run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth

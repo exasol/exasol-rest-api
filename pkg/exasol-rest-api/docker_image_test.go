@@ -89,7 +89,7 @@ func runRestAPIContainer(env map[string]string) testcontainers.Container {
 		Started:          true,
 	})
 	if err != nil {
-		panic(fmt.Errorf("Failed to start docker image %q. Run 'docker build --tag %s .'", image, image))
+		panic(fmt.Errorf("Starting of docker image %q failed with error %q. Run 'docker build --tag %s .' before starting the tests", image, err.Error(), image))
 	}
 	return apiContainer
 }

@@ -54,7 +54,7 @@ jobs:
         run: docker build --tag rest-api-test-image:latest .
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.7.3
+        run: go install github.com/swaggo/swag/cmd/swag@v1.8.0
 
       - name: Generate Swagger API Description
         run: ./generate-swagger-docs
@@ -65,6 +65,9 @@ jobs:
           version: latest
           skip-go-installation: true
           skip-pkg-cache: true
+
+      - name: Nancy Security scanner
+        run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth
 
       - name: test
         run: go test -v -coverprofile=coverage.out ./...
