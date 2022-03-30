@@ -16,9 +16,10 @@ In this release we fixed some security issues in dependencies.
 
 * Upgraded `golang 1.16` to `1.18`
 * Upgraded `github.com/swaggo/swag v1.8.0` to `v1.8.1`
-* Upgraded `github.com/exasol/exasol-driver-go v0.3.0` to ``
+* Upgraded `github.com/exasol/exasol-driver-go v0.3.0` to `v0.3.1`
 * Upgraded `github.com/stretchr/testify v1.7.0` to `v1.7.1`
 * Upgraded `github.com/ulule/limiter/v3 v3.9.0` to `v3.10.0`
+* Upgraded `github.com/testcontainers/testcontainers-go v0.12.0` to `v0.12.1-0.20220216090119-c0c2f90f591a`
 
 ### Indirect Dependencies
 
@@ -29,6 +30,7 @@ In this release we fixed some security issues in dependencies.
 * Upgraded `github.com/PuerkitoBio/purell` to `v1.1.1`
 * Upgraded `github.com/PuerkitoBio/urlesc` to `v0.0.0-20170810143723-de5bf2ad4578`
 * Upgraded `github.com/cenkalti/backoff` to `v2.2.1+incompatible`
+* Upgraded `github.com/cenkalti/backoff/v4` to `v4.1.2`
 * Upgraded `github.com/containerd/cgroups` to `v1.0.3`
 * Upgraded `github.com/containerd/containerd` to `v1.6.2`
 * Upgraded `github.com/davecgh/go-spew` to `v1.1.1`

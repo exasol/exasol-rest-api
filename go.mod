@@ -4,14 +4,14 @@ go 1.18
 
 require (
 	github.com/exasol/error-reporting-go v0.1.1
-	github.com/exasol/exasol-driver-go v0.3.0
+	github.com/exasol/exasol-driver-go v0.3.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gorilla/websocket v1.5.0
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.4.1
 	github.com/swaggo/swag v1.8.1
-	github.com/testcontainers/testcontainers-go v0.12.0
+	github.com/testcontainers/testcontainers-go v0.12.1-0.20220216090119-c0c2f90f591a
 	github.com/tidwall/sjson v1.2.4
 	github.com/ulule/limiter/v3 v3.10.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -25,6 +25,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
 	github.com/containerd/containerd v1.6.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
