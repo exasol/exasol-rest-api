@@ -8,7 +8,7 @@ In this release we fixed some security issues in dependencies.
 
 ## Bugfixes
 
-* #56: Fixed security issue by upgrading dependencies: [CVE-2022-23648](https://github.com/advisories/GHSA-crp2-qrr5-8pq7)
+* Fixed security issue by upgrading dependencies: [CVE-2022-23648](https://github.com/advisories/GHSA-crp2-qrr5-8pq7)
 
 ## Upgrades
 
