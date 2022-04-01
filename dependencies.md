@@ -3,20 +3,25 @@
 
 ## Compile Dependencies
 
-| Dependency                                  | License           |
-| ------------------------------------------- | ----------------- |
-| github.com/exasol/error-reporting-go        | [MIT][0]          |
-| github.com/exasol/exasol-driver-go          |                   |
-| github.com/gin-gonic/gin                    | [MIT][1]          |
-| github.com/gorilla/websocket                | [BSD-2-Clause][2] |
-| github.com/stretchr/testify                 |                   |
-| github.com/swaggo/files                     | [MIT][3]          |
-| github.com/swaggo/gin-swagger               | [MIT][4]          |
-| github.com/swaggo/swag                      | [MIT][5]          |
-| github.com/testcontainers/testcontainers-go |                   |
-| github.com/tidwall/sjson                    | [MIT][6]          |
-| github.com/ulule/limiter/v3                 | [MIT][7]          |
-| gopkg.in/yaml.v3                            | [MIT][8]          |
+| Dependency                           | License           |
+| ------------------------------------ | ----------------- |
+| github.com/exasol/error-reporting-go | [MIT][0]          |
+| github.com/gin-gonic/gin             | [MIT][1]          |
+| github.com/gorilla/websocket         | [BSD-2-Clause][2] |
+| github.com/swaggo/files              | [MIT][3]          |
+| github.com/swaggo/gin-swagger        | [MIT][4]          |
+| github.com/swaggo/swag               | [MIT][5]          |
+| github.com/tidwall/sjson             | [MIT][6]          |
+| github.com/ulule/limiter/v3          | [MIT][7]          |
+| gopkg.in/yaml.v3                     | [MIT][8]          |
+
+## Test Dependencies
+
+| Dependency                                  | License |
+| ------------------------------------------- | ------- |
+| github.com/exasol/exasol-driver-go          |         |
+| github.com/stretchr/testify                 |         |
+| github.com/testcontainers/testcontainers-go |         |
 
 [2]: https://github.com/gorilla/websocket/blob/v1.5.0/LICENSE
 [3]: https://github.com/swaggo/files/blob/a29dd2bc99b2/LICENSE

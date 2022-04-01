@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
 
@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cache go modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-go-
       
       - name: Cache OpenFastTrace
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /tmp/oft/
