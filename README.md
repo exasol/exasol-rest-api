@@ -4,7 +4,7 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 
 **This project is at an early development stage.**
 
-[![Go Build](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml/badge.svg)](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml)
+[![Build Status](https://github.com/exasol/exasol-rest-api/actions/workflows/ci-build.yml/badge.svg)](https://github.com/exasol/exasol-rest-api/actions/workflows/ci-build.yml)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-rest-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=com.exasol%3Aexasol-rest-api)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-rest-api&metric=coverage)](https://sonarcloud.io/summary/new_code?id=com.exasol%3Aexasol-rest-api)
@@ -17,6 +17,7 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 ## Information for Users
 
 - [User Guide](doc/user_guide/user-guide.md)
+- [Changelog](doc/changes/changelog.md)
 - [System Requirements](doc/system-requirements.md)
 - [Design](doc/design.md)
 - [License](LICENSE)
@@ -24,3 +25,4 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 ## Information for Developers
 
 - [Developers Guide](doc/developer-guide.md)
+- [Dependencies](dependencies.md)
