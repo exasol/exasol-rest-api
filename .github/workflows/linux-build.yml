@@ -13,7 +13,7 @@ jobs:
         db: [ "7.0.19", "7.1.12" ]
     env:
       DEFAULT_GO: "1.18"
-      DEFAULT_DB: "7.1.8"
+      DEFAULT_DB: "7.1.12"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
