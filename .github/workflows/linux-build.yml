@@ -70,7 +70,7 @@ jobs:
         run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth
 
       - name: test
-        run: go test -v -coverprofile=coverage.out ./...
+        run: go test -v -coverprofile=coverage.out ./... -timeout 2000s
 
       - name: SonarCloud Scan
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'
