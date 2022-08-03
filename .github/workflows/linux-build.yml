@@ -10,10 +10,10 @@ jobs:
     strategy:
       matrix:
         go: [ "1.18" ]
-        db: [ "7.0.17", "7.1.8" ]
+        db: [ "7.0.19", "7.1.12" ]
     env:
       DEFAULT_GO: "1.18"
-      DEFAULT_DB: "7.1.8"
+      DEFAULT_DB: "7.1.12"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -70,7 +70,7 @@ jobs:
         run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth
 
       - name: test
-        run: go test -v -coverprofile=coverage.out ./...
+        run: go test -v -coverprofile=coverage.out ./... -timeout 2000s
 
       - name: SonarCloud Scan
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'

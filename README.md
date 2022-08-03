@@ -1,8 +1,8 @@
-# Exasol REST API (ALPHA)
+# Exasol REST API
+[![Build Status](https://github.com/exasol/exasol-rest-api/actions/workflows/ci-build.yml/badge.svg)](https://github.com/exasol/exasol-rest-api/actions/workflows/ci-build.yml)
 
 Exasol REST API is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints.
 
-**This project is at an early development stage.**
 
 [![Go Build](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml/badge.svg)](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml)
 
@@ -20,6 +20,8 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 - [System Requirements](doc/system-requirements.md)
 - [Design](doc/design.md)
 - [License](LICENSE)
+- [Changelog](doc/changes/changelog.md)
+- [Dependencies](dependencies.md)
 
 ## Information for Developers
 
