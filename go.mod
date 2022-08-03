@@ -11,7 +11,7 @@ require (
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.1
 	github.com/swaggo/swag v1.8.4
-	github.com/testcontainers/testcontainers-go v0.12.1-0.20220216090119-c0c2f90f591a
+	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/tidwall/sjson v1.2.4
 	github.com/ulule/limiter/v3 v3.10.0
 	gopkg.in/yaml.v3 v3.0.1
