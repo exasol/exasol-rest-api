@@ -34,4 +34,4 @@
 [8]: https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE
 [9]: https://github.com/exasol/exasol-driver-go/blob/v0.3.1/LICENSE
 [10]: https://github.com/stretchr/testify/blob/v1.8.0/LICENSE
-[11]: https://github.com/testcontainers/testcontainers-go/blob/c0c2f90f591a/LICENSE
+[11]: https://github.com/testcontainers/testcontainers-go/blob/v0.13.0/LICENSE

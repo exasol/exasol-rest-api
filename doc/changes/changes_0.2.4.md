@@ -23,3 +23,4 @@ CVE updates + added PK files
 ### Test Dependency Updates
 
 * Updated `github.com/stretchr/testify:v1.7.1` to `v1.8.0`
+* Updated `github.com/testcontainers/testcontainers-go:v0.12.1-0.20220216090119-c0c2f90f591a` to `v0.13.0`
