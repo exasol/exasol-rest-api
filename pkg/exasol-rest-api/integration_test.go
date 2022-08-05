@@ -1018,7 +1018,7 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 func runExasolContainer(ctx context.Context) testcontainers.Container {
 	dbVersion := os.Getenv("DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "7.0.19"
+		dbVersion = "7.1.12"
 	}
 	request := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("exasol/docker-db:%s", dbVersion),
