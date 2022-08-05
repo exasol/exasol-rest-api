@@ -30,11 +30,27 @@ API_TOKENS:
 
 Please be aware of the API token length: only 30 or more characters are allowed.
 
-Before starting the application, you need to set an environment variable that points to the properties file:
+Before starting the application, you need to 
+- set an environment variable that points to the properties file:
 
 ```
 APPLICATION_PROPERTIES_PATH=application-properties.yml
 ```
+OR
+
+- define the path to this properties path in a CLI flag called application-properties-path:
+On Linux:
+
+```shell
+./exasol-rest-api -application-properties-path='<PATH>'
+```
+
+On Windows: open a command prompt and start the service from the prompt:  
+
+```cmd
+path\to\file\exasol-rest-api-x86-64.exe -application-properties-path='<PATH>'
+```
+
 
 #### Via Environment Variables
 
@@ -89,7 +105,7 @@ On Windows: open a command prompt and start the service from the prompt:
 path\to\file\exasol-rest-api-x86-64.exe
 ```
 
-Windows Hint: If you start the application via a double-click on the file, when the application crashes you it exits immediately. It means you won't see any error messages. So we recommend starting the application via cmd.
+Windows Hint: If you start the application via a double-click on the file, when the application crashes it exits immediately. That means you won't see any error messages. So we recommend starting the application via CLI.
 
 ### Accessing the Service
 

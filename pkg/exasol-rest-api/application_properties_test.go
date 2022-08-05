@@ -1,12 +1,13 @@
 package exasol_rest_api_test
 
 import (
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/yaml.v3"
 )
 
 const applicationPropertiesPathKey = "APPLICATION_PROPERTIES_PATH"
@@ -32,17 +33,33 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 		ExasolWebsocketAPIVersion: 3,
 	}
 	suite.setPathToPropertiesFileEnv(expected)
-	actual := exasol_rest_api.GetApplicationProperties()
+	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
-
+func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
+	expected := &exasol_rest_api.ApplicationProperties{
+		APITokens:                 []string{"abc"},
+		ApplicationServer:         "test:8888",
+		ExasolUser:                "myUser",
+		ExasolPassword:            "pass",
+		ExasolHost:                "127.0.0.1",
+		ExasolPort:                1234,
+		Encryption:                1,
+		UseTLS:                    1,
+		ExasolWebsocketAPIVersion: 3,
+	}
+	file, err := suite.createTempAppPropertiesFile("", "application_properties_cli*.yml", expected)
+	onError(err)
+	actual := exasol_rest_api.GetApplicationProperties(file.Name())
+	suite.Equal(expected, actual)
+}
 func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	minimalRequiredProperties := &exasol_rest_api.ApplicationProperties{
 		ExasolUser:     "myUser",
 		ExasolPassword: "pass",
 	}
 	suite.setPathToPropertiesFileEnv(minimalRequiredProperties)
-	actual := exasol_rest_api.GetApplicationProperties()
+	actual := exasol_rest_api.GetApplicationProperties("")
 	expected := &exasol_rest_api.ApplicationProperties{
 		APITokens:                 []string{},
 		ApplicationServer:         "0.0.0.0:8080",
@@ -63,7 +80,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingPropert
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-8: exasol username and password are missing in properties. "+
 		"please specify an Exasol username and password via properties.",
-		func() { exasol_rest_api.GetApplicationProperties() })
+		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEmptyPropertiesFileAndWithoutEnv() {
@@ -77,7 +94,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEmptyPropertie
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-8: exasol username and password are missing in properties. "+
 		"please specify an Exasol username and password via properties.",
-		func() { exasol_rest_api.GetApplicationProperties() })
+		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsername() {
@@ -87,7 +104,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-9: exasol username is missing in properties. please specify an Exasol username via properties.",
-		func() { exasol_rest_api.GetApplicationProperties() })
+		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingPassword() {
@@ -97,7 +114,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingPasswor
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-10: exasol password is missing in properties. please specify an Exasol password via properties.",
-		func() { exasol_rest_api.GetApplicationProperties() })
+		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernameAndPassword() {
@@ -108,7 +125,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-8: exasol username and password are missing in properties. "+
 		"please specify an Exasol username and password via properties.",
-		func() { exasol_rest_api.GetApplicationProperties() })
+		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
@@ -141,7 +158,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolWebsocketAPIVersionKey, "3")
 	onError(err)
-	actual := exasol_rest_api.GetApplicationProperties()
+	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
 
@@ -187,7 +204,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolWebsocketAPIVersionKey, "3")
 	onError(err)
-	actual := exasol_rest_api.GetApplicationProperties()
+	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
 
@@ -229,13 +246,23 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	onError(err)
 	err = os.Setenv(exasol_rest_api.UseTLSKey, "1")
 	onError(err)
-	actual := exasol_rest_api.GetApplicationProperties()
+	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
 
 func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
 	properties *exasol_rest_api.ApplicationProperties) string {
-	file, _ := ioutil.TempFile("", "application_properties_*.yml")
+	var filePath string = ""
+	var fileNamePattern string = "application_properties_*.yml"
+	file, err := suite.createTempAppPropertiesFile(filePath, fileNamePattern, properties)
+	onError(err)
+	err = os.Setenv(applicationPropertiesPathKey, file.Name())
+	onError(err)
+	return applicationPropertiesPathKey
+}
+
+func (suite *ApplicationPropertiesSuite) createTempAppPropertiesFile(filePath string, fileNamePattern string, properties *exasol_rest_api.ApplicationProperties) (*os.File, error) {
+	file, _ := ioutil.TempFile(filePath, fileNamePattern)
 	defer func(file *os.File) {
 		onError(file.Close())
 	}(file)
@@ -244,9 +271,7 @@ func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
 	onError(err)
 	_, err = file.Write(data)
 	onError(err)
-	err = os.Setenv(applicationPropertiesPathKey, file.Name())
-	onError(err)
-	return applicationPropertiesPathKey
+	return file, err
 }
 
 func (suite *ApplicationPropertiesSuite) SetupTest() {
