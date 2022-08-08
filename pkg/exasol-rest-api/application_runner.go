@@ -15,8 +15,8 @@ import (
 )
 
 // Run starts the REST API service.
-func Run(app_properties_path string) {
-	applicationProperties := GetApplicationProperties(app_properties_path)
+func Run(appPropertiesPathCli string) {
+	applicationProperties := GetApplicationProperties(appPropertiesPathCli)
 	application := Application{
 		Properties: applicationProperties,
 		Authorizer: &TokenAuthorizer{
