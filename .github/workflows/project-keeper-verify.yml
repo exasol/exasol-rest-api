@@ -50,6 +50,7 @@ jobs:
 
       - name: Install go-licenses
         run: go install github.com/google/go-licenses@v1.2.1
-
+      - name: make project-keeper.sh executable 
+        run: chmod u+x .github/workflows/project-keeper.sh
       - name: Project Keeper Verify
         run: ./.github/workflows/project-keeper.sh
