@@ -8,7 +8,7 @@ Exasol REST API is an extension for the Exasol database that provides the abilit
 
 The REST API needs to be installed on a internet-facing server machine/VM that also has connectivity to the database environment.
 
-The REST API is stateless, so you can install it on multiple nodes put an HTTP load balancer in front.
+The REST API is stateless, so you can install it on multiple nodes and put a HTTP load balancer in front.
 
 We recommend to use HTTPS/TLS, see the [available options below](#using-secured-connection-https).
 
