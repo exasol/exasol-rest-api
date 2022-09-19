@@ -1,10 +1,16 @@
 # Exasol REST API
 
+Exasol REST API is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints. It is required to use the [Power Apps Connector for Exasol](https://github.com/exasol/power-apps-connector).
+
 ## Installation
 
-### Environment
+### Deployment
 
 The REST API needs to be installed on a internet-facing server machine/VM that also has connectivity to the database environment.
+
+The REST API is stateless, so you can install it on multiple nodes put an HTTP load balancer in front.
+
+We recommend to use HTTPS/TLS, see the [available options below](#using-secured-connection-https).
 
 ### Database Side Preparation
 
@@ -16,7 +22,7 @@ GRANT CREATE SESSION TO api_service_account;
 GRANT SELECT ON SCHEMA my_schema TO api_service_account;
 ```
 
-### Properties
+### Configuration
 
 #### Via YAML Configuration File
 
@@ -72,12 +78,12 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 ### Authorization
 
-Add a list of API tokens to the configuration file (find an example above). 
+Add a list of API tokens to the configuration file (find an example above).
 The tokens must have **at least 30 alphanumeric** characters. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
 
-* Download the latest executable from our [GitHub repository](https://github.com/exasol/exasol-rest-api/releases). 
+* Download the latest executable from our [GitHub repository](https://github.com/exasol/exasol-rest-api/releases).
 
 * Start the service:
 
@@ -87,7 +93,7 @@ On Linux:
 ./exasol-rest-api
 ```
 
-On Windows: open a command prompt and start the service from the prompt:  
+On Windows: open a command prompt and start the service from the prompt:
 
 ```shell
 path\to\file\exasol-rest-api-x86-64.exe
@@ -120,13 +126,13 @@ The service allows 30 requests per minute for all API endpoints. The limitation 
 
 ### Using Secured Connection (HTTPS)
 
-We strongly recommend using HTTPS when deploying the API service.
+We strongly recommend using TLS/HTTPS when deploying the API service.
 
-#### Enable TLS within the API itself
+#### Enable TLS Within the API Itself
 
 You can enable HTTPS within the service itself using the `API_TLS` (set it to true to enable TLS), `API_TLS_PKPATH` (path to `private key.pem` file) and `API_TLS_CERTPATH` (path to `certificate.pem` file) configuration properties.
 
-These entries would look like this in your configuration .yml file:
+These entries would look like this in your configuration `.yml` file:
 
 > API_TLS: true
 >
@@ -138,7 +144,7 @@ You might also want to change the listening port to port 443 (the default for SS
 
 > SERVER_ADDRESS : "0.0.0.0:443"
 
-#### Using a proxy and SSL termination
+#### Using a Proxy and TLS Termination
 
 Another way is setting up a publicly accessible proxy server that [terminates SSL](https://en.wikipedia.org/wiki/TLS_termination_proxy) and forwards the request to the API service.
 
