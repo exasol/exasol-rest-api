@@ -2,6 +2,10 @@
 
 ## Installation
 
+### Environment
+
+The REST API needs to be installed on a internet-facing server machine/VM that also has connectivity to the database environment.
+
 ### Database Side Preparation
 
 * Create a user in the Exasol database for the API service. This user is a service account for Exasol REST API. The service account will be used for all connections, therefore grant **minimum** privileges to it. We strongly recommend to only grant SELECT on required schemas/tables. Please keep in mind that all API users use the same service account.
