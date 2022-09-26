@@ -1,6 +1,6 @@
 # Exasol REST API
 
-Exasol REST API is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints. It is required to use the [Power Apps Connector for Exasol](https://github.com/exasol/power-apps-connector).
+Exasol REST API is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints. The REST API is required by the [Power Apps Connector for Exasol](https://github.com/exasol/power-apps-connector).
 
 ## Installation
 
