@@ -31,7 +31,7 @@
 [5]: https://github.com/swaggo/swag/blob/v1.8.4/license
 [6]: https://github.com/tidwall/sjson/blob/v1.2.4/LICENSE
 [7]: https://github.com/ulule/limiter/blob/v3.10.0/LICENSE
-[8]: https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE
-[9]: https://github.com/exasol/exasol-driver-go/blob/v0.3.1/LICENSE
-[10]: https://github.com/stretchr/testify/blob/v1.8.0/LICENSE
-[11]: https://github.com/testcontainers/testcontainers-go/blob/c0c2f90f591a/LICENSE
+[8]: https://github.com/go-yaml/yaml/blob/496545a6307b/LICENSE
+[9]: https://github.com/exasol/exasol-driver-go/blob/HEAD/LICENSE
+[10]: https://github.com/stretchr/testify/blob/HEAD/LICENSE
+[11]: https://github.com/testcontainers/testcontainers-go/blob/HEAD/LICENSE

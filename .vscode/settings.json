@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "exasol",
+        "projectKey": "com.exasol:exasol-rest-api"
+    }
+}
