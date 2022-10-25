@@ -4,7 +4,7 @@ Code name: Fix vulnerabilities in dependencies
 
 ## Summary
 
-In this release we fixed the CVE-2022-32149 in `pkg:golang/golang.org/x/text@v0.3.7`.
+In this release we updated the dependency `pkg:golang/golang.org/x/text` from v0.3.7 to v0.4.0 in order to fix CVE-2022-32149.
 
 ## Features
 
