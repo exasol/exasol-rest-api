@@ -48,8 +48,10 @@ jobs:
             ${{ runner.os }}-go-licenses-${{ hashFiles('.github/workflows/project-keeper-verify.yml') }}
             ${{ runner.os }}-go-licenses-
 
-      - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.8.7
+      - name: Generate Swagger API Description
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@v1.8.7
+          ./generate-swagger-docs
 
       - name: Project Keeper Verify
         run: ./.github/workflows/project-keeper.sh
