@@ -9,6 +9,7 @@ In this release we updated the dependency `pkg:golang/golang.org/x/text` from v0
 ## Features
 
 * #64: Fixed vulnerabilities in dependencies
+
 ## Dependency Updates
 
 ### Compile Dependency Updates
