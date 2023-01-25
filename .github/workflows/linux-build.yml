@@ -10,25 +10,25 @@ jobs:
     strategy:
       matrix:
         go: [ "1.18" ]
-        db: [ "7.0.20", "7.1.15" ]
+        db: [ "7.0.20", "7.1.17" ]
     env:
       DEFAULT_GO: "1.18"
-      DEFAULT_DB: "7.1.15"
+      DEFAULT_DB: "7.1.17"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
 
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Cache go modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-go-
       
       - name: Cache OpenFastTrace
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /tmp/oft/
@@ -54,7 +54,7 @@ jobs:
         run: docker build --tag rest-api-test-image:latest .
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.8.7
+        run: go install github.com/swaggo/swag/cmd/swag@v1.8.9
 
       - name: Generate Swagger API Description
         run: ./generate-swagger-docs
