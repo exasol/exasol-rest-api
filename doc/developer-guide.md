@@ -13,7 +13,7 @@ Please don't forget to change that version.
 2. Install `swag`:
 
     ```shell
-    go install github.com/swaggo/swag/cmd/swag@latest
+    go install github.com/swaggo/swag/cmd/swag@1.8.7
     ```
 
 3. Run the following script to generate Swagger documentation:

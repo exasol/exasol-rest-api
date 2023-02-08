@@ -27,7 +27,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.19
 
       - name: Cache Project Keeper
         uses: actions/cache@v3
@@ -48,9 +48,10 @@ jobs:
             ${{ runner.os }}-go-licenses-${{ hashFiles('.github/workflows/project-keeper-verify.yml') }}
             ${{ runner.os }}-go-licenses-
 
-      - name: Install go-licenses
-        run: go install github.com/google/go-licenses@v1.2.1
-      - name: make project-keeper.sh executable 
-        run: chmod u+x .github/workflows/project-keeper.sh
+      - name: Generate Swagger API Description
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@v1.8.7
+          ./generate-swagger-docs
+
       - name: Project Keeper Verify
         run: ./.github/workflows/project-keeper.sh
