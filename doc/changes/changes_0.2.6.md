@@ -3,11 +3,11 @@
 Code name: Start app from CLI without environment variable / Dependency updates
 
 ## Summary
-- Add option to start the app as CLI
+- Add option to start app from CLI without environment variable
 - Dependency updates
 ## Features
 
-* #16 - Add option to start the app as CLI
+* #16 - Add option to start app from CLI without environment variable
 ## Dependency Updates
 
 ### Compile Dependency Updates
