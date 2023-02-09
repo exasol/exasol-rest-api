@@ -3,16 +3,13 @@
 Code name: Start app from CLI without environment variable / Dependency updates
 
 ## Summary
-- Add option to start the app as CLI 
+- Add option to start the app as CLI
 - Dependency updates
 ## Features
 
-* #16 - Add option to start the app as CLI 
-
+* #16 - Add option to start the app as CLI
 ## Dependency Updates
 
-* Added indirect dependency to `golang.org/x/net` `v0.5.0` to fix vulnerability.
-  
 ### Compile Dependency Updates
 
 * Updated `golang:1.18` to `1.20`
