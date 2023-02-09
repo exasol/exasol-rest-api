@@ -1,15 +1,18 @@
-# Exasol Rest api 0.2.6, released 2023-??-??
+# Exasol Rest api 0.2.6, released 2023-02-09
 
-Code name:
+Code name: Start app from CLI without environment variable / Dependency updates
 
 ## Summary
-
+- Add option to start the app as CLI 
+- Dependency updates
 ## Features
 
-* ISSUE_NUMBER: description
+* #16 - Add option to start the app as CLI 
 
 ## Dependency Updates
 
+* Added indirect dependency to `golang.org/x/net` `v0.5.0` to fix vulnerability.
+  
 ### Compile Dependency Updates
 
 * Updated `golang:1.18` to `1.20`
