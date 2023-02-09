@@ -27,7 +27,7 @@ func main() {
 }
 
 func extractAppPropertiesPath() *string {
-	appPropertiesPathCli := flag.String("application-properties-path", "", "Option to provide the application properties path via CLI argument.")
+	appPropertiesPathCli := flag.String("application-properties-path", "", "Path to the application properties file.")
 	flag.Parse()
 	return appPropertiesPathCli
 }
