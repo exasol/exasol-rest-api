@@ -1,9 +1,12 @@
 package main
 
-import exasol_rest_api "main/pkg/exasol-rest-api"
+import (
+	"flag"
+	exasol_rest_api "main/pkg/exasol-rest-api"
+)
 
 // @title Exasol REST API
-// @version 0.2.4
+// @version 0.2.6
 // @description This service is a proxy that wrapping up Exasol WebSockets library.
 
 // @contact.name Exasol REST API GitHub Issues
@@ -19,5 +22,12 @@ import exasol_rest_api "main/pkg/exasol-rest-api"
 // @BasePath /api/v1
 
 func main() {
-	exasol_rest_api.Run()
+	appPropertiesPathCli := extractAppPropertiesPath()
+	exasol_rest_api.Run(*appPropertiesPathCli)
+}
+
+func extractAppPropertiesPath() *string {
+	appPropertiesPathCli := flag.String("application-properties-path", "", "Path to the application properties file.")
+	flag.Parse()
+	return appPropertiesPathCli
 }

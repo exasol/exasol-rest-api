@@ -36,8 +36,8 @@ type ApplicationProperties struct {
 }
 
 // GetApplicationProperties creates an application properties.
-func GetApplicationProperties() *ApplicationProperties {
-	properties := readApplicationProperties()
+func GetApplicationProperties(appPropertiesPathCli string) *ApplicationProperties {
+	properties := readApplicationProperties(appPropertiesPathCli)
 	err := properties.validate()
 	if err != nil {
 		panic(exaerror.New("E-ERA-7").Message("application properties validation failed. {{error|uq}}").
@@ -46,15 +46,20 @@ func GetApplicationProperties() *ApplicationProperties {
 	return &properties
 }
 
-func readApplicationProperties() ApplicationProperties {
-	properties := readApplicationPropertiesFromFile()
+func readApplicationProperties(appPropertiesPathCli string) ApplicationProperties {
+	properties := readApplicationPropertiesFromFile(appPropertiesPathCli)
 	properties.setValuesFromEnvironmentVariables()
 	properties.fillMissingWithDefaultValues()
 	return properties
 }
 
-func readApplicationPropertiesFromFile() ApplicationProperties {
-	propertiesFilePath := os.Getenv("APPLICATION_PROPERTIES_PATH")
+func readApplicationPropertiesFromFile(appPropertiesPathCli string) ApplicationProperties {
+	var propertiesFilePath string
+	if appPropertiesPathCli != "" {
+		propertiesFilePath = appPropertiesPathCli
+	} else {
+		propertiesFilePath = os.Getenv("APPLICATION_PROPERTIES_PATH")
+	}
 	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
 		errorLogger.Printf(exaerror.New("E-ERA-6").
