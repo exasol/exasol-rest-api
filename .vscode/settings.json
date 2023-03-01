@@ -1,4 +1,5 @@
 {
+    "go.testTimeout": "2000s",
     "sonarlint.connectedMode.project": {
         "connectionId": "exasol",
         "projectKey": "com.exasol:exasol-rest-api"

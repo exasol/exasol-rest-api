@@ -1,6 +1,6 @@
 sources:
   - type: golang
     path: go.mod
-version: 0.2.6
+version: 0.2.7
 excludes:
   - "E-PK-CORE-18: Outdated content: '.github/workflows/project-keeper-verify.yml'"
