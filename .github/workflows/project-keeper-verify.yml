@@ -21,13 +21,15 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: 11
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
+
+
 
       - name: Cache Project Keeper
         uses: actions/cache@v3
@@ -47,11 +49,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-licenses-${{ hashFiles('.github/workflows/project-keeper-verify.yml') }}
             ${{ runner.os }}-go-licenses-
-
-      - name: Generate Swagger API Description
-        run: |
-          go install github.com/swaggo/swag/cmd/swag@v1.8.7
-          ./generate-swagger-docs
 
       - name: Project Keeper Verify
         run: ./.github/workflows/project-keeper.sh
