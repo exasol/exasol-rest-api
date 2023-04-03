@@ -1,7 +1,6 @@
 package exasol_rest_api_test
 
 import (
-	"io/ioutil"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"os"
 	"testing"
@@ -84,7 +83,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingPropert
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEmptyPropertiesFileAndWithoutEnv() {
-	file, _ := ioutil.TempFile("", "application_properties_*.yml")
+	file, _ := os.CreateTemp("", "application_properties_*.yml")
 	defer func(file *os.File) {
 		onError(file.Close())
 	}(file)
@@ -262,7 +261,7 @@ func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
 }
 
 func (suite *ApplicationPropertiesSuite) createTempAppPropertiesFile(filePath string, fileNamePattern string, properties *exasol_rest_api.ApplicationProperties) (*os.File, error) {
-	file, _ := ioutil.TempFile(filePath, fileNamePattern)
+	file, _ := os.CreateTemp(filePath, fileNamePattern)
 	defer func(file *os.File) {
 		onError(file.Close())
 	}(file)
