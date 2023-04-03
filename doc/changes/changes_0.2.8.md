@@ -1,6 +1,6 @@
 # Exasol Rest api 0.2.8, released 2023-04-03
 
-Code name: Fix vulnerabilities in test dependencies
+Code name: Fix vulnerabilities in test dependencies on top of 0.2.7
 
 ## Summary
 
