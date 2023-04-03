@@ -29,8 +29,6 @@ jobs:
         with:
           go-version: 1.19
 
-
-
       - name: Cache Project Keeper
         uses: actions/cache@v3
         with:
@@ -49,6 +47,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-licenses-${{ hashFiles('.github/workflows/project-keeper-verify.yml') }}
             ${{ runner.os }}-go-licenses-
+
+      - name: Generate Swagger API Description
+        run: |
+          # Required to fix error message: "main/doc/swagger: package main/doc/swagger is not in GOROOT"
+          go install github.com/swaggo/swag/cmd/swag@v1.8.12
+          ./generate-swagger-docs
 
       - name: Project Keeper Verify
         run: ./.github/workflows/project-keeper.sh
