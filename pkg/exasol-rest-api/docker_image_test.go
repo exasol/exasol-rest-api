@@ -3,7 +3,7 @@ package exasol_rest_api_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"strconv"
@@ -68,7 +68,7 @@ func (suite *DockerImageTestSuite) TestQuery() {
 	response, err := client.Do(req)
 	onError(err)
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	onError(err)
 
 	suite.Equal("200 OK", response.Status)
