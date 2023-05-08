@@ -8,7 +8,7 @@ This release upgrades test dependency `github.com/docker/docker` to fix vulnerab
 
 ## Features
 
-* #57: Fixed vulnerabilities in test dependency
+* #75: Fixed vulnerabilities in test dependency
 
 ## Dependency Updates
 
