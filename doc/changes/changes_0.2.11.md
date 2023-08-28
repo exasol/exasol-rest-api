@@ -1,4 +1,4 @@
-# Exasol Rest api 0.2.11, released 2023-08-28
+# Exasol Rest api 0.2.11, released 2023-08-29
 
 Code name: Update Dependencies on top of 0.2.10
 
