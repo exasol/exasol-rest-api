@@ -1017,7 +1017,7 @@ func runExasolContainer(ctx context.Context) *testSetupAbstraction.TestSetupAbst
 	if dbVersion == "" {
 		dbVersion = "7.1.22"
 	}
-	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion("7.1.22").Start()
+	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion(dbVersion).Start()
 	onError(err)
 	return exasolContainer
 }
