@@ -82,15 +82,16 @@ func (suite *DockerImageTestSuite) TestQuery() {
 		string(body))
 }
 
+// getHostAddress returns an address accessible from other Docker containers.
+// This is a workaround for https://github.com/exasol/exasol-test-setup-abstraction-server/issues/38
+// Implementation adapted from https://stackoverflow.com/a/37382208
 func getHostAddress() (string, error) {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
 		return "", err
 	}
 	defer conn.Close()
-
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
 	return localAddr.IP.String(), err
 }
 
