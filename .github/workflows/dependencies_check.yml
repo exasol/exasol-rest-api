@@ -3,6 +3,7 @@ name: Dependencies Check
 on:
   schedule:
     - cron: "0 23 * * *"
+  pull_request:
 
 jobs:
   build:
