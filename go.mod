@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/exasol/error-reporting-go v0.2.0
-	github.com/exasol/exasol-driver-go v1.0.1
+	github.com/exasol/exasol-test-setup-abstraction-server/go-client v0.3.3
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/stretchr/testify v1.8.4
@@ -34,6 +34,7 @@ require (
 	github.com/docker/docker v24.0.5+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/exasol/exasol-driver-go v1.0.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
