@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	exasol_rest_api "main/pkg/exasol-rest-api"
+	"net"
 	"net/http"
 	"strconv"
 	"testing"
 
+	testSetupAbstraction "github.com/exasol/exasol-test-setup-abstraction-server/go-client"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -17,13 +19,12 @@ import (
 type DockerImageTestSuite struct {
 	suite.Suite
 	ctx                   context.Context
-	exasolContainer       testcontainers.Container
+	exasolContainer       *testSetupAbstraction.TestSetupAbstraction
 	defaultExasolUsername string
 	defaultExasolPassword string
 	defaultAuthTokens     string
 	exasolPort            int
 	exasolHost            string
-	exasolContainerIP     string
 }
 
 func TestDockerImageSuite(t *testing.T) {
@@ -36,20 +37,25 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	suite.defaultExasolPassword = "secret_password"
 	suite.defaultAuthTokens = "3J90XAv9loMIXzQdfYmtJrHAbopPsc,OR6rq6KjWmhvGU770A9OTjpfH86nlk"
 	suite.exasolContainer = runExasolContainer(suite.ctx)
-	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
-	suite.exasolPort = getExasolPort(suite.exasolContainer, suite.ctx)
-	suite.exasolContainerIP = getExasolContainerIP(suite.exasolContainer, suite.ctx)
-	createDefaultServiceUserWithAccess(suite.defaultExasolUsername, suite.defaultExasolPassword, suite.exasolHost,
-		suite.exasolPort)
+	connectionInfo, err := suite.exasolContainer.GetConnectionInfo()
+	onError(err)
+	suite.exasolHost = connectionInfo.Host
+	suite.exasolPort = connectionInfo.Port
+	connection, err := suite.exasolContainer.CreateConnection()
+	onError(err)
+	createDefaultServiceUserWithAccess(connection, suite.defaultExasolUsername, suite.defaultExasolPassword)
 }
 
 func (suite *DockerImageTestSuite) TestQuery() {
+	host, err := getHostAddress()
+	onError(err)
+	suite.T().Logf("Using host %s:%d", host, suite.exasolPort)
 	properties := map[string]string{
 		exasol_rest_api.APITokensKey:      suite.defaultAuthTokens,
 		exasol_rest_api.ExasolUserKey:     suite.defaultExasolUsername,
 		exasol_rest_api.ExasolPasswordKey: suite.defaultExasolPassword,
-		exasol_rest_api.ExasolHostKey:     suite.exasolContainerIP,
-		exasol_rest_api.ExasolPortKey:     "8563",
+		exasol_rest_api.ExasolHostKey:     host,
+		exasol_rest_api.ExasolPortKey:     strconv.Itoa(suite.exasolPort),
 		exasol_rest_api.EncryptionKey:     "-1",
 	}
 	apiContainer := runRestAPIContainer(properties)
@@ -74,6 +80,19 @@ func (suite *DockerImageTestSuite) TestQuery() {
 	suite.Equal("200 OK", response.Status)
 	suite.Equal("{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
 		string(body))
+}
+
+// getHostAddress returns an address accessible from other Docker containers.
+// This is a workaround for https://github.com/exasol/exasol-test-setup-abstraction-server/issues/38
+// Implementation adapted from https://stackoverflow.com/a/37382208
+func getHostAddress() (string, error) {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	return localAddr.IP.String(), err
 }
 
 func runRestAPIContainer(env map[string]string) testcontainers.Container {

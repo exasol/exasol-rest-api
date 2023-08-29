@@ -5,27 +5,24 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/exasol/exasol-driver-go"
 	"github.com/stretchr/testify/suite"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+
+	testSetupAbstraction "github.com/exasol/exasol-test-setup-abstraction-server/go-client"
 )
 
 type IntegrationTestSuite struct {
 	suite.Suite
 	ctx                    context.Context
-	exasolContainer        testcontainers.Container
+	exasolContainer        *testSetupAbstraction.TestSetupAbstraction
 	defaultServiceUsername string
 	defaultServicePassword string
 	defaultAuthTokens      []string
@@ -45,15 +42,15 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.defaultServicePassword = "secret_password"
 	suite.defaultAuthTokens = []string{"3J90XAv9loMIXzQdfYmtJrHAbopPsc", "OR6rq6KjWmhvGU770A9OTjpfH86nlk"}
 	suite.exasolContainer = runExasolContainer(suite.ctx)
-	suite.exasolHost = getExasolHost(suite.exasolContainer, suite.ctx)
-	suite.exasolPort = getExasolPort(suite.exasolContainer, suite.ctx)
-	database, err := sql.Open("exasol",
-		exasol.NewConfig("sys",
-			"exasol").ValidateServerCertificate(false).Host(suite.exasolHost).Port(suite.exasolPort).Autocommit(true).String())
+	connectionInfo, err := suite.exasolContainer.GetConnectionInfo()
+	onError(err)
+	suite.exasolHost = connectionInfo.Host
+	suite.exasolPort = connectionInfo.Port
+
+	database, err := suite.exasolContainer.CreateConnectionWithConfig(true)
 	onError(err)
 	suite.connection = database
-	createDefaultServiceUserWithAccess(suite.defaultServiceUsername, suite.defaultServicePassword, suite.exasolHost,
-		suite.exasolPort)
+	createDefaultServiceUserWithAccess(suite.connection, suite.defaultServiceUsername, suite.defaultServicePassword)
 }
 
 func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Application) *gin.Engine {
@@ -1015,41 +1012,14 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 	suite.False(rows.Next())
 }
 
-func runExasolContainer(ctx context.Context) testcontainers.Container {
+func runExasolContainer(ctx context.Context) *testSetupAbstraction.TestSetupAbstraction {
 	dbVersion := os.Getenv("DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "7.1.19"
+		dbVersion = "7.1.22"
 	}
-	request := testcontainers.ContainerRequest{
-		Image:        fmt.Sprintf("exasol/docker-db:%s", dbVersion),
-		ExposedPorts: []string{"8563", "2580"},
-		WaitingFor:   wait.ForLog("All stages finished").WithStartupTimeout(time.Minute * 5),
-		Privileged:   true,
-	}
-	exasolContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: request,
-		Started:          true,
-	})
+	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion(dbVersion).Start()
 	onError(err)
 	return exasolContainer
-}
-
-func getExasolHost(exasolContainer testcontainers.Container, ctx context.Context) string {
-	host, err := exasolContainer.Host(ctx)
-	onError(err)
-	return host
-}
-
-func getExasolContainerIP(exasolContainer testcontainers.Container, ctx context.Context) string {
-	host, err := exasolContainer.ContainerIP(ctx)
-	onError(err)
-	return host
-}
-
-func getExasolPort(exasolContainer testcontainers.Container, ctx context.Context) int {
-	port, err := exasolContainer.MappedPort(ctx, "8563")
-	onError(err)
-	return port.Int()
 }
 
 func onError(err error) {
@@ -1081,12 +1051,9 @@ func (suite *IntegrationTestSuite) runApiServer(properties *exasol_rest_api.Appl
 	}
 }
 
-func createDefaultServiceUserWithAccess(user string, password string, host string, port int) {
-	database, err := sql.Open("exasol",
-		exasol.NewConfig("sys", "exasol").ValidateServerCertificate(false).Host(host).Port(port).Autocommit(true).String())
-	onError(err)
+func createDefaultServiceUserWithAccess(database *sql.DB, user, password string) {
 	schemaName := "TEST_SCHEMA_1"
-	_, err = database.Exec("CREATE SCHEMA " + schemaName)
+	_, err := database.Exec("CREATE SCHEMA " + schemaName)
 	onError(err)
 	_, err = database.Exec("CREATE TABLE " + schemaName + ".TEST_TABLE(X INT, Y VARCHAR(100))")
 	onError(err)
@@ -1100,6 +1067,8 @@ func createDefaultServiceUserWithAccess(user string, password string, host strin
 	_, err = database.Exec("GRANT CREATE SESSION TO " + user)
 	onError(err)
 	_, err = database.Exec("GRANT SELECT ON SCHEMA " + schemaName + " TO " + user)
+	onError(err)
+	_, err = database.Exec("COMMIT")
 	onError(err)
 }
 
