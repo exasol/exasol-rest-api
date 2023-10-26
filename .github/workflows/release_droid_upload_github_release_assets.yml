@@ -21,7 +21,7 @@ jobs:
           go-version: "1.20"
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.8.12
+        run: go install github.com/swaggo/swag/cmd/swag@v1.16.2
       - name: Setup Environment variable for Swagger
         run: export PATH=$(go env GOPATH)/bin:$PATH
       - name: Generate Swagger API Description
