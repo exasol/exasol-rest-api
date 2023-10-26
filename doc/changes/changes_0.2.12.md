@@ -1,4 +1,4 @@
-# Exasol Rest api 0.2.12, released 2023-10-26
+# Exasol Rest api 0.2.12, released 2023-10-27
 
 Code name: Fix CVE-2023-39325 in dependency `golang.org/x/net`
 
