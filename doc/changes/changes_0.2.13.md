@@ -1,4 +1,4 @@
-# Exasol Rest api 0.2.13, released 2023-??-??
+# Exasol Rest API 0.2.13, released 2023-??-??
 
 Code name:
 
@@ -7,4 +7,3 @@ Code name:
 ## Features
 
 * ISSUE_NUMBER: description
-
