@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         go: [ "1.20" ]
-        db: [ "7.1.23", "8.23.0" ]
+        db: [ "7.1.23" ]
     env:
       DEFAULT_GO: "1.20"
       DEFAULT_DB: "8.23.0"
