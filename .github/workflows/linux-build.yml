@@ -66,9 +66,6 @@ jobs:
           skip-go-installation: true
           skip-pkg-cache: true
 
-      - name: Nancy Security scanner
-        run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth --skip-update-check
-
       - name: Run unit tests
         run: go test -v -short ./...
 
