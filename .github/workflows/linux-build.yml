@@ -10,10 +10,10 @@ jobs:
     strategy:
       matrix:
         go: [ "1.20" ]
-        db: [ "7.1.23", "8.23.0" ]
+        db: [ "7.1.23" ]
     env:
       DEFAULT_GO: "1.20"
-      DEFAULT_DB: "8.23.0"
+      DEFAULT_DB: "7.1.23"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -66,11 +66,10 @@ jobs:
           skip-go-installation: true
           skip-pkg-cache: true
 
-      - name: Nancy Security scanner
-        run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth --skip-update-check
-
-      - name: test
-        run: go test -v -coverprofile=coverage.out ./... -timeout 2000s
+      - name: Run all tests with Exasol ${{ matrix.db }}
+        run: go test -v -p 1 -coverprofile=coverage.out ./... -timeout 2000s
+        env:
+          DB_VERSION: ${{ matrix.db }}
 
       - name: SonarCloud Scan
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'

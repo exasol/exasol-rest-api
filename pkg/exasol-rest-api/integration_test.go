@@ -37,6 +37,9 @@ func TestIntegrationSuite(t *testing.T) {
 }
 
 func (suite *IntegrationTestSuite) SetupSuite() {
+	if testing.Short() {
+		suite.T().Skip()
+	}
 	suite.ctx = context.Background()
 	suite.defaultServiceUsername = "api_service_account"
 	suite.defaultServicePassword = "secret_password"
@@ -1015,7 +1018,7 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 func runExasolContainer(ctx context.Context) *testSetupAbstraction.TestSetupAbstraction {
 	dbVersion := os.Getenv("DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "7.1.22"
+		dbVersion = "7.1.23"
 	}
 	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion(dbVersion).Start()
 	onError(err)
