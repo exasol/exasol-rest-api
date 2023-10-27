@@ -10,10 +10,10 @@ jobs:
     strategy:
       matrix:
         go: [ "1.20" ]
-        db: [ "7.1.22" ]
+        db: [ "7.1.23", "8.23.0" ]
     env:
       DEFAULT_GO: "1.20"
-      DEFAULT_DB: "7.1.22"
+      DEFAULT_DB: "8.23.0"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -23,7 +23,7 @@ jobs:
           go-version: ${{ matrix.go }}
 
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -54,7 +54,7 @@ jobs:
         run: docker build --tag rest-api-test-image:latest .
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.8.12
+        run: go install github.com/swaggo/swag/cmd/swag@v1.16.2
 
       - name: Generate Swagger API Description
         run: ./generate-swagger-docs

@@ -14,7 +14,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -51,7 +51,7 @@ jobs:
       - name: Generate Swagger API Description
         run: |
           # Required to fix error message: "main/doc/swagger: package main/doc/swagger is not in GOROOT"
-          go install github.com/swaggo/swag/cmd/swag@v1.8.12
+          go install github.com/swaggo/swag/cmd/swag@v1.16.2
           ./generate-swagger-docs
 
       - name: Project Keeper Verify
