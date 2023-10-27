@@ -13,7 +13,7 @@ jobs:
         db: [ "7.1.23" ]
     env:
       DEFAULT_GO: "1.20"
-      DEFAULT_DB: "8.23.0"
+      DEFAULT_DB: "7.1.23"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -65,9 +65,6 @@ jobs:
           version: latest
           skip-go-installation: true
           skip-pkg-cache: true
-
-      - name: Run unit tests
-        run: go test -v -short ./...
 
       - name: Run all tests with Exasol ${{ matrix.db }}
         run: go test -v -p 1 -coverprofile=coverage.out ./... -timeout 2000s
