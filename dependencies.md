@@ -7,7 +7,7 @@
 | ------------------------------------ | ----------------- |
 | github.com/exasol/error-reporting-go | [MIT][0]          |
 | github.com/gin-gonic/gin             | [MIT][1]          |
-| github.com/gorilla/websocket         | [BSD-2-Clause][2] |
+| github.com/gorilla/websocket         | [BSD-3-Clause][2] |
 | github.com/swaggo/files              | [MIT][3]          |
 | github.com/swaggo/gin-swagger        | [MIT][4]          |
 | github.com/swaggo/swag               | [MIT][5]          |
@@ -25,7 +25,7 @@
 
 [0]: https://github.com/exasol/error-reporting-go/blob/v0.2.0/LICENSE
 [1]: https://github.com/gin-gonic/gin/blob/v1.9.1/LICENSE
-[2]: https://github.com/gorilla/websocket/blob/v1.5.0/LICENSE
+[2]: https://github.com/gorilla/websocket/blob/v1.5.1/LICENSE
 [3]: https://github.com/swaggo/files/blob/v1.0.1/LICENSE
 [4]: https://github.com/swaggo/gin-swagger/blob/v1.6.0/LICENSE
 [5]: https://github.com/swaggo/swag/blob/v1.16.2/license
