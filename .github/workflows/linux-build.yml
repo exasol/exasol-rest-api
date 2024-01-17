@@ -10,15 +10,15 @@ jobs:
     strategy:
       matrix:
         go: [ "1.20" ]
-        db: [ "7.1.23" ]
+        db: [ "8.24.0" ]
     env:
       DEFAULT_GO: "1.20"
-      DEFAULT_DB: "7.1.23"
+      DEFAULT_DB: "8.24.0"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
 
@@ -26,19 +26,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Cache go modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
       
       - name: Cache OpenFastTrace
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             /tmp/oft/
@@ -60,7 +50,7 @@ jobs:
         run: ./generate-swagger-docs
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           skip-go-installation: true
