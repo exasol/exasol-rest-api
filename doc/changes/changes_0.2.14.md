@@ -1,12 +1,16 @@
-# Exasol Rest api 0.2.14, released 2024-??-??
+# Exasol Rest api 0.2.14, released 2024-02-07
 
-Code name:
+Code name: Fix vulnerabilities, update direct dependencies + go version
 
 ## Summary
+Fix vulnerabilities, update direct dependencies + go version
+Fixed vulnerabilies: 
+* github.com/opencontainers/runc : CVE-2024-21626
+* github.com/containerd/containerd
 
-## Features
+## Security
 
-* ISSUE_NUMBER: description
+* #88: fix vulnerabilities / update dependencies
 
 ## Dependency Updates
 
