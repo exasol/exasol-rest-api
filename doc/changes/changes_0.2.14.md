@@ -6,7 +6,7 @@ Code name: Fix vulnerabilities, update direct dependencies + go version
 Fix vulnerabilities, update direct dependencies + go version
 Fixed vulnerabilies: 
 * github.com/opencontainers/runc : CVE-2024-21626
-* github.com/containerd/containerd
+* github.com/containerd/containerd : CVE-2024-21626
 
 ## Security
 
