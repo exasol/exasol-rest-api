@@ -1,4 +1,4 @@
-# Exasol Rest api 0.2.14, released 2024-02-07
+# Exasol Rest api 0.2.14, released 2024-02-08
 
 Code name: Fix vulnerabilities, update direct dependencies + go version
 
