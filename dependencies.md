@@ -28,7 +28,7 @@
 [2]: https://github.com/gorilla/websocket/blob/v1.5.1/LICENSE
 [3]: https://github.com/swaggo/files/blob/v1.0.1/LICENSE
 [4]: https://github.com/swaggo/gin-swagger/blob/v1.6.0/LICENSE
-[5]: https://github.com/swaggo/swag/blob/v1.16.2/license
+[5]: https://github.com/swaggo/swag/blob/v1.16.3/license
 [6]: https://github.com/tidwall/sjson/blob/v1.2.5/LICENSE
 [7]: https://github.com/ulule/limiter/blob/v3.11.2/LICENSE
 [8]: https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE
