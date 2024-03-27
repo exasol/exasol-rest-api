@@ -18,3 +18,4 @@ Fixed CVEs:
 ### Test Dependency Updates
 
 * Updated `github.com/stretchr/testify:v1.8.4` to `v1.9.0`
+* Updated `github.com/testcontainers/testcontainers-go:v0.27.0` to `v0.29.1`
