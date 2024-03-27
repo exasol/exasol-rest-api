@@ -1,7 +1,7 @@
 sources:
   - type: golang
     path: go.mod
-version: 0.2.14
+version: 0.2.15
 excludes:
   # Need to generate Swagger API Description before running PK
   - "E-PK-CORE-18: Outdated content: '.github/workflows/project-keeper-verify.yml'"
