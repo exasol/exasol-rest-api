@@ -9,7 +9,7 @@ Fixed CVEs:
 - github.com/docker/docker : CVE-2024-24557
 - google.golang.org/protobuf : CVE-2024-24786
 
-## Features
+## Security
 
 * #90: Updated dependencies and fixed vulnerabilities
 
