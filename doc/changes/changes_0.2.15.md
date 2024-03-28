@@ -1,6 +1,6 @@
 # Exasol Rest api 0.2.15, released 2024-03-28
 
-Code name: Fix vulnerabilities
+Code name: Fix vulnerabilities CVE-2024-24557 and CVE-2024-24786
 
 ## Summary
 
