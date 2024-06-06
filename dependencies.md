@@ -24,7 +24,7 @@
 | github.com/testcontainers/testcontainers-go                      | [MIT][11] |
 
 [0]: https://github.com/exasol/error-reporting-go/blob/v0.2.0/LICENSE
-[1]: https://github.com/gin-gonic/gin/blob/v1.9.1/LICENSE
+[1]: https://github.com/gin-gonic/gin/blob/v1.10.0/LICENSE
 [2]: https://github.com/gorilla/websocket/blob/v1.5.1/LICENSE
 [3]: https://github.com/swaggo/files/blob/v1.0.1/LICENSE
 [4]: https://github.com/swaggo/gin-swagger/blob/v1.6.0/LICENSE
