@@ -25,3 +25,5 @@ pom.xml.versionsBackup
 *.md.html
 *.flattened-pom.xml
 main
+
+TAGS
