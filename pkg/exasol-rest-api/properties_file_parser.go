@@ -1,7 +1,6 @@
 package exasol_rest_api
 
 import (
-	"fmt"
 	"os"
 
 	exaerror "github.com/exasol/error-reporting-go"
@@ -24,8 +23,7 @@ func openFile(filepath string) (*os.File, error) {
 		return nil, exaerror.New("E-ERA-11").Message("cannot open a file. {{error|uq}}").
 			Parameter("error", err.Error())
 	} else if file == nil {
-		return nil, fmt.Errorf(exaerror.New("E-ERA-12").
-			Message("properties file doesn't exist.").String())
+		return nil, exaerror.New("E-ERA-12").Message("properties file doesn't exist.")
 	} else {
 		return file, nil
 	}

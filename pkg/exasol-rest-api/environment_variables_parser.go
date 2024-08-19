@@ -73,7 +73,7 @@ func (applicationProperties *ApplicationProperties) setExasolWebsocketsAPIVersio
 }
 
 func logEnvironmentVariableParsingError(variableName string, err error) {
-	errorLogger.Printf(exaerror.New("E-ERA-5").
+	errorLogger.Print(exaerror.New("E-ERA-5").
 		Message("cannot parse environment variable "+variableName+". {{error|uq}}").
 		Parameter("error", err.Error()).String())
 }

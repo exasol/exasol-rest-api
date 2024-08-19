@@ -51,5 +51,8 @@ jobs:
           go install github.com/swaggo/swag/cmd/swag@v1.16.3
           ./generate-swagger-docs
 
-      - name: Project Keeper Verify
-        run: ./.github/workflows/project-keeper.sh
+# Disabled until issue is fixed
+# https://github.com/exasol/project-keeper/issues/583
+
+#       - name: Project Keeper Verify
+#         run: ./.github/workflows/project-keeper.sh
