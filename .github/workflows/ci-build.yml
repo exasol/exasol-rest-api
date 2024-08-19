@@ -10,13 +10,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - go: "1.20"
-            db: "7.1.25"
-          - go: "1.21"
-            db: "7.1.25"
+          - go: "1.22"
+            db: "7.1.29"
+          - go: "1.23"
+            db: "7.1.29"
     env:
-      DEFAULT_GO: "1.21"
-      DEFAULT_DB: "7.1.25"
+      DEFAULT_GO: "1.23"
+      DEFAULT_DB: "7.1.29"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +58,7 @@ jobs:
           DB_VERSION: ${{ matrix.db }}
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6.1.0 # 4
+        uses: golangci/golangci-lint-action@v6.1.0
         with:
           version: latest
           skip-cache: true
