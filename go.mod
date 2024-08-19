@@ -6,7 +6,7 @@ require (
 	github.com/containerd/containerd v1.7.20 // indirect
 	github.com/docker/docker v27.1.2+incompatible // indirect
 	github.com/exasol/error-reporting-go v0.2.0
-	github.com/exasol/exasol-test-setup-abstraction-server/go-client v0.3.5
+	github.com/exasol/exasol-test-setup-abstraction-server/go-client v0.3.9
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/stretchr/testify v1.9.0
@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.0 // indirect
+	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -33,7 +33,7 @@ require (
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/exasol/exasol-driver-go v1.0.4 // indirect
+	github.com/exasol/exasol-driver-go v1.0.10 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
