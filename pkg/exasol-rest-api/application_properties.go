@@ -1,7 +1,6 @@
 package exasol_rest_api
 
 import (
-	"fmt"
 	"os"
 
 	exaerror "github.com/exasol/error-reporting-go"
@@ -62,7 +61,7 @@ func readApplicationPropertiesFromFile(appPropertiesPathCli string) ApplicationP
 	}
 	properties, err := getPropertiesFromFile(propertiesFilePath)
 	if err != nil {
-		errorLogger.Printf(exaerror.New("E-ERA-6").
+		errorLogger.Print(exaerror.New("E-ERA-6").
 			Message("cannot read properties from specified file: {{file path}}. {{error|uq}}").
 			Parameter("file path", propertiesFilePath).Parameter("error", err.Error()).String())
 		return ApplicationProperties{}
@@ -95,17 +94,17 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 
 func (applicationProperties *ApplicationProperties) validate() error {
 	if applicationProperties.ExasolUser == "" && applicationProperties.ExasolPassword == "" {
-		return fmt.Errorf(exaerror.New("E-ERA-8").
+		return exaerror.New("E-ERA-8").
 			Message("exasol username and password are missing in properties.").
-			Mitigation("please specify an Exasol username and password via properties.").String())
+			Mitigation("please specify an Exasol username and password via properties.")
 	} else if applicationProperties.ExasolUser == "" {
-		return fmt.Errorf(exaerror.New("E-ERA-9").
+		return exaerror.New("E-ERA-9").
 			Message("exasol username is missing in properties.").
-			Mitigation("please specify an Exasol username via properties.").String())
+			Mitigation("please specify an Exasol username via properties.")
 	} else if applicationProperties.ExasolPassword == "" {
-		return fmt.Errorf(exaerror.New("E-ERA-10").
+		return exaerror.New("E-ERA-10").
 			Message("exasol password is missing in properties.").
-			Mitigation("please specify an Exasol password via properties.").String())
+			Mitigation("please specify an Exasol password via properties.")
 	} else {
 		return nil
 	}
