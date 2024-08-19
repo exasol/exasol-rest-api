@@ -1,7 +1,6 @@
 package exasol_rest_api
 
 import (
-	"fmt"
 	"net/http"
 
 	exaerror "github.com/exasol/error-reporting-go"
