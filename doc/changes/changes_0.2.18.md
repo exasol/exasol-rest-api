@@ -4,7 +4,7 @@ Code name: Fix vulnerability
 
 ## Summary
 
-This release fixes vulnerability "Authz zero length regression" in test dependency `github.com/docker/docker:v26.0.2` by updating dependencies.
+This release changes the supported version of `go` to be `1.22` or higher and fixes the vulnerability "Authz zero length regression" in test dependency `github.com/docker/docker:v26.0.2` by updating dependencies.
 
 ## Security Issues
 
