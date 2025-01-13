@@ -10,7 +10,7 @@ This release updates dependencies `golang.org/x/net` and `golang.org/x/crypto` t
 
 * #98: Fix vulnerabilities `CVE-2024-45337` and `CVE-2024-45338` in dependencies
 
-## Dependency Updates
+## Upgrades
 
 ### Indirect Dependencies
 
