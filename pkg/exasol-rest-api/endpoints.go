@@ -289,15 +289,16 @@ func (application *Application) handleRequest(convert func(toConvert []byte) (in
 }
 
 func getValueByType(valueType string, valueAsString string) (interface{}, error) {
-	if valueType == "string" {
+	switch valueType {
+	case "string":
 		return valueAsString, nil
-	} else if valueType == "bool" {
+	case "bool":
 		return strconv.ParseBool(valueAsString)
-	} else if valueType == "int" {
+	case "int":
 		return strconv.Atoi(valueAsString)
-	} else if valueType == "float" {
+	case "float":
 		return strconv.ParseFloat(valueType, 64)
-	} else {
+	default:
 		return "", errors.New("unsupported value type: " + valueType)
 	}
 }

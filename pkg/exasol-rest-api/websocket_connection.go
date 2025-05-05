@@ -52,11 +52,14 @@ func getInsecureConnection(connection *websocketConnection) bool {
 
 func (connection *websocketConnection) close() {
 	err := connection.send(&command{Command: "disconnect"}, nil)
-	connection.websocket.Close()
-	connection.websocket = nil
 	if err != nil {
 		errorLogger.Printf("error closing a websockets connection: %s", err)
 	}
+	err = connection.websocket.Close()
+	if err != nil {
+		errorLogger.Printf("error closing websocket: %s", err)
+	}
+	connection.websocket = nil
 }
 
 func (connection *websocketConnection) getURIScheme() string {

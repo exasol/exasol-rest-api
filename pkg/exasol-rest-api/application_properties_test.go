@@ -251,8 +251,8 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 
 func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
 	properties *exasol_rest_api.ApplicationProperties) string {
-	var filePath string = ""
-	var fileNamePattern string = "application_properties_*.yml"
+	var filePath = ""
+	var fileNamePattern = "application_properties_*.yml"
 	file, err := suite.createTempAppPropertiesFile(filePath, fileNamePattern, properties)
 	onError(err)
 	err = os.Setenv(applicationPropertiesPathKey, file.Name())
