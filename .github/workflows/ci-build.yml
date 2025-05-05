@@ -10,13 +10,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - go: "1.22"
-            db: "7.1.29"
-          - go: "1.23"
-            db: "7.1.29"
+          - go: "1.24.1"
+            db: "7.1.30"
+          - go: "1.24.1"
+            db: "8.34.0"
     env:
-      DEFAULT_GO: "1.23"
-      DEFAULT_DB: "7.1.29"
+      DEFAULT_GO: "1.24.1"
+      DEFAULT_DB: "8.34.0"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +47,7 @@ jobs:
         run: docker build --tag rest-api-test-image:latest .
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.16.3
+        run: go install github.com/swaggo/swag/cmd/swag@v1.16.4
 
       - name: Generate Swagger API Description
         run: ./generate-swagger-docs
@@ -56,13 +56,7 @@ jobs:
         run: go test -v -p 1 -coverprofile=coverage.out ./... -timeout 2000s
         env:
           DB_VERSION: ${{ matrix.db }}
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6.1.0
-        with:
-          version: latest
-          skip-cache: true
-
+          
       - name: SonarCloud Scan
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'
         uses: SonarSource/sonarcloud-github-action@master
@@ -70,6 +64,32 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8.0.0
+        with:
+          version: latest
+          skip-cache: true
+
+      - name: Run Go vulnerability check
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./... -show verbose
+
+      - name: Configure broken links checker
+        run: |
+          mkdir -p ./target
+          echo '{"aliveStatusCodes": [429, 200], "ignorePatterns": [' \
+               '{"pattern": "^https?://(www|dev).mysql.com/"},' \
+               '{"pattern": "^https?://(www.)?opensource.org"}' \
+               '{"pattern": "^https?://(www.)?eclipse.org"}' \
+               '{"pattern": "^https?://projects.eclipse.org"}' \
+               ']}' > ./target/broken_links_checker.json
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "yes"
+          config-file: ./target/broken_links_checker.json
+  
   build:
     needs: matrix-build
     runs-on: ubuntu-latest

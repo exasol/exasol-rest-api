@@ -1,9 +1,9 @@
 sources:
   - type: golang
     path: go.mod
-version: 0.2.19
+version: 0.3.0
 excludes:
-  # Need to generate Swagger API Description before running PK
+  # Need to generate Swagger API Description before running PK, see https://github.com/exasol/project-keeper/issues/642
   - "E-PK-CORE-18: Outdated content: '.github/workflows/project-keeper-verify.yml'"
   - "E-PK-CORE-26: '.github/workflows/release_droid_upload_github_release_assets.yml' exists but must not exist. Reason: Release-droid workflows are replaced by release.yml"
   - "E-PK-CORE-26: 'release_config.yml' exists but must not exist. Reason: Release-droid configuration is replaced by release.yml"
