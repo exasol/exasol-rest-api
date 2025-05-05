@@ -370,7 +370,7 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
-	defer onError(rows.Close())
+	defer func() { onError(rows.Close()) }()
 	rows.Next()
 
 	var c1, c2, c3, c4, c9, c10, c11, c12, c13, c14 string
@@ -590,7 +590,7 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
-	defer onError(rows.Close())
+	defer func() { onError(rows.Close()) }()
 
 	var c1 string
 	var c2 int
@@ -1010,7 +1010,7 @@ func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData,
 func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
-	defer onError(rows.Close())
+	defer func() { onError(rows.Close()) }()
 	suite.True(rows.Next())
 	suite.False(rows.Next())
 }
