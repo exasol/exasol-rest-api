@@ -52,10 +52,13 @@ jobs:
       - name: Generate Swagger API Description
         run: ./generate-swagger-docs
 
+      - name: Run short tests
+        run: go test -v -p 1 -short ./...
+
       - name: Run all tests with Exasol ${{ matrix.db }}
         run: go test -v -p 1 -coverprofile=coverage.out ./... -timeout 2000s
         env:
-          DB_VERSION: ${{ matrix.db }}
+          EXASOL_DB_VERSION: ${{ matrix.db }}
           
       - name: SonarCloud Scan
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'

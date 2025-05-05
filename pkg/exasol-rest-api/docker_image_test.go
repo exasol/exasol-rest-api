@@ -28,6 +28,9 @@ type DockerImageTestSuite struct {
 }
 
 func TestDockerImageSuite(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	suite.Run(t, new(DockerImageTestSuite))
 }
 
