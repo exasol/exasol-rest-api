@@ -73,7 +73,7 @@ jobs:
       - name: Run Go vulnerability check
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./... -show verbose
+          govulncheck -show verbose ./...
 
       - name: Configure broken links checker
         run: |
