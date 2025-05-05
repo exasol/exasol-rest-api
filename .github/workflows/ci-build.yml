@@ -12,11 +12,12 @@ jobs:
         include:
           - go: "1.24.1"
             db: "7.1.30"
-          - go: "1.24.1"
-            db: "8.34.0"
+# Will be enabled in a separate PR
+#          - go: "1.24.1"
+#            db: "8.34.0"
     env:
       DEFAULT_GO: "1.24.1"
-      DEFAULT_DB: "8.34.0"
+      DEFAULT_DB: "7.1.30"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
