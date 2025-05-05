@@ -53,5 +53,5 @@ jobs:
           go install github.com/swaggo/swag/cmd/swag@v1.16.4
           ./generate-swagger-docs
 
-       - name: Project Keeper Verify
-         run: ./.github/workflows/project-keeper.sh
+      - name: Project Keeper Verify
+        run: ./.github/workflows/project-keeper.sh

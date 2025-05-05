@@ -12,7 +12,7 @@ Code name:
 
 ### Compile Dependency Updates
 
-* Updated `golang:1.21` to `1.23.0`
+* Updated `golang:1.21` to `1.24.0`
 * Updated `github.com/swaggo/swag:v1.16.3` to `v1.16.4`
 
 ### Test Dependency Updates
@@ -23,4 +23,4 @@ Code name:
 
 ### Other Dependency Updates
 
-* Added `toolchain:go1.23.7`
+* Added `toolchain:go1.24.1`
