@@ -32,9 +32,13 @@ This section describes the runtime behavior of the software.
 ## Proxy Service
 
 ### Communicate with Database
-`dsn~communicate-with-database~1`
+`dsn~communicate-with-database~2`
 
-ERA uses [Exasol WebSockets API](https://github.com/exasol/websocket-api) to proxy the communication with the Exasol database.
+ERA uses [Exasol Driver for Go](https://github.com/exasol/exasol-driver-go) to proxy the communication with the Exasol database.
+
+Rationale:
+
+Using the Go driver encapsulates the Websocket protocol and avoids code duplication.
 
 Covers:
 
@@ -164,7 +168,7 @@ Covers:
 
 * `req~support-json-request-and-response-format~1`
 
-Needs: impl, utest, itest
+Needs: impl, itest
 
 ### Get Tables
 
@@ -214,7 +218,7 @@ Covers:
 
 * `req~support-json-request-and-response-format~1`
 
-Needs: impl, utest, itest
+Needs: impl, itest
 
 ### Insert Row
 
@@ -440,7 +444,7 @@ Covers:
 
 * `req~support-json-request-and-response-format~1`
 
-Needs: impl, utest, itest
+Needs: impl, itest
 
 ### Update Rows
 

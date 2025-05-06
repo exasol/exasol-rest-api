@@ -350,6 +350,7 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 	}
 }
 
+// [impl->dsn~communicate-with-database~2]
 func (application *Application) openConnection() (*sql.DB, error) {
 	props := application.Properties
 	database, err := sql.Open("exasol", exasol.NewConfig(props.ExasolUser, props.ExasolPassword).

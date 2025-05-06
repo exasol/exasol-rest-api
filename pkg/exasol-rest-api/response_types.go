@@ -23,8 +23,8 @@ type Table struct {
 	SchemaName string `json:"schemaName"`
 }
 
-// [impl->dsn~execute-query-response-body~1]
-// [impl->dsn~get-rows-response-body~1]
+// [impl->dsn~execute-query-response-body~2]
+// [impl->dsn~get-rows-response-body~2]
 type GetRowsResponse struct {
 	Status    string          `json:"status"`
 	Rows      json.RawMessage `json:"rows,omitempty"`
@@ -74,7 +74,7 @@ func ConvertToGetTablesResponse(rows *sql.Rows) (interface{}, error) {
 	return convertedResponse, nil
 }
 
-// [impl->dsn~execute-query-response-body~1]
+// [impl->dsn~execute-query-response-body~2]
 func ConvertToGetRowsResponse(rows *sql.Rows) (interface{}, error) {
 	columns, err := extractColumns(rows)
 	if err != nil {

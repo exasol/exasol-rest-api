@@ -65,7 +65,7 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestQuery() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -78,7 +78,7 @@ func (suite *IntegrationTestSuite) TestQuery() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -91,7 +91,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -104,7 +104,7 @@ func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege() {
 	username := "user_without_session_privilege"
 	password := "secret"
@@ -128,7 +128,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
 		APITokens:      suite.defaultAuthTokens,
@@ -148,7 +148,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
 		APITokens:      suite.defaultAuthTokens,
@@ -168,7 +168,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -181,7 +181,7 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -629,7 +629,7 @@ func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRows() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -643,7 +643,7 @@ func (suite *IntegrationTestSuite) TestGetRows() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithoutPredicate() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -657,7 +657,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithoutPredicate() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutColumnName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -671,7 +671,7 @@ func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutColumnName() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValue() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -685,7 +685,7 @@ func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValue() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValueType() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -699,7 +699,7 @@ func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValueType() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -713,7 +713,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -727,7 +727,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -741,7 +741,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -755,7 +755,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
