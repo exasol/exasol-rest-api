@@ -4,11 +4,13 @@ Package exasol_rest_api contains Exasol REST API logic.
 package exasol_rest_api
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"strconv"
 
 	exaerror "github.com/exasol/error-reporting-go"
+	"github.com/exasol/exasol-driver-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -52,7 +54,7 @@ func (application *Application) ExecuteStatement(context *gin.Context) {
 	} else if validationError != nil {
 		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
 	} else {
-		context.JSON(application.handleRequest(ConvertToBaseResponse, request.GetStatement()))
+		context.JSON(application.handleStatementRequest(request.GetStatement()))
 	}
 }
 
@@ -97,7 +99,7 @@ func (application *Application) InsertRow(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 		} else {
 			statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
-			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
+			context.JSON(application.handleStatementRequest(statement))
 		}
 	}
 }
@@ -129,7 +131,7 @@ func (application *Application) DeleteRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
 		} else {
 			statement := "DELETE FROM " + schemaName + "." + tableName + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
+			context.JSON(application.handleStatementRequest(statement))
 		}
 	}
 }
@@ -164,7 +166,7 @@ func (application *Application) UpdateRows(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
 		} else {
 			statement := "UPDATE " + schemaName + "." + tableName + " SET " + valuesToUpdate + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
+			context.JSON(application.handleStatementRequest(statement))
 		}
 	}
 }
@@ -273,18 +275,27 @@ func getRenderedValue(context *gin.Context, valueType string, value string) (int
 // [impl->dsn~get-rows-headers~1]
 // [impl->dsn~update-rows-headers~1]
 // [impl->dsn~execute-statement-headers~1]
-func (application *Application) handleRequest(convert func(toConvert []byte) (interface{}, error),
-	statement string) (int, interface{}) {
-	response, err := application.queryExasol(statement)
+func (application *Application) handleRequest(convert func(toConvert *sql.Rows) (interface{}, error), statement string) (int, interface{}) {
+	rows, err := application.queryExasol(statement)
 	if err != nil {
 		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
 	} else {
-		convertedResponse, err := convert(response)
+		convertedResponse, err := convert(rows)
 		if err != nil {
 			return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
 		} else {
 			return http.StatusOK, convertedResponse
 		}
+	}
+}
+
+func (application *Application) handleStatementRequest(statement string) (int, interface{}) {
+	_, err := application.executeUpdateExasol(statement)
+	if err != nil {
+		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
+	}
+	return http.StatusOK, APIBaseResponse{
+		Status: statusOk,
 	}
 }
 
@@ -303,7 +314,7 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 	}
 }
 
-func (application *Application) queryExasol(query string) ([]byte, error) {
+func (application *Application) queryExasol(query string) (*sql.Rows, error) {
 	connection, err := application.openConnection()
 	if err != nil {
 		return nil, exaerror.New("E-ERA-2").
@@ -311,31 +322,63 @@ func (application *Application) queryExasol(query string) ([]byte, error) {
 			Parameter("error", err.Error())
 	}
 
-	defer connection.close()
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			errorLogger.Print("error closing connection: %w", err)
+		}
+	}()
 
-	response, err := connection.executeQuery(query)
+	response, err := connection.Query(query)
 	if err != nil {
-		return nil, exaerror.New("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
+		return nil, exaerror.New("E-ERA-3").Message("error while executing query {{query}}: {{error|uq}}").
+			Parameter("query", query).
 			Parameter("error", err.Error())
 	}
 
 	return response, nil
 }
 
-func (application *Application) openConnection() (*websocketConnection, error) {
-	connection := &websocketConnection{
-		connProperties: application.Properties,
+func (application *Application) executeUpdateExasol(statement string) (sql.Result, error) {
+	connection, err := application.openConnection()
+	if err != nil {
+		return nil, exaerror.New("E-ERA-2").
+			Message("error while opening a connection with Exasol: {{error|uq}}").
+			Parameter("error", err.Error())
 	}
 
-	err := connection.connect()
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			errorLogger.Print("error closing connection: %w", err)
+		}
+	}()
+
+	result, err := connection.Exec(statement)
+	if err != nil {
+		return nil, exaerror.New("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
+			Parameter("error", err.Error())
+	}
+
+	return result, nil
+}
+
+func (application *Application) openConnection() (*sql.DB, error) {
+	props := application.Properties
+	database, err := sql.Open("exasol", exasol.NewConfig(props.ExasolUser, props.ExasolPassword).
+		Host(props.ExasolHost).
+		Port(props.ExasolPort).
+		Compression(true).
+		Encryption(props.Encryption == 1).
+		ValidateServerCertificate(props.Encryption == 1).
+		CertificateFingerprint(props.ExasolCertificateFingerprint).
+		Autocommit(true).
+		ClientName("Exasol REST API").
+		String())
+
 	if err != nil {
 		return nil, err
 	}
 
-	err = connection.login()
-	if err != nil {
-		return nil, err
-	}
-
-	return connection, nil
+	return database, nil
 }

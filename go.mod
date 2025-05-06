@@ -8,6 +8,7 @@ require (
 	github.com/docker/docker v28.1.1+incompatible // indirect
 	github.com/exasol/error-reporting-go v0.2.0
 	github.com/exasol/exasol-test-setup-abstraction-server/go-client v0.3.11
+	github.com/exasol/exasol-driver-go v1.0.13
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/stretchr/testify v1.10.0

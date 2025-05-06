@@ -144,7 +144,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'some query': failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - authentication failed.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -165,30 +165,9 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol:",
+		expectedBody:   "failed to connect to URL \\\"ws://localhost:4321\\\":",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
-}
-
-// [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
-func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 0,
-	})
-	data := testData{
-		server:         server,
-		query:          "some query",
-		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
-	}
-	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 // [itest->dsn~execute-query-endpoint~1]

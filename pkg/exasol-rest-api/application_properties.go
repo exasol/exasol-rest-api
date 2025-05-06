@@ -20,18 +20,19 @@ const UseTLSKey string = "EXASOL_TLS"
 // [impl->dsn~service-account~1]
 // [impl->dsn~service-credentials~1]
 type ApplicationProperties struct {
-	APITokens                 []string `yaml:"API_TOKENS"`
-	ApplicationServer         string   `yaml:"SERVER_ADDRESS"`
-	ExasolUser                string   `yaml:"EXASOL_USER"`
-	ExasolPassword            string   `yaml:"EXASOL_PASSWORD"`
-	ExasolHost                string   `yaml:"EXASOL_HOST"`
-	ExasolPort                int      `yaml:"EXASOL_PORT"`
-	ExasolWebsocketAPIVersion int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
-	Encryption                int      `yaml:"EXASOL_ENCRYPTION"`
-	UseTLS                    int      `yaml:"EXASOL_TLS"`
-	APIUseTLS                 bool     `yaml:"API_TLS"`
-	APITLSPrivateKeyPath      string   `yaml:"API_TLS_PKPATH"`
-	APITLSCertificatePath     string   `yaml:"API_TLS_CERTPATH"`
+	APITokens                    []string `yaml:"API_TOKENS"`
+	ApplicationServer            string   `yaml:"SERVER_ADDRESS"`
+	ExasolUser                   string   `yaml:"EXASOL_USER"`
+	ExasolPassword               string   `yaml:"EXASOL_PASSWORD"`
+	ExasolHost                   string   `yaml:"EXASOL_HOST"`
+	ExasolPort                   int      `yaml:"EXASOL_PORT"`
+	ExasolWebsocketAPIVersion    int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
+	Encryption                   int      `yaml:"EXASOL_ENCRYPTION"`
+	ExasolCertificateFingerprint string   `yaml:"EXASOL_CERTIFICATE_FINGERPRINT"`
+	UseTLS                       int      `yaml:"EXASOL_TLS"`
+	APIUseTLS                    bool     `yaml:"API_TLS"`
+	APITLSPrivateKeyPath         string   `yaml:"API_TLS_PKPATH"`
+	APITLSCertificatePath        string   `yaml:"API_TLS_CERTPATH"`
 }
 
 // GetApplicationProperties creates an application properties.
