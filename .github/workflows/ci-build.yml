@@ -10,13 +10,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - go: "1.24.1"
+          - go: "1.24.2"
             db: "7.1.30"
 # Will be enabled in a separate PR
-#          - go: "1.24.1"
+#          - go: "1.24.2"
 #            db: "8.34.0"
     env:
-      DEFAULT_GO: "1.24.1"
+      DEFAULT_GO: "1.24.2"
       DEFAULT_DB: "7.1.30"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest

@@ -1,4 +1,4 @@
-FROM golang:1.24.1-alpine
+FROM golang:1.24.2-alpine
 COPY . /exasol-rest-api
 WORKDIR /exasol-rest-api
 RUN go install github.com/swaggo/swag/cmd/swag@v1.16.4

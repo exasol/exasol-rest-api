@@ -23,4 +23,4 @@ Code name:
 
 ### Other Dependency Updates
 
-* Added `toolchain:go1.24.1`
+* Added `toolchain:go1.24.2`
