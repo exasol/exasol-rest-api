@@ -62,7 +62,7 @@ func (suite *DockerImageTestSuite) TestQueryDocker() {
 		exasol_rest_api.EncryptionKey:     "-1",
 	}
 	apiContainer := runRestAPIContainer(properties)
-	ip, err := apiContainer.Host(context.Background())
+	ip, err := apiContainer.Host(suite.ctx)
 	onError(err)
 
 	port, err := apiContainer.MappedPort(suite.ctx, "8080")
@@ -81,7 +81,7 @@ func (suite *DockerImageTestSuite) TestQueryDocker() {
 	onError(err)
 
 	suite.Equal("200 OK", response.Status)
-	suite.Equal("{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+	suite.Equal("{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
 		string(body))
 }
 

@@ -8,8 +8,8 @@ This release adds support for Exasol v8.
 
 **Breaking Changes:**
 * Column type metadata for queries does not contain the following fields any more:
-  * `characterSet`
-  * `withLocalTimeZone`
+  * `characterSet` (values: `"UTF8"`, `"ASCII"`)
+  * `withLocalTimeZone` (values: `true`, `false`)
   * `fraction`
   * `srid`
 * Configuration property `EXASOL_WEBSOCKET_API_VERSION` is not supported any more and is ignored.

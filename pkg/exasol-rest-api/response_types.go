@@ -42,14 +42,10 @@ type Column struct {
 }
 
 type DataType struct {
-	Type              string `json:"type"`
-	Precision         int64  `json:"precision,omitempty"`
-	Scale             int64  `json:"scale,omitempty"`
-	Size              int64  `json:"size,omitempty"`
-	CharacterSet      string `json:"characterSet,omitempty"`
-	WithLocalTimeZone bool   `json:"withLocalTimeZone,omitempty"`
-	Fraction          int    `json:"fraction,omitempty"`
-	SRID              int    `json:"srid,omitempty"`
+	Type      string `json:"type"`
+	Precision int64  `json:"precision,omitempty"`
+	Scale     int64  `json:"scale,omitempty"`
+	Size      int64  `json:"size,omitempty"`
 }
 
 // [impl->dsn~insert-row-response-body~1]
@@ -117,20 +113,15 @@ func extractColumns(rows *sql.Rows) ([]Column, error) {
 }
 
 func createColumn(colName string, colType *sql.ColumnType) Column {
-	fmt.Printf("Col %s: type %v\n", colName, colType)
 	precision, scale, _ := colType.DecimalSize()
 	length, _ := colType.Length()
 	return Column{
 		Name: colName,
 		DataType: DataType{
-			Type:              colType.DatabaseTypeName(),
-			Precision:         precision,
-			Scale:             scale,
-			Size:              length,
-			CharacterSet:      "",
-			WithLocalTimeZone: false,
-			Fraction:          0,
-			SRID:              0,
+			Type:      colType.DatabaseTypeName(),
+			Precision: precision,
+			Scale:     scale,
+			Size:      length,
 		},
 	}
 }
@@ -147,8 +138,8 @@ func buildRowsString(sqlRows *sql.Rows) (string, error) {
 	}
 
 	dest := []any{}
-	for _, colType := range types {
-		dest = append(dest, destForType(colType))
+	for range types {
+		dest = append(dest, new(any))
 	}
 
 	for sqlRows.Next() {
@@ -160,7 +151,6 @@ func buildRowsString(sqlRows *sql.Rows) (string, error) {
 		for colIndex := range dest {
 			value := dest[colIndex]
 			row, _ = sjson.Set(row, names[colIndex], &value)
-			fmt.Printf("Col %d: %s = %s / %v ---- Row = %s\n", colIndex, names[colIndex], value, &value, row)
 		}
 		rows += row
 		rows += ","
@@ -168,11 +158,4 @@ func buildRowsString(sqlRows *sql.Rows) (string, error) {
 	rows = strings.TrimRight(rows, ",")
 	rows += "]"
 	return rows, nil
-}
-
-func destForType(colType *sql.ColumnType) any {
-	t := colType.ScanType()
-	fmt.Printf("Col %s: %v\n", colType.Name(), t)
-	//dest := ""
-	return new(any)
 }

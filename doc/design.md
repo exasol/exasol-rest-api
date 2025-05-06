@@ -119,7 +119,7 @@ Covers:
 Needs: impl, itest
 
 #### Execute Query Response Body
-`dsn~execute-query-response-body~1`
+`dsn~execute-query-response-body~2`
 
 The endpoint has the following JSON response body format:
 
@@ -142,11 +142,7 @@ The endpoint has the following JSON response body format:
           "type": <string>,
           "precision": <number>,
           "scale": <number>,
-          "size": <number>,
-          "characterSet": <string>,
-          "withLocalTimeZone": <true | false>,
-          "fraction": <number>,
-          "srid": <number>
+          "size": <number>
         }
       }
     ]
@@ -155,6 +151,14 @@ The endpoint has the following JSON response body format:
   "exception": "<error code and message>"
 }
 ```
+
+Rationale:
+
+After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available not was removed from the response:
+* `characterSet`
+* `withLocalTimeZone`
+* `fraction`
+* `srid`
 
 Covers:
 
@@ -393,7 +397,7 @@ Covers:
 Needs: impl, utest, itest
 
 #### Get Rows Response Body
-`dsn~get-rows-response-body~1`
+`dsn~get-rows-response-body~2`
 
 The endpoint has the following JSON response body format:
 
@@ -416,11 +420,7 @@ The endpoint has the following JSON response body format:
           "type": <string>,
           "precision": <number>,
           "scale": <number>,
-          "size": <number>,
-          "characterSet": <string>,
-          "withLocalTimeZone": <true | false>,
-          "fraction": <number>,
-          "srid": <number>
+          "size": <number>
         }
       }
     ]
@@ -429,6 +429,12 @@ The endpoint has the following JSON response body format:
   "exception": "<error code and message>"
 }
 ```
+
+After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available not was removed from the response:
+* `characterSet`
+* `withLocalTimeZone`
+* `fraction`
+* `srid`
 
 Covers:
 

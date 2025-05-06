@@ -57,7 +57,7 @@ jobs:
         run: go test -v -short ./...
 
       - name: Run all tests with Exasol ${{ matrix.db }}
-        run: go test -v -p 1 -coverprofile=coverage.out ./... -timeout 2000s
+        run: go test -v -p 1 -count 1 -coverprofile=coverage.out ./... -timeout 2000s
         env:
           EXASOL_DB_VERSION: ${{ matrix.db }}
           
