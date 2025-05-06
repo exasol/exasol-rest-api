@@ -29,13 +29,15 @@ This release adds support for Exasol v8.
 
 * Updated `golang:1.21` to `1.24.0`
 * Updated `github.com/swaggo/swag:v1.16.3` to `v1.16.4`
+* Added `github.com/exasol/exasol-driver-go:v1.0.13`
+* Updated `github.com/stretchr/testify:v1.9.0` to `v1.10.0`
 
 ### Test Dependency Updates
 
 * Updated `github.com/testcontainers/testcontainers-go:v0.32.0` to `v0.37.0`
-* Updated `github.com/stretchr/testify:v1.9.0` to `v1.10.0`
 * Updated `github.com/exasol/exasol-test-setup-abstraction-server/go-client:v0.3.9` to `v0.3.11`
 
 ### Other Dependency Updates
 
-* Added `toolchain:go1.24.1`
+* Added `toolchain:go1.24.2`
+* Removed `github.com/gorilla/websocket:v1.5.3`
