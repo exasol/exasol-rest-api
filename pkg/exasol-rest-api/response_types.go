@@ -117,6 +117,7 @@ func extractColumns(rows *sql.Rows) ([]Column, error) {
 }
 
 func createColumn(colName string, colType *sql.ColumnType) Column {
+	fmt.Printf("Col %s: type %v\n", colName, colType)
 	precision, scale, _ := colType.DecimalSize()
 	length, _ := colType.Length()
 	return Column{
@@ -170,6 +171,8 @@ func buildRowsString(sqlRows *sql.Rows) (string, error) {
 }
 
 func destForType(colType *sql.ColumnType) any {
-	dest := ""
-	return &dest
+	t := colType.ScanType()
+	fmt.Printf("Col %s: %v\n", colType.Name(), t)
+	//dest := ""
+	return new(any)
 }
