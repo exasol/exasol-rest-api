@@ -93,7 +93,7 @@ func getHostAddress() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer onError(conn.Close())
+	defer func() { onError(conn.Close()) }()
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	return localAddr.IP.String(), err
 }
