@@ -28,6 +28,9 @@ type DockerImageTestSuite struct {
 }
 
 func TestDockerImageSuite(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	suite.Run(t, new(DockerImageTestSuite))
 }
 
@@ -90,7 +93,7 @@ func getHostAddress() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer conn.Close()
+	defer func() { onError(conn.Close()) }()
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	return localAddr.IP.String(), err
 }
@@ -108,7 +111,7 @@ func runRestAPIContainer(env map[string]string) testcontainers.Container {
 		Started:          true,
 	})
 	if err != nil {
-		panic(fmt.Errorf("Starting of docker image %q failed with error %q. Run 'docker build --tag %s .' before starting the tests", image, err.Error(), image))
+		panic(fmt.Errorf("Starting of docker image %q failed with error %q. Run 'docker buildx build --tag %s .' before starting the tests", image, err.Error(), image))
 	}
 	return apiContainer
 }

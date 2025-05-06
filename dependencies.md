@@ -28,10 +28,10 @@
 [2]: https://github.com/gorilla/websocket/blob/v1.5.3/LICENSE
 [3]: https://github.com/swaggo/files/blob/v1.0.1/LICENSE
 [4]: https://github.com/swaggo/gin-swagger/blob/v1.6.0/LICENSE
-[5]: https://github.com/swaggo/swag/blob/v1.16.3/license
+[5]: https://github.com/swaggo/swag/blob/v1.16.4/license
 [6]: https://github.com/tidwall/sjson/blob/v1.2.5/LICENSE
 [7]: https://github.com/ulule/limiter/blob/v3.11.2/LICENSE
 [8]: https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE
 [9]: https://github.com/exasol/exasol-test-setup-abstraction-server/blob/HEAD/go-client/LICENSE
-[10]: https://github.com/stretchr/testify/blob/v1.9.0/LICENSE
+[10]: https://github.com/stretchr/testify/blob/v1.10.0/LICENSE
 [11]: https://github.com/testcontainers/testcontainers-go/blob/HEAD/LICENSE
