@@ -68,17 +68,20 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: golangci-lint
+        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
         uses: golangci/golangci-lint-action@v8.0.0
         with:
           version: v2.1.6
           skip-cache: true
 
       - name: Run Go vulnerability check
+        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck -show verbose ./...
 
       - name: Configure broken links checker
+        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
         run: |
           mkdir -p ./target
           echo '{"aliveStatusCodes": [429, 200], "ignorePatterns": [' \
@@ -88,6 +91,7 @@ jobs:
                '{"pattern": "^https?://projects.eclipse.org"}' \
                ']}' > ./target/broken_links_checker.json
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
         with:
           use-quiet-mode: "yes"
           use-verbose-mode: "yes"
