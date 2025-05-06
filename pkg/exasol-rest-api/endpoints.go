@@ -275,24 +275,60 @@ func getRenderedValue(context *gin.Context, valueType string, value string) (int
 // [impl->dsn~get-rows-headers~1]
 // [impl->dsn~update-rows-headers~1]
 // [impl->dsn~execute-statement-headers~1]
-func (application *Application) handleRequest(convert func(toConvert *sql.Rows) (interface{}, error), statement string) (int, interface{}) {
-	rows, err := application.queryExasol(statement)
+func (application *Application) handleRequest(convert func(toConvert *sql.Rows) (interface{}, error), query string) (int, interface{}) {
+	connection, err := application.openConnection()
+
+	if err != nil {
+		wrappedError := exaerror.New("E-ERA-2").
+			Message("error while opening a connection with Exasol: {{error|uq}}").
+			Parameter("error", err.Error())
+		return http.StatusInternalServerError, APIBaseResponse{Status: "error", Exception: wrappedError.Error()}
+	}
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			errorLogger.Print("error closing connection: %w", err)
+		}
+	}()
+
+	rows, err := connection.Query(query)
+	if err != nil {
+		wrappedError := exaerror.New("E-ERA-3").Message("error while executing query {{query}}: {{error|uq}}").
+			Parameter("query", query).
+			Parameter("error", err.Error())
+		// Return 200 OK when query fails for backwards compatibility
+		return http.StatusOK, APIBaseResponse{Status: "error", Exception: wrappedError.Error()}
+	}
+
+	convertedResponse, err := convert(rows)
 	if err != nil {
 		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
 	} else {
-		convertedResponse, err := convert(rows)
-		if err != nil {
-			return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
-		} else {
-			return http.StatusOK, convertedResponse
-		}
+		return http.StatusOK, convertedResponse
 	}
 }
 
 func (application *Application) handleStatementRequest(statement string) (int, interface{}) {
-	_, err := application.executeUpdateExasol(statement)
+	connection, err := application.openConnection()
 	if err != nil {
-		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
+		wrappedError := exaerror.New("E-ERA-2").
+			Message("error while opening a connection with Exasol: {{error|uq}}").
+			Parameter("error", err.Error())
+		return http.StatusInternalServerError, APIBaseResponse{Status: "error", Exception: wrappedError.Error()}
+	}
+
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			errorLogger.Print("error closing connection: %w", err)
+		}
+	}()
+	_, err = connection.Exec(statement)
+	if err != nil {
+		wrappedError := exaerror.New("E-ERA-31").Message("error while executing statement {{statement}}: {{error|uq}}").
+			Parameter("statement", statement).
+			Parameter("error", err.Error())
+		return http.StatusOK, APIBaseResponse{Status: "error", Exception: wrappedError.Error()}
 	}
 	return http.StatusOK, APIBaseResponse{
 		Status: statusOk,
@@ -314,55 +350,6 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 	}
 }
 
-func (application *Application) queryExasol(query string) (*sql.Rows, error) {
-	connection, err := application.openConnection()
-	if err != nil {
-		return nil, exaerror.New("E-ERA-2").
-			Message("error while opening a connection with Exasol: {{error|uq}}").
-			Parameter("error", err.Error())
-	}
-
-	defer func() {
-		err := connection.Close()
-		if err != nil {
-			errorLogger.Print("error closing connection: %w", err)
-		}
-	}()
-
-	response, err := connection.Query(query)
-	if err != nil {
-		return nil, exaerror.New("E-ERA-3").Message("error while executing query {{query}}: {{error|uq}}").
-			Parameter("query", query).
-			Parameter("error", err.Error())
-	}
-
-	return response, nil
-}
-
-func (application *Application) executeUpdateExasol(statement string) (sql.Result, error) {
-	connection, err := application.openConnection()
-	if err != nil {
-		return nil, exaerror.New("E-ERA-2").
-			Message("error while opening a connection with Exasol: {{error|uq}}").
-			Parameter("error", err.Error())
-	}
-
-	defer func() {
-		err := connection.Close()
-		if err != nil {
-			errorLogger.Print("error closing connection: %w", err)
-		}
-	}()
-
-	result, err := connection.Exec(statement)
-	if err != nil {
-		return nil, exaerror.New("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
-			Parameter("error", err.Error())
-	}
-
-	return result, nil
-}
-
 func (application *Application) openConnection() (*sql.DB, error) {
 	props := application.Properties
 	database, err := sql.Open("exasol", exasol.NewConfig(props.ExasolUser, props.ExasolPassword).
@@ -379,6 +366,10 @@ func (application *Application) openConnection() (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// Verify that connection works to avoid later errors when executing queries
+	err = database.Ping()
+	if err != nil {
+		return nil, err
+	}
 	return database, nil
 }

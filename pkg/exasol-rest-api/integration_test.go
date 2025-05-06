@@ -121,8 +121,8 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 		server:         server,
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'some query': failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - insufficient privileges: CREATE SESSION.'\"}",
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - insufficient privileges: CREATE SESSION.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -141,8 +141,8 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		server:         server,
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'some query': failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - authentication failed.'\"}",
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - authentication failed.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -829,7 +829,7 @@ func (suite *IntegrationTestSuite) TestExecuteStatementWithSyntaxError() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"42000 syntax error",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-31: error while executing statement 'CREATE LUA SCALAR SCRIPT my_script;': E-EGOD-11: execution failed with SQL error code '42000' and message 'syntax error, unexpecte",
 	}
 	request := exasol_rest_api.ExecuteStatementRequest{
 		Statement: "CREATE LUA SCALAR SCRIPT my_script;",

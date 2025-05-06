@@ -13,7 +13,11 @@ This release adds support for Exasol v8.
   * `fraction`
   * `srid`
 * Configuration property `EXASOL_WEBSOCKET_API_VERSION` is not supported any more and is ignored.
+* The REST API now returns the correct error status code 500 (Internal server error) instead of 400 (Bad request) when connection to the Exasol database fails.
 * Error messages e.g. for connection failures or query errors are different in the new version.
+
+**Note:**
+* For backwards compatibility the REST API returns status code 200 instead of 400 when a query or statement fails e.g. due to syntax error.
 
 ## Features
 
