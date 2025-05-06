@@ -83,7 +83,7 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 | EXASOL_PASSWORD              |                | Password of the Exasol service account.                      |
 | EXASOL_HOST                  |  "localhost"   | Exasol host.                                                 |
 | EXASOL_PORT                  |      8563      | Exasol port.                                                 |
-| EXASOL_WEBSOCKET_API_VERSION |       2        | Version of Exasol Websocket API.                             |
+| EXASOL_WEBSOCKET_API_VERSION |       2        | Version of Exasol Websocket API (not used any more).         |
 | EXASOL_ENCRYPTION            |       1        | Automatic [Exasol connection encryption][1]. Use 1 to enable it and -1 to disable. |
 | EXASOL_TLS                   |       1        | Database TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side). Use 1 to enable it and -1 to disable. |
 | API_TLS                      |     false      | Enable API TLS/SSL.                                          |

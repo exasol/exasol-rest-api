@@ -49,7 +49,7 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	createDefaultServiceUserWithAccess(connection, suite.defaultExasolUsername, suite.defaultExasolPassword)
 }
 
-func (suite *DockerImageTestSuite) TestQuery() {
+func (suite *DockerImageTestSuite) TestQueryDocker() {
 	host, err := getHostAddress()
 	onError(err)
 	suite.T().Logf("Using host %s:%d", host, suite.exasolPort)

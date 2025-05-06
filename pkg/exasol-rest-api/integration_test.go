@@ -85,7 +85,7 @@ func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 		query:          "SELECTFROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"meta\":{},\"exception\":\"42000 syntax error, unexpected ",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'SELECTFROM TEST_SCHEMA_1.TEST_TABLE': E-EGOD-11: execution failed with SQL error code '42000' and message 'syntax error, unexpected ",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
@@ -98,7 +98,7 @@ func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 		query:          "CREATE SCHEMA not_allowed_schema",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"meta\":{},\"exception\":\"42500 insufficient privileges for creating schema",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'CREATE SCHEMA not_allowed_schema': E-EGOD-11: execution failed with SQL error code '42500' and message 'insufficient privileges for creating schema",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
@@ -111,19 +111,18 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	suite.createExasolUser(username, password)
 
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 	data := testData{
 		server:         server,
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'some query': failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - insufficient privileges: CREATE SESSION.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
@@ -132,12 +131,11 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 // [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                "not_existing_user",
-		ExasolPassword:            "wrong_password",
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     "not_existing_user",
+		ExasolPassword: "wrong_password",
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 	data := testData{
 		server:         server,
@@ -153,12 +151,11 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 // [itest->dsn~execute-query-response-body~1]
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                4321,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     suite.defaultServiceUsername,
+		ExasolPassword: suite.defaultServicePassword,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     4321,
 	})
 	data := testData{
 		server:         server,
@@ -210,12 +207,11 @@ func (suite *IntegrationTestSuite) TestGetTables() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "SELECT ON SCHEMA "+schemaName)
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 
 	data := testData{
@@ -236,12 +232,11 @@ func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 	suite.grantToUser(username, "CREATE SESSION")
 
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 	data := testData{
 		server:         server,
@@ -265,26 +260,6 @@ func (suite *IntegrationTestSuite) TestGetTablesUnauthorizedAccess() {
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
 
-// [itest->dsn~get-tables-endpoint~1]
-// [itest->dsn~get-tables-response-body~1]
-func (suite *IntegrationTestSuite) TestGetTablesWithWrongAPIVersion() {
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 0,
-	})
-	data := testData{
-		server:         server,
-		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
-	}
-	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
-}
-
 // [itest->dsn~insert-row-endpoint~1]
 // [itest->dsn~insert-row-request-body~1]
 // [itest->dsn~insert-row-response-body~1]
@@ -303,12 +278,11 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	suite.grantToUser(username, "INSERT ON SCHEMA "+schemaName)
 
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 
 	data := testData{
@@ -439,12 +413,11 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 	suite.grantToUser(username, "DELETE ON SCHEMA "+schemaName)
 
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 
 	data := testData{
@@ -531,12 +504,11 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 	suite.grantToUser(username, "UPDATE ON SCHEMA "+schemaName)
 
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 
 	data := testData{
@@ -809,12 +781,11 @@ func (suite *IntegrationTestSuite) TestExecuteStatement() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "CREATE ANY SCRIPT")
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     username,
+		ExasolPassword: password,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
 	})
 
 	data := testData{
@@ -1013,13 +984,12 @@ func onError(err error) {
 
 func (suite *IntegrationTestSuite) createServerWithDefaultProperties() exasol_rest_api.Application {
 	properties := &exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		Encryption:                -1,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     suite.defaultServiceUsername,
+		ExasolPassword: suite.defaultServicePassword,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     suite.exasolPort,
+		Encryption:     -1,
 	}
 	return suite.runApiServer(properties)
 }

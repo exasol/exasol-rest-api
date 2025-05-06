@@ -7,10 +7,9 @@ toolchain go1.24.1
 require (
 	github.com/docker/docker v28.1.1+incompatible // indirect
 	github.com/exasol/error-reporting-go v0.2.0
-	github.com/exasol/exasol-test-setup-abstraction-server/go-client v0.3.11
 	github.com/exasol/exasol-driver-go v1.0.13
+	github.com/exasol/exasol-test-setup-abstraction-server/go-client v0.3.11
 	github.com/gin-gonic/gin v1.10.0
-	github.com/gorilla/websocket v1.5.3
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
@@ -34,7 +33,6 @@ require (
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/exasol/exasol-driver-go v1.0.13 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -97,6 +95,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/go-archive v0.1.0 // indirect
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect

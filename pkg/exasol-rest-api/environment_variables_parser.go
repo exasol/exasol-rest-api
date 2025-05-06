@@ -14,7 +14,6 @@ func (applicationProperties *ApplicationProperties) setValuesFromEnvironmentVari
 	applicationProperties.setExasolHost()
 	applicationProperties.setServerAddress()
 	applicationProperties.setExasolPort()
-	applicationProperties.setExasolWebsocketsAPIVersion()
 	applicationProperties.setEncryption()
 	applicationProperties.setTLS()
 	applicationProperties.setAPITokens()
@@ -56,18 +55,6 @@ func (applicationProperties *ApplicationProperties) setExasolPort() {
 			logEnvironmentVariableParsingError(ExasolPortKey, err)
 		} else {
 			applicationProperties.ExasolPort = port
-		}
-	}
-}
-
-func (applicationProperties *ApplicationProperties) setExasolWebsocketsAPIVersion() {
-	exasolWebsocketAPIVersion := os.Getenv(ExasolWebsocketAPIVersionKey)
-	if exasolWebsocketAPIVersion != "" {
-		apiVersion, err := strconv.Atoi(exasolWebsocketAPIVersion)
-		if err != nil {
-			logEnvironmentVariableParsingError(ExasolWebsocketAPIVersionKey, err)
-		} else {
-			applicationProperties.ExasolWebsocketAPIVersion = apiVersion
 		}
 	}
 }

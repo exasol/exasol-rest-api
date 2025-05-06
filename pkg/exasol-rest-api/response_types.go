@@ -32,25 +32,6 @@ type GetRowsResponse struct {
 	Exception string          `json:"exception,omitempty"`
 }
 
-type responseData struct {
-	NumResults int               `json:"numResults"`
-	Results    []json.RawMessage `json:"results"`
-}
-
-type results struct {
-	ResultType string    `json:"resultType"`
-	ResultSet  resultSet `json:"resultSet"`
-}
-
-type resultSet struct {
-	ResultSetHandle  int             `json:"resultSetHandle"`
-	NumColumns       int             `json:"numColumns,omitempty"`
-	NumRows          int             `json:"numRows"`
-	NumRowsInMessage int             `json:"numRowsInMessage"`
-	Columns          []Column        `json:"columns,omitempty"`
-	Data             [][]interface{} `json:"data"`
-}
-
 type Meta struct {
 	Columns []Column `json:"columns,omitempty"`
 }
@@ -78,23 +59,6 @@ type DataType struct {
 type APIBaseResponse struct {
 	Status    string `json:"status"`
 	Exception string `json:"exception,omitempty"`
-}
-
-type webSocketsBaseResponse struct {
-	Status       string          `json:"status"`
-	ResponseData json.RawMessage `json:"responseData"`
-	Exception    *exception      `json:"exception"`
-}
-
-type exception struct {
-	Text    string `json:"text"`
-	SQLCode string `json:"sqlCode"`
-}
-
-type publicKeyResponse struct {
-	PublicKeyPem      string `json:"publicKeyPem"`
-	PublicKeyModulus  string `json:"publicKeyModulus"`
-	PublicKeyExponent string `json:"publicKeyExponent"`
 }
 
 // [impl->dsn~get-tables-response-body~1]
@@ -146,7 +110,7 @@ func extractColumns(rows *sql.Rows) ([]Column, error) {
 		return nil, fmt.Errorf("inconsistent row metadata: %d types and %d names", len(types), len(names))
 	}
 	columns := []Column{}
-	for i := 0; i < len(names); i++ {
+	for i := range names {
 		columns = append(columns, createColumn(names[i], types[i]))
 	}
 	return columns, nil
@@ -158,7 +122,7 @@ func createColumn(colName string, colType *sql.ColumnType) Column {
 	return Column{
 		Name: colName,
 		DataType: DataType{
-			Type:              colType.Name(),
+			Type:              colType.DatabaseTypeName(),
 			Precision:         precision,
 			Scale:             scale,
 			Size:              length,
@@ -187,11 +151,15 @@ func buildRowsString(sqlRows *sql.Rows) (string, error) {
 	}
 
 	for sqlRows.Next() {
-		sqlRows.Scan(dest)
+		err = sqlRows.Scan(dest...)
+		if err != nil {
+			return "", err
+		}
 		row := ""
 		for colIndex := range dest {
 			value := dest[colIndex]
-			row, _ = sjson.Set(row, names[colIndex], value)
+			row, _ = sjson.Set(row, names[colIndex], &value)
+			fmt.Printf("Col %d: %s = %s / %v ---- Row = %s\n", colIndex, names[colIndex], value, &value, row)
 		}
 		rows += row
 		rows += ","
@@ -204,19 +172,4 @@ func buildRowsString(sqlRows *sql.Rows) (string, error) {
 func destForType(colType *sql.ColumnType) any {
 	dest := ""
 	return &dest
-}
-
-func getResults(base *webSocketsBaseResponse) (*results, error) {
-	responseData := &responseData{}
-	err := json.Unmarshal(base.ResponseData, responseData)
-	if err != nil {
-		return nil, err
-	}
-
-	results := &results{}
-	err = json.Unmarshal(responseData.Results[0], results)
-	if err != nil {
-		return nil, err
-	}
-	return results, nil
 }
