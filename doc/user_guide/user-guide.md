@@ -90,10 +90,11 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 ### Encrypted Connection to the Exasol Database
 
-Starting with version 1.0.0 the REST API only supports TLS encrypted connections to the Exasol database. When the Exasol database uses a self-signed certificate, connections will fail with an error message like this:
+Starting with version 1.0.0 the REST API only supports TLS encrypted connections to the Exasol database. When the Exasol database uses a self-signed certificate, connections will fail with an error message like these:
 
 ```
 E-ERA-2: error while opening a connection with Exasol: failed to connect to URL "wss://localhost:32805": tls: failed to verify certificate: x509: “exacluster.local” certificate is not standards compliant
+E-ERA-2: error while opening a connection with Exasol: failed to connect to URL "wss://localhost:32805": tls: failed to verify certificate: x509: certificate is valid for *.exacluster.local, exacluster.local, not localhoststandards compliant
 ```
 
 In this case we recommend to specify property `EXASOL_CERTIFICATE_FINGERPRINT` with the fingerprint of the Exasol database's TLS certificate. This ensures that REST API connects to the expected database.

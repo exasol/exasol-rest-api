@@ -136,9 +136,9 @@ func (suite *IntegrationTestSuite) TestCertificateValidationFailsWithoutFingerpr
 		query:          "select 1",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusInternalServerError,
-		expectedBody:   `{"status":"error","exception":"E-ERA-2: error while opening a connection with Exasol: failed to connect to URL \"wss://localhost:32805\": tls: failed to verify certificate: x509: “exacluster.local” certificate is not standards compliant"}`,
+		expectedBody:   `{"status":"error","exception":"E-ERA-2: error while opening a connection with Exasol: failed to connect to URL \"wss://localhost:32805\": tls: failed to verify certificate: x509:`,
 	}
-	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 // Get actual fingerprint of Exasol Docker container by extracting the fingerprint
