@@ -4,11 +4,13 @@ Package exasol_rest_api contains Exasol REST API logic.
 package exasol_rest_api
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"strconv"
 
 	exaerror "github.com/exasol/error-reporting-go"
+	"github.com/exasol/exasol-driver-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -48,11 +50,11 @@ func (application *Application) ExecuteStatement(context *gin.Context) {
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(validationError))
 	} else {
-		context.JSON(application.handleRequest(ConvertToBaseResponse, request.GetStatement()))
+		context.JSON(application.handleStatementRequest(request.GetStatement()))
 	}
 }
 
@@ -86,18 +88,18 @@ func (application *Application) InsertRow(context *gin.Context) {
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(validationError))
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
 		columnNames, values, err := request.GetRow()
 		if err != nil {
-			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+			context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 		} else {
 			statement := "INSERT INTO " + schemaName + "." + tableName + " (" + columnNames + ") VALUES (" + values + ")"
-			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
+			context.JSON(application.handleStatementRequest(statement))
 		}
 	}
 }
@@ -118,18 +120,18 @@ func (application *Application) DeleteRows(context *gin.Context) {
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(validationError))
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
 		condition, err := request.GetCondition()
 		if err != nil {
-			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+			context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 		} else {
 			statement := "DELETE FROM " + schemaName + "." + tableName + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
+			context.JSON(application.handleStatementRequest(statement))
 		}
 	}
 }
@@ -150,21 +152,21 @@ func (application *Application) UpdateRows(context *gin.Context) {
 	err := context.BindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(validationError))
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
 		valuesToUpdate, valuesError := request.GetValuesToUpdate()
 		condition, conditionError := request.GetCondition()
 		if valuesError != nil {
-			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: valuesError.Error()})
+			context.JSON(http.StatusBadRequest, apiErrorResponse(valuesError))
 		} else if conditionError != nil {
-			context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
+			context.JSON(http.StatusBadRequest, apiErrorResponse(conditionError))
 		} else {
 			statement := "UPDATE " + schemaName + "." + tableName + " SET " + valuesToUpdate + " WHERE " + condition
-			context.JSON(application.handleRequest(ConvertToBaseResponse, statement))
+			context.JSON(application.handleStatementRequest(statement))
 		}
 	}
 }
@@ -189,9 +191,9 @@ func (application *Application) GetRows(context *gin.Context) {
 	request, err := buildGetRowsRequest(context)
 	validationError := request.ValidateWithOptionalCondition()
 	if err != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
 	} else if validationError != nil {
-		context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: validationError.Error()})
+		context.JSON(http.StatusBadRequest, apiErrorResponse(validationError))
 	} else {
 		schemaName := request.GetSchemaName()
 		tableName := request.GetTableName()
@@ -201,7 +203,7 @@ func (application *Application) GetRows(context *gin.Context) {
 		} else {
 			condition, conditionError := request.GetCondition()
 			if conditionError != nil {
-				context.JSON(http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: conditionError.Error()})
+				context.JSON(http.StatusBadRequest, apiErrorResponse(conditionError))
 			} else {
 				statement := "SELECT * FROM " + schemaName + "." + tableName + " WHERE " + condition
 				context.JSON(application.handleRequest(ConvertToGetRowsResponse, statement))
@@ -273,19 +275,69 @@ func getRenderedValue(context *gin.Context, valueType string, value string) (int
 // [impl->dsn~get-rows-headers~1]
 // [impl->dsn~update-rows-headers~1]
 // [impl->dsn~execute-statement-headers~1]
-func (application *Application) handleRequest(convert func(toConvert []byte) (interface{}, error),
-	statement string) (int, interface{}) {
-	response, err := application.queryExasol(statement)
+func (application *Application) handleRequest(convert func(toConvert *sql.Rows) (interface{}, error), query string) (int, interface{}) {
+	connection, err := application.openConnection()
+
 	if err != nil {
-		return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
-	} else {
-		convertedResponse, err := convert(response)
-		if err != nil {
-			return http.StatusBadRequest, APIBaseResponse{Status: "error", Exception: err.Error()}
-		} else {
-			return http.StatusOK, convertedResponse
-		}
+		wrappedError := exaerror.New("E-ERA-2").
+			Message("error while opening a connection with Exasol: {{error|uq}}").
+			Parameter("error", err.Error())
+		return http.StatusInternalServerError, apiErrorResponse(wrappedError)
 	}
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			errorLogger.Print("error closing connection: %w", err)
+		}
+	}()
+
+	rows, err := connection.Query(query)
+	if err != nil {
+		wrappedError := exaerror.New("E-ERA-3").Message("error while executing query {{query}}: {{error|uq}}").
+			Parameter("query", query).
+			Parameter("error", err.Error())
+		// Return 200 OK when query fails for backwards compatibility
+		return http.StatusOK, apiErrorResponse(wrappedError)
+	}
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			errorLogger.Print("error closing result set: %w", err)
+		}
+	}()
+
+	convertedResponse, err := convert(rows)
+	if err != nil {
+		return http.StatusBadRequest, apiErrorResponse(err)
+	} else {
+		return http.StatusOK, convertedResponse
+	}
+}
+
+func (application *Application) handleStatementRequest(statement string) (int, interface{}) {
+	connection, err := application.openConnection()
+	if err != nil {
+		wrappedError := exaerror.New("E-ERA-2").
+			Message("error while opening a connection with Exasol: {{error|uq}}").
+			Parameter("error", err.Error())
+		return http.StatusInternalServerError, apiErrorResponse(wrappedError)
+	}
+
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			errorLogger.Print("error closing connection: %w", err)
+		}
+	}()
+	_, err = connection.Exec(statement)
+	if err != nil {
+		wrappedError := exaerror.New("E-ERA-31").Message("error while executing statement {{statement}}: {{error|uq}}").
+			Parameter("statement", statement).
+			Parameter("error", err.Error())
+		// Return 200 OK when statement fails for backwards compatibility
+		return http.StatusOK, apiErrorResponse(wrappedError)
+	}
+	return http.StatusOK, apiOkResponse()
 }
 
 func getValueByType(valueType string, valueAsString string) (interface{}, error) {
@@ -303,39 +355,27 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 	}
 }
 
-func (application *Application) queryExasol(query string) ([]byte, error) {
-	connection, err := application.openConnection()
-	if err != nil {
-		return nil, exaerror.New("E-ERA-2").
-			Message("error while opening a connection with Exasol: {{error|uq}}").
-			Parameter("error", err.Error())
-	}
+// [impl->dsn~communicate-with-database~2]
+func (application *Application) openConnection() (*sql.DB, error) {
+	props := application.Properties
+	database, err := sql.Open("exasol", exasol.NewConfig(props.ExasolUser, props.ExasolPassword).
+		Host(props.ExasolHost).
+		Port(props.ExasolPort).
+		Compression(true).
+		Encryption(true). // Deactivating encryption not supported any more
+		ValidateServerCertificate(props.ExasolValidateServerCertificate != "false").
+		CertificateFingerprint(props.ExasolCertificateFingerprint).
+		Autocommit(true).
+		ClientName("Exasol REST API").
+		String())
 
-	defer connection.close()
-
-	response, err := connection.executeQuery(query)
-	if err != nil {
-		return nil, exaerror.New("E-ERA-3").Message("error while executing a query {{query}}: {{error|uq}}").
-			Parameter("error", err.Error())
-	}
-
-	return response, nil
-}
-
-func (application *Application) openConnection() (*websocketConnection, error) {
-	connection := &websocketConnection{
-		connProperties: application.Properties,
-	}
-
-	err := connection.connect()
 	if err != nil {
 		return nil, err
 	}
-
-	err = connection.login()
+	// Verify that connection works to avoid later errors when executing queries
+	err = database.Ping()
 	if err != nil {
 		return nil, err
 	}
-
-	return connection, nil
+	return database, nil
 }

@@ -14,9 +14,8 @@ func (applicationProperties *ApplicationProperties) setValuesFromEnvironmentVari
 	applicationProperties.setExasolHost()
 	applicationProperties.setServerAddress()
 	applicationProperties.setExasolPort()
-	applicationProperties.setExasolWebsocketsAPIVersion()
-	applicationProperties.setEncryption()
-	applicationProperties.setTLS()
+	applicationProperties.setExasolValidateServerCertificate()
+	applicationProperties.setExasolCertificateFingerprintKey()
 	applicationProperties.setAPITokens()
 }
 
@@ -60,46 +59,31 @@ func (applicationProperties *ApplicationProperties) setExasolPort() {
 	}
 }
 
-func (applicationProperties *ApplicationProperties) setExasolWebsocketsAPIVersion() {
-	exasolWebsocketAPIVersion := os.Getenv(ExasolWebsocketAPIVersionKey)
-	if exasolWebsocketAPIVersion != "" {
-		apiVersion, err := strconv.Atoi(exasolWebsocketAPIVersion)
-		if err != nil {
-			logEnvironmentVariableParsingError(ExasolWebsocketAPIVersionKey, err)
-		} else {
-			applicationProperties.ExasolWebsocketAPIVersion = apiVersion
-		}
+func (applicationProperties *ApplicationProperties) setExasolValidateServerCertificate() {
+	validateCertificate := os.Getenv(ExasolValidateServerCertificateKey)
+	if validateCertificate == "" {
+		return
 	}
+	_, err := strconv.ParseBool(validateCertificate)
+	if err != nil {
+		logEnvironmentVariableParsingError(ExasolValidateServerCertificateKey, err)
+		return
+	}
+	applicationProperties.ExasolValidateServerCertificate = validateCertificate
+}
+
+func (applicationProperties *ApplicationProperties) setExasolCertificateFingerprintKey() {
+	fingerprint := os.Getenv(ExasolCertificateFingerprintKey)
+	if fingerprint == "" {
+		return
+	}
+	applicationProperties.ExasolCertificateFingerprint = fingerprint
 }
 
 func logEnvironmentVariableParsingError(variableName string, err error) {
 	errorLogger.Print(exaerror.New("E-ERA-5").
 		Message("cannot parse environment variable "+variableName+". {{error|uq}}").
 		Parameter("error", err.Error()).String())
-}
-
-func (applicationProperties *ApplicationProperties) setEncryption() {
-	exasolEncryption := os.Getenv(EncryptionKey)
-	if exasolEncryption != "" {
-		encryption, err := strconv.Atoi(exasolEncryption)
-		if err != nil {
-			logEnvironmentVariableParsingError(EncryptionKey, err)
-		} else {
-			applicationProperties.Encryption = encryption
-		}
-	}
-}
-
-func (applicationProperties *ApplicationProperties) setTLS() {
-	exasolTLS := os.Getenv(UseTLSKey)
-	if exasolTLS != "" {
-		tls, err := strconv.Atoi(exasolTLS)
-		if err != nil {
-			logEnvironmentVariableParsingError(UseTLSKey, err)
-		} else {
-			applicationProperties.UseTLS = tls
-		}
-	}
 }
 
 func (applicationProperties *ApplicationProperties) setAPITokens() {

@@ -5,11 +5,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +46,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.defaultServiceUsername = "api_service_account"
 	suite.defaultServicePassword = "secret_password"
 	suite.defaultAuthTokens = []string{"3J90XAv9loMIXzQdfYmtJrHAbopPsc", "OR6rq6KjWmhvGU770A9OTjpfH86nlk"}
-	suite.exasolContainer = runExasolContainer(suite.ctx)
+	suite.exasolContainer = runExasolContainer()
 	connectionInfo, err := suite.exasolContainer.GetConnectionInfo()
 	onError(err)
 	suite.exasolHost = connectionInfo.Host
@@ -65,134 +67,175 @@ func (suite *IntegrationTestSuite) startServer(application exasol_rest_api.Appli
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestQuery() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
 		query:          "SELECT * FROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestQueryWithTypo() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
 		query:          "SELECTFROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"meta\":{},\"exception\":\"42000 syntax error, unexpected ",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'SELECTFROM TEST_SCHEMA_1.TEST_TABLE': E-EGOD-11: execution failed with SQL error code '42000' and message 'syntax error, unexpected ",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestInsertNotAllowed() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
 		query:          "CREATE SCHEMA not_allowed_schema",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"meta\":{},\"exception\":\"42500 insufficient privileges for creating schema",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-3: error while executing query 'CREATE SCHEMA not_allowed_schema': E-EGOD-11: execution failed with SQL error code '42500' and message 'insufficient privileges for creating schema",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege() {
 	username := "user_without_session_privilege"
 	password := "secret"
 	suite.createExasolUser(username, password)
-
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - insufficient privileges: CREATE SESSION.\"}",
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - insufficient privileges: CREATE SESSION.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+func (suite *IntegrationTestSuite) TestCertificateValidationFailsWithoutFingerprint() {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "",
+	})
+
+	data := testData{
+		server:         server,
+		query:          "select 1",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   fmt.Sprintf(`{"status":"error","exception":"E-ERA-2: error while opening a connection with Exasol: failed to connect to URL \"wss://%s:%d\": tls: failed to verify certificate: x509:`, suite.exasolHost, suite.exasolPort),
+	}
+	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
+}
+
+// Get actual fingerprint of Exasol Docker container by extracting the fingerprint
+// from the error message returned when connecting with an invalid fingerprint.
+func (suite *IntegrationTestSuite) TestCertificateValidationSucceedsWithFingerprint() {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    suite.getExasolCertificateFingerprint(),
+	})
+
+	data := testData{
+		server:         server,
+		query:          "select 1",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   `{"status":"ok","rows":[[null,1]],"meta":{"columns":[{"name":"1","dataType":{"type":"DECIMAL","precision":1}}]}}`,
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+}
+
+func (suite *IntegrationTestSuite) getExasolCertificateFingerprint() string {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "invalidFingerprint",
+	})
+
+	data := testData{
+		server:         server,
+		query:          "ignored",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "",
+	}
+	response := suite.sendQueryRequest(&data)
+	reg := regexp.MustCompile("the server's certificate fingerprint '([a-zA-Z0-9]+)' does not match the expected fingerprint 'invalidFingerprint'")
+	submatches := reg.FindStringSubmatch(response.Body.String())
+	actualFingerprint := submatches[1]
+	if actualFingerprint == "" {
+		suite.FailNowf("Expected response %q to match %q", response.Body.String(), reg)
+	}
+	return actualFingerprint
+}
+
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                "not_existing_user",
-		ExasolPassword:            "wrong_password",
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      "not_existing_user",
+		ExasolPassword:                  "wrong_password",
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "false",
 	})
 	data := testData{
 		server:         server,
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: [08004] Connection exception - authentication failed.\"}",
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - authentication failed.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                4321,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:      suite.defaultAuthTokens,
+		ExasolUser:     suite.defaultServiceUsername,
+		ExasolPassword: suite.defaultServicePassword,
+		ExasolHost:     suite.exasolHost,
+		ExasolPort:     4321,
 	})
 	data := testData{
 		server:         server,
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol:",
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   "failed to connect to URL \\\"wss://localhost:4321\\\":",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
-func (suite *IntegrationTestSuite) TestWrongWebsocketApiVersion() {
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 0,
-	})
-	data := testData{
-		server:         server,
-		query:          "some query",
-		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
-	}
-	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
-}
-
-// [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -205,7 +248,7 @@ func (suite *IntegrationTestSuite) TestUnauthorizedAccessToQuery() {
 }
 
 // [itest->dsn~execute-query-endpoint~1]
-// [itest->dsn~execute-query-response-body~1]
+// [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestUnauthorizedAccessWithShortToken() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -230,17 +273,9 @@ func (suite *IntegrationTestSuite) TestGetTables() {
 	suite.createExasolUser(username, password)
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "SELECT ON SCHEMA "+schemaName)
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
 
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[{\"tableName\":\"TEST_TABLE_1\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"},{\"tableName\":\"TEST_TABLE_2\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"}]}",
@@ -256,16 +291,8 @@ func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 	suite.createExasolUser(username, password)
 	suite.grantToUser(username, "CREATE SESSION")
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[]}",
@@ -282,26 +309,6 @@ func (suite *IntegrationTestSuite) TestGetTablesUnauthorizedAccess() {
 		authToken:      "OR6rq6KjWmhvGU770A9OTjpfH86nlkq",
 		expectedStatus: http.StatusForbidden,
 		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-22: an authorization token is missing or wrong. please make sure you provided a valid token.\"}",
-	}
-	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
-}
-
-// [itest->dsn~get-tables-endpoint~1]
-// [itest->dsn~get-tables-response-body~1]
-func (suite *IntegrationTestSuite) TestGetTablesWithWrongAPIVersion() {
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 0,
-	})
-	data := testData{
-		server:         server,
-		authToken:      suite.defaultAuthTokens[0],
-		expectedStatus: http.StatusBadRequest,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: E-ERA-15: error while sending a login command via websockets connection: [00000] Could not create WebSocket protocol version 0\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetTables(&data))
 }
@@ -323,17 +330,8 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "INSERT ON SCHEMA "+schemaName)
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
-
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -459,17 +457,8 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "DELETE ON SCHEMA "+schemaName)
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
-
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -551,17 +540,8 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "UPDATE ON SCHEMA "+schemaName)
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
-
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -678,35 +658,35 @@ func (suite *IntegrationTestSuite) TestUpdateRowsBadRequestError() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRows() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15&valueType=int&comparisonPredicate==",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithoutPredicate() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
 		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
 }
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutColumnName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -720,7 +700,7 @@ func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutColumnName() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValue() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -734,7 +714,7 @@ func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValue() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValueType() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -748,7 +728,7 @@ func (suite *IntegrationTestSuite) TestGetRowsPredicateWithoutValueType() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -762,7 +742,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingSchemaName() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -776,7 +756,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithMissingTableName() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -790,7 +770,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithIncorrectValueType() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -804,7 +784,7 @@ func (suite *IntegrationTestSuite) TestGetRowsWithNotParsableValue() {
 
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
-// [itest->dsn~get-rows-response-body~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithoutAuthentication() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
@@ -829,17 +809,9 @@ func (suite *IntegrationTestSuite) TestExecuteStatement() {
 	suite.createExasolUser(username, password)
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "CREATE ANY SCRIPT")
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                username,
-		ExasolPassword:            password,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		ExasolWebsocketAPIVersion: 2,
-	})
 
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -879,7 +851,7 @@ func (suite *IntegrationTestSuite) TestExecuteStatementWithSyntaxError() {
 		server:         suite.createServerWithDefaultProperties(),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"error\",\"exception\":\"42000 syntax error",
+		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-31: error while executing statement 'CREATE LUA SCALAR SCRIPT my_script;': E-EGOD-11: execution failed with SQL error code '42000' and message 'syntax error, unexpecte",
 	}
 	request := exasol_rest_api.ExecuteStatementRequest{
 		Statement: "CREATE LUA SCALAR SCRIPT my_script;",
@@ -895,7 +867,7 @@ func (suite *IntegrationTestSuite) TestRateLimiter() {
 		query:          "SELECT * FROM TEST_SCHEMA_1.TEST_TABLE",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
-		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
 	}
 	router := suite.startServer(data.server)
 
@@ -995,14 +967,12 @@ func (suite *IntegrationTestSuite) sendHttpRequest(data *testData, req *http.Req
 	return responseRecorder
 }
 
-func (suite *IntegrationTestSuite) assertResponseBodyEquals(data *testData,
-	responseRecorder *httptest.ResponseRecorder) {
+func (suite *IntegrationTestSuite) assertResponseBodyEquals(data *testData, responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Equal(data.expectedBody, responseRecorder.Body.String())
 }
 
-func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData,
-	responseRecorder *httptest.ResponseRecorder) {
+func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData, responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
 }
@@ -1015,10 +985,10 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 	suite.False(rows.Next())
 }
 
-func runExasolContainer(ctx context.Context) *testSetupAbstraction.TestSetupAbstraction {
+func runExasolContainer() *testSetupAbstraction.TestSetupAbstraction {
 	dbVersion := os.Getenv("EXASOL_DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "7.1.30"
+		dbVersion = "8.34.0"
 	}
 	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion(dbVersion).Start()
 	onError(err)
@@ -1032,17 +1002,19 @@ func onError(err error) {
 	}
 }
 
-func (suite *IntegrationTestSuite) createServerWithDefaultProperties() exasol_rest_api.Application {
+func (suite *IntegrationTestSuite) createServerWithUser(user string, password string) exasol_rest_api.Application {
 	properties := &exasol_rest_api.ApplicationProperties{
-		APITokens:                 suite.defaultAuthTokens,
-		ExasolUser:                suite.defaultServiceUsername,
-		ExasolPassword:            suite.defaultServicePassword,
-		ExasolHost:                suite.exasolHost,
-		ExasolPort:                suite.exasolPort,
-		Encryption:                -1,
-		ExasolWebsocketAPIVersion: 2,
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      user,
+		ExasolPassword:                  password,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "false",
 	}
 	return suite.runApiServer(properties)
+}
+func (suite *IntegrationTestSuite) createServerWithDefaultProperties() exasol_rest_api.Application {
+	return suite.createServerWithUser(suite.defaultServiceUsername, suite.defaultServicePassword)
 }
 
 func (suite *IntegrationTestSuite) runApiServer(properties *exasol_rest_api.ApplicationProperties) exasol_rest_api.Application {

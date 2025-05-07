@@ -1,10 +1,12 @@
 package exasol_rest_api
 
-import "github.com/tidwall/sjson"
-
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	"github.com/tidwall/sjson"
 )
 
 // [impl->dsn~get-tables-response-body~1]
@@ -19,32 +21,13 @@ type Table struct {
 	SchemaName string `json:"schemaName"`
 }
 
-// [impl->dsn~execute-query-response-body~1]
-// [impl->dsn~get-rows-response-body~1]
+// [impl->dsn~execute-query-response-body~2]
+// [impl->dsn~get-rows-response-body~2]
 type GetRowsResponse struct {
 	Status    string          `json:"status"`
 	Rows      json.RawMessage `json:"rows,omitempty"`
 	Meta      Meta            `json:"meta,omitempty"`
 	Exception string          `json:"exception,omitempty"`
-}
-
-type responseData struct {
-	NumResults int               `json:"numResults"`
-	Results    []json.RawMessage `json:"results"`
-}
-
-type results struct {
-	ResultType string    `json:"resultType"`
-	ResultSet  resultSet `json:"resultSet"`
-}
-
-type resultSet struct {
-	ResultSetHandle  int             `json:"resultSetHandle"`
-	NumColumns       int             `json:"numColumns,omitempty"`
-	NumRows          int             `json:"numRows"`
-	NumRowsInMessage int             `json:"numRowsInMessage"`
-	Columns          []Column        `json:"columns,omitempty"`
-	Data             [][]interface{} `json:"data"`
 }
 
 type Meta struct {
@@ -57,14 +40,10 @@ type Column struct {
 }
 
 type DataType struct {
-	Type              string `json:"type"`
-	Precision         int64  `json:"precision,omitempty"`
-	Scale             int64  `json:"scale,omitempty"`
-	Size              int64  `json:"size,omitempty"`
-	CharacterSet      string `json:"characterSet,omitempty"`
-	WithLocalTimeZone bool   `json:"withLocalTimeZone,omitempty"`
-	Fraction          int    `json:"fraction,omitempty"`
-	SRID              int    `json:"srid,omitempty"`
+	Type      string `json:"type"`
+	Precision int64  `json:"precision,omitempty"`
+	Scale     int64  `json:"scale,omitempty"`
+	Size      int64  `json:"size,omitempty"`
 }
 
 // [impl->dsn~insert-row-response-body~1]
@@ -76,129 +55,115 @@ type APIBaseResponse struct {
 	Exception string `json:"exception,omitempty"`
 }
 
-type webSocketsBaseResponse struct {
-	Status       string          `json:"status"`
-	ResponseData json.RawMessage `json:"responseData"`
-	Exception    *exception      `json:"exception"`
+func apiErrorResponse(err error) APIBaseResponse {
+	return APIBaseResponse{Status: "error", Exception: err.Error()}
 }
 
-type exception struct {
-	Text    string `json:"text"`
-	SQLCode string `json:"sqlCode"`
-}
+var statusOk = "ok"
 
-type publicKeyResponse struct {
-	PublicKeyPem      string `json:"publicKeyPem"`
-	PublicKeyModulus  string `json:"publicKeyModulus"`
-	PublicKeyExponent string `json:"publicKeyExponent"`
+func apiOkResponse() APIBaseResponse {
+	return APIBaseResponse{Status: statusOk}
 }
 
 // [impl->dsn~get-tables-response-body~1]
-func ConvertToGetTablesResponse(response []byte) (interface{}, error) {
-	base := &webSocketsBaseResponse{}
-	err := json.Unmarshal(response, base)
-	if err != nil {
-		return err, nil
-	}
-
-	results, err := getResults(base)
-	if err != nil {
-		return err, nil
-	}
-
+func ConvertToGetTablesResponse(rows *sql.Rows) (interface{}, error) {
 	convertedResponse := GetTablesResponse{
-		Status: base.Status,
+		Status:     statusOk,
+		TablesList: []Table{},
 	}
-	if base.Exception != nil {
-		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
-	} else {
-		convertedResponse.TablesList = []Table{}
-		data := results.ResultSet.Data
-		if len(data) > 0 {
-			for row := range data[0] {
-				convertedResponse.TablesList = append(convertedResponse.TablesList, Table{
-					SchemaName: fmt.Sprintf("%v", data[0][row]),
-					TableName:  fmt.Sprintf("%v", data[1][row]),
-				})
-			}
-		}
-	}
-	return convertedResponse, nil
-}
-
-// [impl->dsn~execute-query-response-body~1]
-func ConvertToGetRowsResponse(response []byte) (interface{}, error) {
-	base := &webSocketsBaseResponse{}
-	err := json.Unmarshal(response, base)
-	if err != nil {
-		return err, nil
-	}
-
-	convertedResponse := GetRowsResponse{
-		Status: base.Status,
-	}
-	if base.Exception != nil {
-		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
-	} else {
-		results, err := getResults(base)
+	for rows.Next() {
+		var table Table
+		err := rows.Scan(&table.SchemaName, &table.TableName)
 		if err != nil {
-			return err, nil
+			return nil, fmt.Errorf("failed to read row: %w", err)
 		}
-
-		convertedResponse.Meta = Meta{Columns: results.ResultSet.Columns}
-		data := results.ResultSet.Data
-		if len(data) > 0 {
-			rows := buildRowsString(data, convertedResponse)
-			convertedResponse.Rows = json.RawMessage(rows)
-		}
+		convertedResponse.TablesList = append(convertedResponse.TablesList, table)
 	}
 	return convertedResponse, nil
 }
 
-func buildRowsString(data [][]interface{}, convertedResponse GetRowsResponse) string {
+// [impl->dsn~execute-query-response-body~2]
+func ConvertToGetRowsResponse(rows *sql.Rows) (interface{}, error) {
+	columns, err := extractColumns(rows)
+	if err != nil {
+		return nil, err
+	}
+	rowsJson, err := buildRowsString(rows)
+	if err != nil {
+		return nil, err
+	}
+	convertedResponse := GetRowsResponse{
+		Status: statusOk,
+		Meta:   Meta{Columns: columns},
+		Rows:   json.RawMessage(rowsJson),
+	}
+
+	return convertedResponse, nil
+}
+
+func extractColumns(rows *sql.Rows) ([]Column, error) {
+	types, err := rows.ColumnTypes()
+	if err != nil {
+		return nil, err
+	}
+	names, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+	if len(types) != len(names) {
+		return nil, fmt.Errorf("inconsistent row metadata: %d types and %d names", len(types), len(names))
+	}
+	columns := []Column{}
+	for i := range names {
+		columns = append(columns, createColumn(names[i], types[i]))
+	}
+	return columns, nil
+}
+
+func createColumn(colName string, colType *sql.ColumnType) Column {
+	precision, scale, _ := colType.DecimalSize()
+	length, _ := colType.Length()
+	return Column{
+		Name: colName,
+		DataType: DataType{
+			Type:      colType.DatabaseTypeName(),
+			Precision: precision,
+			Scale:     scale,
+			Size:      length,
+		},
+	}
+}
+
+func buildRowsString(sqlRows *sql.Rows) (string, error) {
 	rows := "["
-	for rowIndex := range data[0] {
+	types, err := sqlRows.ColumnTypes()
+	if err != nil {
+		return "", err
+	}
+	names, err := sqlRows.Columns()
+	if err != nil {
+		return "", err
+	}
+
+	dest := []any{}
+	for range types {
+		dest = append(dest, new(any))
+	}
+
+	for sqlRows.Next() {
+		err = sqlRows.Scan(dest...)
+		if err != nil {
+			return "", err
+		}
 		row := ""
-		for colIndex := range data {
-			value := data[colIndex][rowIndex]
-			row, _ = sjson.Set(row, convertedResponse.Meta.Columns[colIndex].Name, value)
+		for colIndex := range dest {
+			value := dest[colIndex]
+			row, _ = sjson.Set(row, names[colIndex], &value)
 		}
 		rows += row
-		if rowIndex < len(data[0])-1 {
-			rows += ","
-		}
+		rows += ","
 	}
+	rows = strings.TrimRight(rows, ",")
 	rows += "]"
-	return rows
-}
-
-func getResults(base *webSocketsBaseResponse) (*results, error) {
-	responseData := &responseData{}
-	err := json.Unmarshal(base.ResponseData, responseData)
-	if err != nil {
-		return nil, err
-	}
-
-	results := &results{}
-	err = json.Unmarshal(responseData.Results[0], results)
-	if err != nil {
-		return nil, err
-	}
-	return results, nil
-}
-
-func ConvertToBaseResponse(response []byte) (interface{}, error) {
-	base := &webSocketsBaseResponse{}
-	err := json.Unmarshal(response, base)
-	if err != nil {
-		return err, nil
-	}
-
-	convertedResponse := APIBaseResponse{
-		Status: base.Status,
-	}
-	if base.Exception != nil {
-		convertedResponse.Exception = base.Exception.SQLCode + " " + base.Exception.Text
-	}
-	return convertedResponse, nil
+	return rows, nil
 }

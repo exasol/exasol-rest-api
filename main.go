@@ -6,7 +6,7 @@ import (
 )
 
 // @title Exasol REST API
-// @version 0.3.0
+// @version 1.0.0
 // @description This service is a proxy that wrapping up Exasol WebSockets library.
 
 // @contact.name Exasol REST API GitHub Issues

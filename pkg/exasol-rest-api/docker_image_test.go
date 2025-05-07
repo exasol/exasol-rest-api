@@ -39,7 +39,7 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	suite.defaultExasolUsername = "api_service_account"
 	suite.defaultExasolPassword = "secret_password"
 	suite.defaultAuthTokens = "3J90XAv9loMIXzQdfYmtJrHAbopPsc,OR6rq6KjWmhvGU770A9OTjpfH86nlk"
-	suite.exasolContainer = runExasolContainer(suite.ctx)
+	suite.exasolContainer = runExasolContainer()
 	connectionInfo, err := suite.exasolContainer.GetConnectionInfo()
 	onError(err)
 	suite.exasolHost = connectionInfo.Host
@@ -49,20 +49,20 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	createDefaultServiceUserWithAccess(connection, suite.defaultExasolUsername, suite.defaultExasolPassword)
 }
 
-func (suite *DockerImageTestSuite) TestQuery() {
+func (suite *DockerImageTestSuite) TestQueryDocker() {
 	host, err := getHostAddress()
 	onError(err)
 	suite.T().Logf("Using host %s:%d", host, suite.exasolPort)
 	properties := map[string]string{
-		exasol_rest_api.APITokensKey:      suite.defaultAuthTokens,
-		exasol_rest_api.ExasolUserKey:     suite.defaultExasolUsername,
-		exasol_rest_api.ExasolPasswordKey: suite.defaultExasolPassword,
-		exasol_rest_api.ExasolHostKey:     host,
-		exasol_rest_api.ExasolPortKey:     strconv.Itoa(suite.exasolPort),
-		exasol_rest_api.EncryptionKey:     "-1",
+		exasol_rest_api.APITokensKey:                       suite.defaultAuthTokens,
+		exasol_rest_api.ExasolUserKey:                      suite.defaultExasolUsername,
+		exasol_rest_api.ExasolPasswordKey:                  suite.defaultExasolPassword,
+		exasol_rest_api.ExasolHostKey:                      host,
+		exasol_rest_api.ExasolPortKey:                      strconv.Itoa(suite.exasolPort),
+		exasol_rest_api.ExasolValidateServerCertificateKey: "false",
 	}
 	apiContainer := runRestAPIContainer(properties)
-	ip, err := apiContainer.Host(context.Background())
+	ip, err := apiContainer.Host(suite.ctx)
 	onError(err)
 
 	port, err := apiContainer.MappedPort(suite.ctx, "8080")
@@ -81,7 +81,7 @@ func (suite *DockerImageTestSuite) TestQuery() {
 	onError(err)
 
 	suite.Equal("200 OK", response.Status)
-	suite.Equal("{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100,\"characterSet\":\"UTF8\"}}]}}",
+	suite.Equal("{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
 		string(body))
 }
 

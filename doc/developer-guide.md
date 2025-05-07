@@ -33,7 +33,7 @@ To start a docker container:
 3. Build the docker image:
 
     ```shell
-    docker build --tag rest-api-test-image:latest .
+    docker buildx build --tag rest-api-test-image:latest .
     ```
 
 4. Generate one or more random tokens with at least 30 characters, e.g. by calling `uuidgen`:

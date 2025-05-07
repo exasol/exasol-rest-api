@@ -12,26 +12,25 @@ const ExasolUserKey string = "EXASOL_USER"
 const ExasolPasswordKey string = "EXASOL_PASSWORD"
 const ExasolHostKey string = "EXASOL_HOST"
 const ExasolPortKey string = "EXASOL_PORT"
-const ExasolWebsocketAPIVersionKey string = "EXASOL_WEBSOCKET_API_VERSION"
-const EncryptionKey string = "EXASOL_ENCRYPTION"
-const UseTLSKey string = "EXASOL_TLS"
+const ExasolCertificateFingerprintKey string = "EXASOL_CERTIFICATE_FINGERPRINT"
+const ExasolValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIFICATE"
 
 // ApplicationProperties for Exasol REST API service.
 // [impl->dsn~service-account~1]
 // [impl->dsn~service-credentials~1]
 type ApplicationProperties struct {
-	APITokens                 []string `yaml:"API_TOKENS"`
-	ApplicationServer         string   `yaml:"SERVER_ADDRESS"`
-	ExasolUser                string   `yaml:"EXASOL_USER"`
-	ExasolPassword            string   `yaml:"EXASOL_PASSWORD"`
-	ExasolHost                string   `yaml:"EXASOL_HOST"`
-	ExasolPort                int      `yaml:"EXASOL_PORT"`
-	ExasolWebsocketAPIVersion int      `yaml:"EXASOL_WEBSOCKET_API_VERSION"`
-	Encryption                int      `yaml:"EXASOL_ENCRYPTION"`
-	UseTLS                    int      `yaml:"EXASOL_TLS"`
-	APIUseTLS                 bool     `yaml:"API_TLS"`
-	APITLSPrivateKeyPath      string   `yaml:"API_TLS_PKPATH"`
-	APITLSCertificatePath     string   `yaml:"API_TLS_CERTPATH"`
+	APITokens         []string `yaml:"API_TOKENS"`
+	ApplicationServer string   `yaml:"SERVER_ADDRESS"`
+	ExasolUser        string   `yaml:"EXASOL_USER"`
+	ExasolPassword    string   `yaml:"EXASOL_PASSWORD"`
+	ExasolHost        string   `yaml:"EXASOL_HOST"`
+	ExasolPort        int      `yaml:"EXASOL_PORT"`
+	// Using string instead of bool to support default values
+	ExasolValidateServerCertificate string `yaml:"EXASOL_VALIDATE_SERVER_CERTIFICATE"`
+	ExasolCertificateFingerprint    string `yaml:"EXASOL_CERTIFICATE_FINGERPRINT"`
+	APIUseTLS                       bool   `yaml:"API_TLS"`
+	APITLSPrivateKeyPath            string `yaml:"API_TLS_PKPATH"`
+	APITLSCertificatePath           string `yaml:"API_TLS_CERTPATH"`
 }
 
 // GetApplicationProperties creates an application properties.
@@ -81,14 +80,8 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 	if applicationProperties.ExasolPort == 0 {
 		applicationProperties.ExasolPort = defaultProperties.ExasolPort
 	}
-	if applicationProperties.ExasolWebsocketAPIVersion == 0 {
-		applicationProperties.ExasolWebsocketAPIVersion = defaultProperties.ExasolWebsocketAPIVersion
-	}
-	if applicationProperties.Encryption != -1 && applicationProperties.Encryption != 1 {
-		applicationProperties.Encryption = defaultProperties.Encryption
-	}
-	if applicationProperties.UseTLS != -1 && applicationProperties.UseTLS != 1 {
-		applicationProperties.UseTLS = defaultProperties.UseTLS
+	if applicationProperties.ExasolValidateServerCertificate == "" {
+		applicationProperties.ExasolValidateServerCertificate = "true"
 	}
 }
 
@@ -112,11 +105,10 @@ func (applicationProperties *ApplicationProperties) validate() error {
 
 func getDefaultProperties() *ApplicationProperties {
 	return &ApplicationProperties{
-		ApplicationServer:         "0.0.0.0:8080",
-		ExasolHost:                "localhost",
-		ExasolPort:                8563,
-		ExasolWebsocketAPIVersion: 2,
-		Encryption:                1,
-		UseTLS:                    1,
+		ApplicationServer:               "0.0.0.0:8080",
+		ExasolHost:                      "localhost",
+		ExasolPort:                      8563,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "",
 	}
 }

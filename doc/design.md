@@ -32,9 +32,13 @@ This section describes the runtime behavior of the software.
 ## Proxy Service
 
 ### Communicate with Database
-`dsn~communicate-with-database~1`
+`dsn~communicate-with-database~2`
 
-ERA uses [Exasol WebSockets API](https://github.com/exasol/websocket-api) to proxy the communication with the Exasol database.
+ERA uses [Exasol Driver for Go](https://github.com/exasol/exasol-driver-go) to proxy the communication with the Exasol database.
+
+Rationale:
+
+Using the Go driver encapsulates the Websocket protocol and avoids code duplication.
 
 Covers:
 
@@ -119,7 +123,7 @@ Covers:
 Needs: impl, itest
 
 #### Execute Query Response Body
-`dsn~execute-query-response-body~1`
+`dsn~execute-query-response-body~2`
 
 The endpoint has the following JSON response body format:
 
@@ -142,11 +146,7 @@ The endpoint has the following JSON response body format:
           "type": <string>,
           "precision": <number>,
           "scale": <number>,
-          "size": <number>,
-          "characterSet": <string>,
-          "withLocalTimeZone": <true | false>,
-          "fraction": <number>,
-          "srid": <number>
+          "size": <number>
         }
       }
     ]
@@ -156,11 +156,19 @@ The endpoint has the following JSON response body format:
 }
 ```
 
+Rationale:
+
+After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available and was removed from the response:
+* `characterSet`
+* `withLocalTimeZone`
+* `fraction`
+* `srid`
+
 Covers:
 
 * `req~support-json-request-and-response-format~1`
 
-Needs: impl, utest, itest
+Needs: impl, itest
 
 ### Get Tables
 
@@ -210,7 +218,7 @@ Covers:
 
 * `req~support-json-request-and-response-format~1`
 
-Needs: impl, utest, itest
+Needs: impl, itest
 
 ### Insert Row
 
@@ -393,7 +401,7 @@ Covers:
 Needs: impl, utest, itest
 
 #### Get Rows Response Body
-`dsn~get-rows-response-body~1`
+`dsn~get-rows-response-body~2`
 
 The endpoint has the following JSON response body format:
 
@@ -416,11 +424,7 @@ The endpoint has the following JSON response body format:
           "type": <string>,
           "precision": <number>,
           "scale": <number>,
-          "size": <number>,
-          "characterSet": <string>,
-          "withLocalTimeZone": <true | false>,
-          "fraction": <number>,
-          "srid": <number>
+          "size": <number>
         }
       }
     ]
@@ -430,11 +434,17 @@ The endpoint has the following JSON response body format:
 }
 ```
 
+After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available and was removed from the response:
+* `characterSet`
+* `withLocalTimeZone`
+* `fraction`
+* `srid`
+
 Covers:
 
 * `req~support-json-request-and-response-format~1`
 
-Needs: impl, utest, itest
+Needs: impl, itest
 
 ### Update Rows
 
