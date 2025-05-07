@@ -158,7 +158,7 @@ The endpoint has the following JSON response body format:
 
 Rationale:
 
-After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available not was removed from the response:
+After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available and was removed from the response:
 * `characterSet`
 * `withLocalTimeZone`
 * `fraction`
@@ -434,7 +434,7 @@ The endpoint has the following JSON response body format:
 }
 ```
 
-After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available not was removed from the response:
+After migrating from an embedded websocket client to `exasol-driver-go`, the following information is no longer available and was removed from the response:
 * `characterSet`
 * `withLocalTimeZone`
 * `fraction`
