@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -117,6 +118,78 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 		expectedBody:   "{\"status\":\"error\",\"exception\":\"E-ERA-2: error while opening a connection with Exasol: failed to login: E-EGOD-11: execution failed with SQL error code '08004' and message 'Connection exception - insufficient privileges: CREATE SESSION.'\"}",
 	}
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+}
+
+func (suite *IntegrationTestSuite) TestCertificateValidationFailsWithoutFingerprint() {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "",
+	})
+
+	data := testData{
+		server:         server,
+		query:          "select 1",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusInternalServerError,
+		expectedBody:   `{"status":"error","exception":"E-ERA-2: error while opening a connection with Exasol: failed to connect to URL \"wss://localhost:32805\": tls: failed to verify certificate: x509: “exacluster.local” certificate is not standards compliant"}`,
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+}
+
+// Get actual fingerprint of Exasol Docker container by extracting the fingerprint
+// from the error message returned when connecting with an invalid fingerprint.
+func (suite *IntegrationTestSuite) TestCertificateValidationSucceedsWithFingerprint() {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    suite.getExasolCertificateFingerprint(),
+	})
+
+	data := testData{
+		server:         server,
+		query:          "select 1",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   `{"status":"ok","rows":[[null,1]],"meta":{"columns":[{"name":"1","dataType":{"type":"DECIMAL","precision":1}}]}}`,
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+}
+
+func (suite *IntegrationTestSuite) getExasolCertificateFingerprint() string {
+	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "invalidFingerprint",
+	})
+
+	data := testData{
+		server:         server,
+		query:          "ignored",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "",
+	}
+	response := suite.sendQueryRequest(&data)
+	reg := regexp.MustCompile("the server's certificate fingerprint '([a-zA-Z0-9]+)' does not match the expected fingerprint 'invalidFingerprint'")
+	submatches := reg.FindStringSubmatch(response.Body.String())
+	actualFingerprint := submatches[1]
+	if actualFingerprint == "" {
+		suite.FailNowf("Expected response %q to match %q", response.Body.String(), reg)
+	}
+	return actualFingerprint
 }
 
 // [itest->dsn~execute-query-endpoint~1]
@@ -893,14 +966,12 @@ func (suite *IntegrationTestSuite) sendHttpRequest(data *testData, req *http.Req
 	return responseRecorder
 }
 
-func (suite *IntegrationTestSuite) assertResponseBodyEquals(data *testData,
-	responseRecorder *httptest.ResponseRecorder) {
+func (suite *IntegrationTestSuite) assertResponseBodyEquals(data *testData, responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Equal(data.expectedBody, responseRecorder.Body.String())
 }
 
-func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData,
-	responseRecorder *httptest.ResponseRecorder) {
+func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData, responseRecorder *httptest.ResponseRecorder) {
 	suite.Equal(data.expectedStatus, responseRecorder.Code)
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
 }
