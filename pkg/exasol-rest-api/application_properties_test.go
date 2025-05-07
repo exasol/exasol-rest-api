@@ -27,7 +27,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 		ExasolPassword:                  "pass",
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
-		ExasolValidateServerCertificate: true,
+		ExasolValidateServerCertificate: "true",
 	}
 	suite.setPathToPropertiesFileEnv(expected)
 	actual := exasol_rest_api.GetApplicationProperties("")
@@ -41,7 +41,7 @@ func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 		ExasolPassword:                  "pass",
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
-		ExasolValidateServerCertificate: true,
+		ExasolValidateServerCertificate: "true",
 	}
 	file, err := suite.createTempAppPropertiesFile("", "application_properties_cli*.yml", expected)
 	onError(err)
@@ -56,12 +56,13 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	suite.setPathToPropertiesFileEnv(minimalRequiredProperties)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{},
-		ApplicationServer: "0.0.0.0:8080",
-		ExasolUser:        "myUser",
-		ExasolPassword:    "pass",
-		ExasolHost:        "localhost",
-		ExasolPort:        8563,
+		APITokens:                       []string{},
+		ApplicationServer:               "0.0.0.0:8080",
+		ExasolUser:                      "myUser",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "localhost",
+		ExasolPort:                      8563,
+		ExasolValidateServerCertificate: "true",
 	}
 	suite.Equal(expected, actual)
 }
@@ -111,7 +112,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingPasswor
 
 func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernameAndPassword() {
 	properties := &exasol_rest_api.ApplicationProperties{
-		ExasolValidateServerCertificate: true,
+		ExasolValidateServerCertificate: "true",
 	}
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
@@ -128,7 +129,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 		ExasolPassword:                  "pass",
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
-		ExasolValidateServerCertificate: false,
+		ExasolValidateServerCertificate: "false",
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -141,6 +142,8 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "false")
 	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
@@ -154,7 +157,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolPassword:                  "pass111",
 		ExasolHost:                      "localhost1",
 		ExasolPort:                      4321,
-		ExasolValidateServerCertificate: true,
+		ExasolValidateServerCertificate: "true",
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
@@ -164,7 +167,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolPassword:                  "pass",
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
-		ExasolValidateServerCertificate: false,
+		ExasolValidateServerCertificate: "false",
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -178,6 +181,8 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
 	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "false")
+	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
@@ -190,7 +195,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolPassword:                  "pass111",
 		ExasolHost:                      "localhost1",
 		ExasolPort:                      4321,
-		ExasolValidateServerCertificate: false,
+		ExasolValidateServerCertificate: "false",
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
@@ -200,7 +205,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolPassword:                  "pass",
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      4321,
-		ExasolValidateServerCertificate: true,
+		ExasolValidateServerCertificate: "true",
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -212,12 +217,13 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "wrong")
 	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "true")
+	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
 
-func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(
-	properties *exasol_rest_api.ApplicationProperties) string {
+func (suite *ApplicationPropertiesSuite) setPathToPropertiesFileEnv(properties *exasol_rest_api.ApplicationProperties) string {
 	var filePath = ""
 	var fileNamePattern = "application_properties_*.yml"
 	file, err := suite.createTempAppPropertiesFile(filePath, fileNamePattern, properties)
@@ -252,6 +258,8 @@ func (suite *ApplicationPropertiesSuite) SetupTest() {
 	err = os.Unsetenv(exasol_rest_api.ExasolHostKey)
 	onError(err)
 	err = os.Unsetenv(exasol_rest_api.ExasolPortKey)
+	onError(err)
+	err = os.Unsetenv(exasol_rest_api.ExasolValidateServerCertificateKey)
 	onError(err)
 	err = os.Unsetenv(applicationPropertiesPathKey)
 	onError(err)

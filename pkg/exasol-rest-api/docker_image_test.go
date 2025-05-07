@@ -54,12 +54,12 @@ func (suite *DockerImageTestSuite) TestQueryDocker() {
 	onError(err)
 	suite.T().Logf("Using host %s:%d", host, suite.exasolPort)
 	properties := map[string]string{
-		exasol_rest_api.APITokensKey:                 suite.defaultAuthTokens,
-		exasol_rest_api.ExasolUserKey:                suite.defaultExasolUsername,
-		exasol_rest_api.ExasolPasswordKey:            suite.defaultExasolPassword,
-		exasol_rest_api.ExasolHostKey:                host,
-		exasol_rest_api.ExasolPortKey:                strconv.Itoa(suite.exasolPort),
-		exasol_rest_api.ValidateServerCertificateKey: "0",
+		exasol_rest_api.APITokensKey:                       suite.defaultAuthTokens,
+		exasol_rest_api.ExasolUserKey:                      suite.defaultExasolUsername,
+		exasol_rest_api.ExasolPasswordKey:                  suite.defaultExasolPassword,
+		exasol_rest_api.ExasolHostKey:                      host,
+		exasol_rest_api.ExasolPortKey:                      strconv.Itoa(suite.exasolPort),
+		exasol_rest_api.ExasolValidateServerCertificateKey: "false",
 	}
 	apiContainer := runRestAPIContainer(properties)
 	ip, err := apiContainer.Host(suite.ctx)

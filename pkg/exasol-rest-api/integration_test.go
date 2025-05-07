@@ -128,7 +128,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		ExasolPassword:                  "wrong_password",
 		ExasolHost:                      suite.exasolHost,
 		ExasolPort:                      suite.exasolPort,
-		ExasolValidateServerCertificate: false,
+		ExasolValidateServerCertificate: "false",
 	})
 	data := testData{
 		server:         server,
@@ -155,7 +155,7 @@ func (suite *IntegrationTestSuite) TestWrongExasolPort() {
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusInternalServerError,
-		expectedBody:   "failed to connect to URL \\\"ws://localhost:4321\\\":",
+		expectedBody:   "failed to connect to URL \\\"wss://localhost:4321\\\":",
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
@@ -937,7 +937,7 @@ func (suite *IntegrationTestSuite) createServerWithUser(user string, password st
 		ExasolPassword:                  password,
 		ExasolHost:                      suite.exasolHost,
 		ExasolPort:                      suite.exasolPort,
-		ExasolValidateServerCertificate: false,
+		ExasolValidateServerCertificate: "false",
 	}
 	return suite.runApiServer(properties)
 }
