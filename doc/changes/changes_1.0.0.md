@@ -1,10 +1,10 @@
-# Exasol Rest api 0.3.0, released 2025-05-??
+# Exasol Rest api 0.3.0, released 2025-05-07
 
 Code name: Support Exasol v8
 
 ## Summary
 
-This release adds support for Exasol v8.
+This release adds support for Exasol v8 and refactors the configuration of Exasol certificate validation. See the [user guide section](../user_guide/user-guide.md#encrypted-connection-to-the-exasol-database) for details.
 
 **Breaking Changes:**
 * The REST API now only supports TLS encrypted connections to the Exasol database. Unencrypted connections to Exasol 7.1 servers are not supported any more.
@@ -13,6 +13,7 @@ This release adds support for Exasol v8.
   * `EXASOL_TLS`: This option allowed to enable or deactivate verification of the Exasol database TLS certificate and supported values `1` and `-1`. We replaced this option with property `EXASOL_VALIDATE_SERVER_CERTIFICATE` that supports values `true` (default) and `false`.
 * REST API now additionally supports the following configuration properties:
   * `EXASOL_VALIDATE_SERVER_CERTIFICATE`: Enable (`true`, default) or disable (`false`) verification of the Exasol TLS certificate.
+  * `EXASOL_CERTIFICATE_FINGERPRINT`: Expected fingerprint of the Exasol TLS certificate. This is useful when Exasol uses a self-signed certificate.
 * Column type metadata for queries does not contain the following fields any more:
   * `characterSet` (values: `"UTF8"`, `"ASCII"`)
   * `withLocalTimeZone` (values: `true`, `false`)

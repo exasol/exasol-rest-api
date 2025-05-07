@@ -61,7 +61,6 @@ On Windows: open a command prompt and start the service from the prompt:
 path\to\file\exasol-rest-api-x86-64.exe -application-properties-path='<PATH>'
 ```
 
-
 #### Via Environment Variables
 
 You can set the properties via environment variables. Use the properties' names from the table below.
@@ -75,24 +74,35 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 #### All Available Properties
 
-| Property                     |    Default     | Description                                                  |
-| :--------------------------- | :------------: | :----------------------------------------------------------- |
-| API_TOKENS                   |                | List of allowed API tokens for authorization.                |
-| SERVER_ADDRESS               | "0.0.0.0:8080" | Address for the server to listen for new connection.         |
-| EXASOL_USER                  |                | Name of the Exasol service account.                          |
-| EXASOL_PASSWORD              |                | Password of the Exasol service account.                      |
-| EXASOL_HOST                  |  "localhost"   | Exasol host.                                                 |
-| EXASOL_PORT                  |      8563      | Exasol port.                                                 |
-| EXASOL_VALIDATE_SERVER_CERTIFICATE | `true`   | Enable (`true`) or disable (`false`) verification of the Exasol TLS certificate. |
-| API_TLS                      |     false      | Enable API TLS/SSL.                                          |
-| API_TLS_PKPATH               |                | Path of the private key file.                                |
-| API_TLS_CERTPATH             |                | Path of the certificate file.                                |
+| Property                     |     Default      | Description                                                  |
+| :--------------------------- |  :------------:  | :----------------------------------------------------------- |
+| API_TOKENS                   |                  | List of allowed API tokens for authorization.                |
+| SERVER_ADDRESS               | `"0.0.0.0:8080"` | Address for the server to listen for new connection.         |
+| EXASOL_USER                  |                  | Name of the Exasol service account.                          |
+| EXASOL_PASSWORD              |                  | Password of the Exasol service account.                      |
+| EXASOL_HOST                  |  `"localhost"`   | Exasol host.                                                 |
+| EXASOL_PORT                  |       `8563`     | Exasol port.                                                 |
+| EXASOL_CERTIFICATE_FINGERPRINT |                | Fingerprint of the Exasol TLS certificate. Useful when Exasol uses a self-signed certificate. |
+| EXASOL_VALIDATE_SERVER_CERTIFICATE | `true`     | Enable (`true`) or disable (`false`, not recommended) verification of the Exasol TLS certificate. |
+| API_TLS                      |     `false`      | Enable API TLS/SSL.                                          |
+| API_TLS_PKPATH               |                  | Path of the private key file.                                |
+| API_TLS_CERTPATH             |                  | Path of the certificate file.                                |
 
-[1]: https://community.exasol.com/t5/database-features/database-connection-encryption-at-exasol/ta-p/2259
+### Encrypted Connection to the Exasol Database
+
+Starting with version 1.0.0 the REST API only supports TLS encrypted connections to the Exasol database. When the Exasol database uses a self-signed certificate, connections will fail with an error message like this:
+
+```
+E-ERA-2: error while opening a connection with Exasol: failed to connect to URL "wss://localhost:32805": tls: failed to verify certificate: x509: “exacluster.local” certificate is not standards compliant
+```
+
+In this case we recommend to specify property `EXASOL_CERTIFICATE_FINGERPRINT` with the fingerprint of the Exasol database's TLS certificate. This ensures that REST API connects to the expected database.
+
+Another option is to disable certificate validation by setting property `EXASOL_VALIDATE_SERVER_CERTIFICATE` to `false`, but this is discouraged.
 
 ### Authorization
 
-Add a list of API tokens to the configuration file (find an example above).
+Add a comma separated list of API tokens to the configuration file (find an example above).
 The tokens must have **at least 30 alphanumeric** characters. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service

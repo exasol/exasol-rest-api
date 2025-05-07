@@ -19,15 +19,15 @@ const ExasolValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIF
 // [impl->dsn~service-account~1]
 // [impl->dsn~service-credentials~1]
 type ApplicationProperties struct {
-	APITokens                    []string `yaml:"API_TOKENS"`
-	ApplicationServer            string   `yaml:"SERVER_ADDRESS"`
-	ExasolUser                   string   `yaml:"EXASOL_USER"`
-	ExasolPassword               string   `yaml:"EXASOL_PASSWORD"`
-	ExasolHost                   string   `yaml:"EXASOL_HOST"`
-	ExasolPort                   int      `yaml:"EXASOL_PORT"`
-	ExasolCertificateFingerprint string   `yaml:"EXASOL_CERTIFICATE_FINGERPRINT"`
+	APITokens         []string `yaml:"API_TOKENS"`
+	ApplicationServer string   `yaml:"SERVER_ADDRESS"`
+	ExasolUser        string   `yaml:"EXASOL_USER"`
+	ExasolPassword    string   `yaml:"EXASOL_PASSWORD"`
+	ExasolHost        string   `yaml:"EXASOL_HOST"`
+	ExasolPort        int      `yaml:"EXASOL_PORT"`
 	// Using string instead of bool to support default values
 	ExasolValidateServerCertificate string `yaml:"EXASOL_VALIDATE_SERVER_CERTIFICATE"`
+	ExasolCertificateFingerprint    string `yaml:"EXASOL_CERTIFICATE_FINGERPRINT"`
 	APIUseTLS                       bool   `yaml:"API_TLS"`
 	APITLSPrivateKeyPath            string `yaml:"API_TLS_PKPATH"`
 	APITLSCertificatePath           string `yaml:"API_TLS_CERTPATH"`
