@@ -7,6 +7,9 @@ Code name: Support Exasol v8
 This release adds support for Exasol v8.
 
 **Breaking Changes:**
+* The REST API now only supports TLS encrypted connections to the Exasol database. Unencrypted connections to Exasol 7.1 servers are not supported any more.
+* The REST API does not support the following properties any more:
+  * `EXASOL_ENCRYPTION`: Encryption is enabled by default and cannot be deactivated.
 * Column type metadata for queries does not contain the following fields any more:
   * `characterSet` (values: `"UTF8"`, `"ASCII"`)
   * `withLocalTimeZone` (values: `true`, `false`)

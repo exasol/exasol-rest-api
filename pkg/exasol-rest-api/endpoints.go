@@ -357,7 +357,7 @@ func (application *Application) openConnection() (*sql.DB, error) {
 		Host(props.ExasolHost).
 		Port(props.ExasolPort).
 		Compression(true).
-		Encryption(props.Encryption == 1).
+		Encryption(true). // Deactivating encryption not supported any more
 		ValidateServerCertificate(props.ExasolValidateServerCertificate == 1).
 		CertificateFingerprint(props.ExasolCertificateFingerprint).
 		Autocommit(true).

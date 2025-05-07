@@ -27,7 +27,6 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 		ExasolPassword:    "pass",
 		ExasolHost:        "127.0.0.1",
 		ExasolPort:        1234,
-		Encryption:        1,
 		UseTLS:            1,
 	}
 	suite.setPathToPropertiesFileEnv(expected)
@@ -42,7 +41,6 @@ func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 		ExasolPassword:    "pass",
 		ExasolHost:        "127.0.0.1",
 		ExasolPort:        1234,
-		Encryption:        1,
 		UseTLS:            1,
 	}
 	file, err := suite.createTempAppPropertiesFile("", "application_properties_cli*.yml", expected)
@@ -64,7 +62,6 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 		ExasolPassword:    "pass",
 		ExasolHost:        "localhost",
 		ExasolPort:        8563,
-		Encryption:        1,
 		UseTLS:            1,
 	}
 	suite.Equal(expected, actual)
@@ -132,7 +129,6 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 		ExasolPassword:    "pass",
 		ExasolHost:        "127.0.0.1",
 		ExasolPort:        1234,
-		Encryption:        1,
 		UseTLS:            -1,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
@@ -146,8 +142,6 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
-	onError(err)
-	err = os.Setenv(exasol_rest_api.EncryptionKey, "1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.UseTLSKey, "-1")
 	onError(err)
@@ -163,7 +157,6 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolPassword:    "pass111",
 		ExasolHost:        "localhost1",
 		ExasolPort:        4321,
-		Encryption:        1,
 		UseTLS:            1,
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
@@ -174,7 +167,6 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolPassword:    "pass",
 		ExasolHost:        "127.0.0.1",
 		ExasolPort:        1234,
-		Encryption:        -1,
 		UseTLS:            -1,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
@@ -188,8 +180,6 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
-	onError(err)
-	err = os.Setenv(exasol_rest_api.EncryptionKey, "-1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.UseTLSKey, "-1")
 	onError(err)
@@ -205,7 +195,6 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolPassword:    "pass111",
 		ExasolHost:        "localhost1",
 		ExasolPort:        4321,
-		Encryption:        -1,
 		UseTLS:            -1,
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
@@ -216,7 +205,6 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolPassword:    "pass",
 		ExasolHost:        "127.0.0.1",
 		ExasolPort:        4321,
-		Encryption:        -1,
 		UseTLS:            1,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
@@ -228,8 +216,6 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "wrong")
-	onError(err)
-	err = os.Setenv(exasol_rest_api.EncryptionKey, "bad")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.UseTLSKey, "1")
 	onError(err)
@@ -273,8 +259,6 @@ func (suite *ApplicationPropertiesSuite) SetupTest() {
 	err = os.Unsetenv(exasol_rest_api.ExasolHostKey)
 	onError(err)
 	err = os.Unsetenv(exasol_rest_api.ExasolPortKey)
-	onError(err)
-	err = os.Unsetenv(exasol_rest_api.EncryptionKey)
 	onError(err)
 	err = os.Unsetenv(exasol_rest_api.UseTLSKey)
 	onError(err)

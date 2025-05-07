@@ -128,7 +128,6 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		ExasolPassword:                  "wrong_password",
 		ExasolHost:                      suite.exasolHost,
 		ExasolPort:                      suite.exasolPort,
-		Encryption:                      1,
 		ExasolValidateServerCertificate: 0,
 	})
 	data := testData{
@@ -938,7 +937,6 @@ func (suite *IntegrationTestSuite) createServerWithUser(user string, password st
 		ExasolPassword:                  password,
 		ExasolHost:                      suite.exasolHost,
 		ExasolPort:                      suite.exasolPort,
-		Encryption:                      1,
 		ExasolValidateServerCertificate: 0,
 	}
 	return suite.runApiServer(properties)

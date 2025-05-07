@@ -12,7 +12,8 @@ const ExasolUserKey string = "EXASOL_USER"
 const ExasolPasswordKey string = "EXASOL_PASSWORD"
 const ExasolHostKey string = "EXASOL_HOST"
 const ExasolPortKey string = "EXASOL_PORT"
-const EncryptionKey string = "EXASOL_ENCRYPTION"
+const CertificateFingerprintKey string = "EXASOL_CERTIFICATE_FINGERPRINT"
+const ValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIFICATE"
 const UseTLSKey string = "EXASOL_TLS"
 
 // ApplicationProperties for Exasol REST API service.
@@ -25,7 +26,6 @@ type ApplicationProperties struct {
 	ExasolPassword                  string   `yaml:"EXASOL_PASSWORD"`
 	ExasolHost                      string   `yaml:"EXASOL_HOST"`
 	ExasolPort                      int      `yaml:"EXASOL_PORT"`
-	Encryption                      int      `yaml:"EXASOL_ENCRYPTION"`
 	ExasolCertificateFingerprint    string   `yaml:"EXASOL_CERTIFICATE_FINGERPRINT"`
 	ExasolValidateServerCertificate int      `yaml:"EXASOL_VALIDATE_SERVER_CERTIFICATE"`
 	UseTLS                          int      `yaml:"EXASOL_TLS"`
@@ -81,9 +81,6 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 	if applicationProperties.ExasolPort == 0 {
 		applicationProperties.ExasolPort = defaultProperties.ExasolPort
 	}
-	if applicationProperties.Encryption != -1 && applicationProperties.Encryption != 1 {
-		applicationProperties.Encryption = defaultProperties.Encryption
-	}
 	if applicationProperties.UseTLS != -1 && applicationProperties.UseTLS != 1 {
 		applicationProperties.UseTLS = defaultProperties.UseTLS
 	}
@@ -112,7 +109,6 @@ func getDefaultProperties() *ApplicationProperties {
 		ApplicationServer: "0.0.0.0:8080",
 		ExasolHost:        "localhost",
 		ExasolPort:        8563,
-		Encryption:        1,
 		UseTLS:            1,
 	}
 }
