@@ -12,7 +12,7 @@ const ExasolUserKey string = "EXASOL_USER"
 const ExasolPasswordKey string = "EXASOL_PASSWORD"
 const ExasolHostKey string = "EXASOL_HOST"
 const ExasolPortKey string = "EXASOL_PORT"
-const CertificateFingerprintKey string = "EXASOL_CERTIFICATE_FINGERPRINT"
+const ExasolCertificateFingerprintKey string = "EXASOL_CERTIFICATE_FINGERPRINT"
 const ExasolValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIFICATE"
 
 // ApplicationProperties for Exasol REST API service.
@@ -109,5 +109,6 @@ func getDefaultProperties() *ApplicationProperties {
 		ExasolHost:                      "localhost",
 		ExasolPort:                      8563,
 		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "",
 	}
 }

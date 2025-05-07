@@ -15,6 +15,7 @@ func (applicationProperties *ApplicationProperties) setValuesFromEnvironmentVari
 	applicationProperties.setServerAddress()
 	applicationProperties.setExasolPort()
 	applicationProperties.setExasolValidateServerCertificate()
+	applicationProperties.setExasolCertificateFingerprintKey()
 	applicationProperties.setAPITokens()
 }
 
@@ -57,6 +58,7 @@ func (applicationProperties *ApplicationProperties) setExasolPort() {
 		}
 	}
 }
+
 func (applicationProperties *ApplicationProperties) setExasolValidateServerCertificate() {
 	validateCertificate := os.Getenv(ExasolValidateServerCertificateKey)
 	if validateCertificate == "" {
@@ -68,6 +70,14 @@ func (applicationProperties *ApplicationProperties) setExasolValidateServerCerti
 		return
 	}
 	applicationProperties.ExasolValidateServerCertificate = validateCertificate
+}
+
+func (applicationProperties *ApplicationProperties) setExasolCertificateFingerprintKey() {
+	fingerprint := os.Getenv(ExasolCertificateFingerprintKey)
+	if fingerprint == "" {
+		return
+	}
+	applicationProperties.ExasolCertificateFingerprint = fingerprint
 }
 
 func logEnvironmentVariableParsingError(variableName string, err error) {

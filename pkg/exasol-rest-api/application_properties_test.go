@@ -28,6 +28,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
 		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "fingerprint",
 	}
 	suite.setPathToPropertiesFileEnv(expected)
 	actual := exasol_rest_api.GetApplicationProperties("")
@@ -42,6 +43,7 @@ func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
 		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "fingerprint",
 	}
 	file, err := suite.createTempAppPropertiesFile("", "application_properties_cli*.yml", expected)
 	onError(err)
@@ -63,6 +65,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 		ExasolHost:                      "localhost",
 		ExasolPort:                      8563,
 		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "",
 	}
 	suite.Equal(expected, actual)
 }
@@ -130,6 +133,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
 		ExasolValidateServerCertificate: "false",
+		ExasolCertificateFingerprint:    "fingerprint",
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -144,6 +148,8 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "false")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolCertificateFingerprintKey, "fingerprint")
 	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
@@ -158,6 +164,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolHost:                      "localhost1",
 		ExasolPort:                      4321,
 		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "fingerprint1",
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
@@ -168,6 +175,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      1234,
 		ExasolValidateServerCertificate: "false",
+		ExasolCertificateFingerprint:    "fingerprint2",
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -183,6 +191,8 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "false")
 	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolCertificateFingerprintKey, "fingerprint2")
+	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
@@ -196,6 +206,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolHost:                      "localhost1",
 		ExasolPort:                      4321,
 		ExasolValidateServerCertificate: "false",
+		ExasolCertificateFingerprint:    "fingerprint1",
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
@@ -206,6 +217,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolHost:                      "127.0.0.1",
 		ExasolPort:                      4321,
 		ExasolValidateServerCertificate: "true",
+		ExasolCertificateFingerprint:    "fingerprint2",
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -218,6 +230,8 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "wrong")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "true")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolCertificateFingerprintKey, "fingerprint2")
 	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
@@ -260,6 +274,8 @@ func (suite *ApplicationPropertiesSuite) SetupTest() {
 	err = os.Unsetenv(exasol_rest_api.ExasolPortKey)
 	onError(err)
 	err = os.Unsetenv(exasol_rest_api.ExasolValidateServerCertificateKey)
+	onError(err)
+	err = os.Unsetenv(exasol_rest_api.ExasolCertificateFingerprintKey)
 	onError(err)
 	err = os.Unsetenv(applicationPropertiesPathKey)
 	onError(err)
