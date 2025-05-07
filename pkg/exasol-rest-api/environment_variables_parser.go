@@ -14,7 +14,6 @@ func (applicationProperties *ApplicationProperties) setValuesFromEnvironmentVari
 	applicationProperties.setExasolHost()
 	applicationProperties.setServerAddress()
 	applicationProperties.setExasolPort()
-	applicationProperties.setTLS()
 	applicationProperties.setAPITokens()
 }
 
@@ -62,18 +61,6 @@ func logEnvironmentVariableParsingError(variableName string, err error) {
 	errorLogger.Print(exaerror.New("E-ERA-5").
 		Message("cannot parse environment variable "+variableName+". {{error|uq}}").
 		Parameter("error", err.Error()).String())
-}
-
-func (applicationProperties *ApplicationProperties) setTLS() {
-	exasolTLS := os.Getenv(UseTLSKey)
-	if exasolTLS != "" {
-		tls, err := strconv.Atoi(exasolTLS)
-		if err != nil {
-			logEnvironmentVariableParsingError(UseTLSKey, err)
-		} else {
-			applicationProperties.UseTLS = tls
-		}
-	}
 }
 
 func (applicationProperties *ApplicationProperties) setAPITokens() {

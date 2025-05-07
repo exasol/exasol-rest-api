@@ -44,7 +44,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.defaultServiceUsername = "api_service_account"
 	suite.defaultServicePassword = "secret_password"
 	suite.defaultAuthTokens = []string{"3J90XAv9loMIXzQdfYmtJrHAbopPsc", "OR6rq6KjWmhvGU770A9OTjpfH86nlk"}
-	suite.exasolContainer = runExasolContainer(suite.ctx)
+	suite.exasolContainer = runExasolContainer()
 	connectionInfo, err := suite.exasolContainer.GetConnectionInfo()
 	onError(err)
 	suite.exasolHost = connectionInfo.Host
@@ -128,7 +128,7 @@ func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 		ExasolPassword:                  "wrong_password",
 		ExasolHost:                      suite.exasolHost,
 		ExasolPort:                      suite.exasolPort,
-		ExasolValidateServerCertificate: 0,
+		ExasolValidateServerCertificate: false,
 	})
 	data := testData{
 		server:         server,
@@ -913,7 +913,7 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 	suite.False(rows.Next())
 }
 
-func runExasolContainer(ctx context.Context) *testSetupAbstraction.TestSetupAbstraction {
+func runExasolContainer() *testSetupAbstraction.TestSetupAbstraction {
 	dbVersion := os.Getenv("EXASOL_DB_VERSION")
 	if dbVersion == "" {
 		dbVersion = "8.34.0"
@@ -937,7 +937,7 @@ func (suite *IntegrationTestSuite) createServerWithUser(user string, password st
 		ExasolPassword:                  password,
 		ExasolHost:                      suite.exasolHost,
 		ExasolPort:                      suite.exasolPort,
-		ExasolValidateServerCertificate: 0,
+		ExasolValidateServerCertificate: false,
 	}
 	return suite.runApiServer(properties)
 }

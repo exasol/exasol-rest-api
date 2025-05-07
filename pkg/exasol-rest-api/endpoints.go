@@ -358,7 +358,7 @@ func (application *Application) openConnection() (*sql.DB, error) {
 		Port(props.ExasolPort).
 		Compression(true).
 		Encryption(true). // Deactivating encryption not supported any more
-		ValidateServerCertificate(props.ExasolValidateServerCertificate == 1).
+		ValidateServerCertificate(props.ExasolValidateServerCertificate).
 		CertificateFingerprint(props.ExasolCertificateFingerprint).
 		Autocommit(true).
 		ClientName("Exasol REST API").

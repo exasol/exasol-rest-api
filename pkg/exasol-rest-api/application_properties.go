@@ -14,7 +14,6 @@ const ExasolHostKey string = "EXASOL_HOST"
 const ExasolPortKey string = "EXASOL_PORT"
 const CertificateFingerprintKey string = "EXASOL_CERTIFICATE_FINGERPRINT"
 const ValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIFICATE"
-const UseTLSKey string = "EXASOL_TLS"
 
 // ApplicationProperties for Exasol REST API service.
 // [impl->dsn~service-account~1]
@@ -27,8 +26,7 @@ type ApplicationProperties struct {
 	ExasolHost                      string   `yaml:"EXASOL_HOST"`
 	ExasolPort                      int      `yaml:"EXASOL_PORT"`
 	ExasolCertificateFingerprint    string   `yaml:"EXASOL_CERTIFICATE_FINGERPRINT"`
-	ExasolValidateServerCertificate int      `yaml:"EXASOL_VALIDATE_SERVER_CERTIFICATE"`
-	UseTLS                          int      `yaml:"EXASOL_TLS"`
+	ExasolValidateServerCertificate bool     `yaml:"EXASOL_VALIDATE_SERVER_CERTIFICATE"`
 	APIUseTLS                       bool     `yaml:"API_TLS"`
 	APITLSPrivateKeyPath            string   `yaml:"API_TLS_PKPATH"`
 	APITLSCertificatePath           string   `yaml:"API_TLS_CERTPATH"`
@@ -81,9 +79,6 @@ func (applicationProperties *ApplicationProperties) fillMissingWithDefaultValues
 	if applicationProperties.ExasolPort == 0 {
 		applicationProperties.ExasolPort = defaultProperties.ExasolPort
 	}
-	if applicationProperties.UseTLS != -1 && applicationProperties.UseTLS != 1 {
-		applicationProperties.UseTLS = defaultProperties.UseTLS
-	}
 }
 
 func (applicationProperties *ApplicationProperties) validate() error {
@@ -106,9 +101,9 @@ func (applicationProperties *ApplicationProperties) validate() error {
 
 func getDefaultProperties() *ApplicationProperties {
 	return &ApplicationProperties{
-		ApplicationServer: "0.0.0.0:8080",
-		ExasolHost:        "localhost",
-		ExasolPort:        8563,
-		UseTLS:            1,
+		ApplicationServer:               "0.0.0.0:8080",
+		ExasolHost:                      "localhost",
+		ExasolPort:                      8563,
+		ExasolValidateServerCertificate: true,
 	}
 }

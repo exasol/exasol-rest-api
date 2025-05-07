@@ -83,7 +83,7 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 | EXASOL_PASSWORD              |                | Password of the Exasol service account.                      |
 | EXASOL_HOST                  |  "localhost"   | Exasol host.                                                 |
 | EXASOL_PORT                  |      8563      | Exasol port.                                                 |
-| EXASOL_TLS                   |       1        | Database TLS/SSL verification. Disable it if you want to use a self-signed or invalid certificate (server side). Use 1 to enable it and -1 to disable. |
+| EXASOL_VALIDATE_SERVER_CERTIFICATE | `true`   | Enable (`true`) or disable (`false`) verification of the Exasol TLS certificate. |
 | API_TLS                      |     false      | Enable API TLS/SSL.                                          |
 | API_TLS_PKPATH               |                | Path of the private key file.                                |
 | API_TLS_CERTPATH             |                | Path of the certificate file.                                |

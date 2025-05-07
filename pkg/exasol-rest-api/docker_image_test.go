@@ -39,7 +39,7 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 	suite.defaultExasolUsername = "api_service_account"
 	suite.defaultExasolPassword = "secret_password"
 	suite.defaultAuthTokens = "3J90XAv9loMIXzQdfYmtJrHAbopPsc,OR6rq6KjWmhvGU770A9OTjpfH86nlk"
-	suite.exasolContainer = runExasolContainer(suite.ctx)
+	suite.exasolContainer = runExasolContainer()
 	connectionInfo, err := suite.exasolContainer.GetConnectionInfo()
 	onError(err)
 	suite.exasolHost = connectionInfo.Host

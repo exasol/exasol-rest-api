@@ -21,13 +21,13 @@ func TestApplicationPropertiesSuite(t *testing.T) {
 
 func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc"},
-		ApplicationServer: "test:8888",
-		ExasolUser:        "myUser",
-		ExasolPassword:    "pass",
-		ExasolHost:        "127.0.0.1",
-		ExasolPort:        1234,
-		UseTLS:            1,
+		APITokens:                       []string{"abc"},
+		ApplicationServer:               "test:8888",
+		ExasolUser:                      "myUser",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "127.0.0.1",
+		ExasolPort:                      1234,
+		ExasolValidateServerCertificate: true,
 	}
 	suite.setPathToPropertiesFileEnv(expected)
 	actual := exasol_rest_api.GetApplicationProperties("")
@@ -35,13 +35,13 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 }
 func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc"},
-		ApplicationServer: "test:8888",
-		ExasolUser:        "myUser",
-		ExasolPassword:    "pass",
-		ExasolHost:        "127.0.0.1",
-		ExasolPort:        1234,
-		UseTLS:            1,
+		APITokens:                       []string{"abc"},
+		ApplicationServer:               "test:8888",
+		ExasolUser:                      "myUser",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "127.0.0.1",
+		ExasolPort:                      1234,
+		ExasolValidateServerCertificate: true,
 	}
 	file, err := suite.createTempAppPropertiesFile("", "application_properties_cli*.yml", expected)
 	onError(err)
@@ -62,7 +62,6 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 		ExasolPassword:    "pass",
 		ExasolHost:        "localhost",
 		ExasolPort:        8563,
-		UseTLS:            1,
 	}
 	suite.Equal(expected, actual)
 }
@@ -112,7 +111,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingPasswor
 
 func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernameAndPassword() {
 	properties := &exasol_rest_api.ApplicationProperties{
-		UseTLS: 1,
+		ExasolValidateServerCertificate: true,
 	}
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
@@ -123,13 +122,13 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc", "bca"},
-		ApplicationServer: "test:8888",
-		ExasolUser:        "myUser",
-		ExasolPassword:    "pass",
-		ExasolHost:        "127.0.0.1",
-		ExasolPort:        1234,
-		UseTLS:            -1,
+		APITokens:                       []string{"abc", "bca"},
+		ApplicationServer:               "test:8888",
+		ExasolUser:                      "myUser",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "127.0.0.1",
+		ExasolPort:                      1234,
+		ExasolValidateServerCertificate: false,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -142,8 +141,6 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
-	onError(err)
-	err = os.Setenv(exasol_rest_api.UseTLSKey, "-1")
 	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
@@ -151,23 +148,23 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 
 func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv() {
 	propertiesFromFile := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc"},
-		ApplicationServer: "1.1.1.1:8888",
-		ExasolUser:        "user",
-		ExasolPassword:    "pass111",
-		ExasolHost:        "localhost1",
-		ExasolPort:        4321,
-		UseTLS:            1,
+		APITokens:                       []string{"abc"},
+		ApplicationServer:               "1.1.1.1:8888",
+		ExasolUser:                      "user",
+		ExasolPassword:                  "pass111",
+		ExasolHost:                      "localhost1",
+		ExasolPort:                      4321,
+		ExasolValidateServerCertificate: true,
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc", "bca"},
-		ApplicationServer: "test:8888",
-		ExasolUser:        "myUser",
-		ExasolPassword:    "pass",
-		ExasolHost:        "127.0.0.1",
-		ExasolPort:        1234,
-		UseTLS:            -1,
+		APITokens:                       []string{"abc", "bca"},
+		ApplicationServer:               "test:8888",
+		ExasolUser:                      "myUser",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "127.0.0.1",
+		ExasolPort:                      1234,
+		ExasolValidateServerCertificate: false,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -181,31 +178,29 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
 	onError(err)
-	err = os.Setenv(exasol_rest_api.UseTLSKey, "-1")
-	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
 }
 
 func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	propertiesFromFile := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc"},
-		ApplicationServer: "1.1.1.1:8888",
-		ExasolUser:        "user",
-		ExasolPassword:    "pass111",
-		ExasolHost:        "localhost1",
-		ExasolPort:        4321,
-		UseTLS:            -1,
+		APITokens:                       []string{"abc"},
+		ApplicationServer:               "1.1.1.1:8888",
+		ExasolUser:                      "user",
+		ExasolPassword:                  "pass111",
+		ExasolHost:                      "localhost1",
+		ExasolPort:                      4321,
+		ExasolValidateServerCertificate: false,
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:         []string{"abc", "bca"},
-		ApplicationServer: "test:8888",
-		ExasolUser:        "user",
-		ExasolPassword:    "pass",
-		ExasolHost:        "127.0.0.1",
-		ExasolPort:        4321,
-		UseTLS:            1,
+		APITokens:                       []string{"abc", "bca"},
+		ApplicationServer:               "test:8888",
+		ExasolUser:                      "user",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "127.0.0.1",
+		ExasolPort:                      4321,
+		ExasolValidateServerCertificate: true,
 	}
 	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
 	onError(err)
@@ -216,8 +211,6 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ExasolPortKey, "wrong")
-	onError(err)
-	err = os.Setenv(exasol_rest_api.UseTLSKey, "1")
 	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
@@ -259,8 +252,6 @@ func (suite *ApplicationPropertiesSuite) SetupTest() {
 	err = os.Unsetenv(exasol_rest_api.ExasolHostKey)
 	onError(err)
 	err = os.Unsetenv(exasol_rest_api.ExasolPortKey)
-	onError(err)
-	err = os.Unsetenv(exasol_rest_api.UseTLSKey)
 	onError(err)
 	err = os.Unsetenv(applicationPropertiesPathKey)
 	onError(err)
