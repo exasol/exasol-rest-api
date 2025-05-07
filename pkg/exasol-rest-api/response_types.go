@@ -9,8 +9,6 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-var statusOk = "ok"
-
 // [impl->dsn~get-tables-response-body~1]
 type GetTablesResponse struct {
 	Status     string  `json:"status"`
@@ -55,6 +53,16 @@ type DataType struct {
 type APIBaseResponse struct {
 	Status    string `json:"status"`
 	Exception string `json:"exception,omitempty"`
+}
+
+func apiErrorResponse(err error) APIBaseResponse {
+	return APIBaseResponse{Status: "error", Exception: err.Error()}
+}
+
+var statusOk = "ok"
+
+func apiOkResponse() APIBaseResponse {
+	return APIBaseResponse{Status: statusOk}
 }
 
 // [impl->dsn~get-tables-response-body~1]

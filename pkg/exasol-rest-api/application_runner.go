@@ -43,7 +43,7 @@ func Run(appPropertiesPathCli string) {
 func (application *Application) Auth(context *gin.Context) {
 	err := application.Authorizer.Authorize(context.Request)
 	if err != nil {
-		context.JSON(http.StatusForbidden, APIBaseResponse{Status: "error", Exception: err.Error()})
+		context.JSON(http.StatusForbidden, apiErrorResponse(err))
 		context.Abort()
 	}
 }
