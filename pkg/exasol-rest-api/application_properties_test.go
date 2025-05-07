@@ -155,6 +155,34 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	suite.Equal(expected, actual)
 }
 
+func (suite *ApplicationPropertiesSuite) TestReadingPropertiesFromEnvIgnoresInvalidExasolValidateServerCertificateKey() {
+	expected := &exasol_rest_api.ApplicationProperties{
+		APITokens:                       []string{"abc", "bca"},
+		ApplicationServer:               "test:8888",
+		ExasolUser:                      "myUser",
+		ExasolPassword:                  "pass",
+		ExasolHost:                      "127.0.0.1",
+		ExasolPort:                      1234,
+		ExasolValidateServerCertificate: "true",
+	}
+	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ApplicationServerKey, "test:8888")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolUserKey, "myUser")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolPasswordKey, "pass")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolHostKey, "127.0.0.1")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolPortKey, "1234")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolValidateServerCertificateKey, "invalid")
+	onError(err)
+	actual := exasol_rest_api.GetApplicationProperties("")
+	suite.Equal(expected, actual)
+}
+
 func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv() {
 	propertiesFromFile := &exasol_rest_api.ApplicationProperties{
 		APITokens:                       []string{"abc"},
