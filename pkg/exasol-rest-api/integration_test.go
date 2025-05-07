@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
@@ -136,7 +137,7 @@ func (suite *IntegrationTestSuite) TestCertificateValidationFailsWithoutFingerpr
 		query:          "select 1",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusInternalServerError,
-		expectedBody:   `{"status":"error","exception":"E-ERA-2: error while opening a connection with Exasol: failed to connect to URL \"wss://localhost:32805\": tls: failed to verify certificate: x509:`,
+		expectedBody:   fmt.Sprintf(`{"status":"error","exception":"E-ERA-2: error while opening a connection with Exasol: failed to connect to URL \"wss://%s:%d\": tls: failed to verify certificate: x509:`, suite.exasolHost, suite.exasolPort),
 	}
 	suite.assertResponseBodyContains(&data, suite.sendQueryRequest(&data))
 }
