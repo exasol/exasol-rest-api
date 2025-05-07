@@ -109,16 +109,8 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 	username := "user_without_session_privilege"
 	password := "secret"
 	suite.createExasolUser(username, password)
-
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		query:          "some query",
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusInternalServerError,
@@ -131,11 +123,13 @@ func (suite *IntegrationTestSuite) TestExasolUserWithoutCreateSessionPrivilege()
 // [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestExasolUserWithWrongCredentials() {
 	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     "not_existing_user",
-		ExasolPassword: "wrong_password",
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      "not_existing_user",
+		ExasolPassword:                  "wrong_password",
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		Encryption:                      1,
+		ExasolValidateServerCertificate: 0,
 	})
 	data := testData{
 		server:         server,
@@ -206,16 +200,9 @@ func (suite *IntegrationTestSuite) TestGetTables() {
 	suite.createExasolUser(username, password)
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "SELECT ON SCHEMA "+schemaName)
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
 
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[{\"tableName\":\"TEST_TABLE_1\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"},{\"tableName\":\"TEST_TABLE_2\",\"schemaName\":\"TEST_SCHEMA_GET_TABLES_1\"}]}",
@@ -231,15 +218,8 @@ func (suite *IntegrationTestSuite) TestGetTablesWithZeroTables() {
 	suite.createExasolUser(username, password)
 	suite.grantToUser(username, "CREATE SESSION")
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\",\"tablesList\":[]}",
@@ -277,16 +257,8 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "INSERT ON SCHEMA "+schemaName)
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
-
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -412,16 +384,8 @@ func (suite *IntegrationTestSuite) TestDeleteRow() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "DELETE ON SCHEMA "+schemaName)
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
-
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -503,16 +467,8 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "UPDATE ON SCHEMA "+schemaName)
 
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
-
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -780,16 +736,9 @@ func (suite *IntegrationTestSuite) TestExecuteStatement() {
 	suite.createExasolUser(username, password)
 	suite.grantToUser(username, "CREATE SESSION")
 	suite.grantToUser(username, "CREATE ANY SCRIPT")
-	server := suite.runApiServer(&exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     username,
-		ExasolPassword: password,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-	})
 
 	data := testData{
-		server:         server,
+		server:         suite.createServerWithUser(username, password),
 		authToken:      suite.defaultAuthTokens[0],
 		expectedStatus: http.StatusOK,
 		expectedBody:   "{\"status\":\"ok\"}",
@@ -982,16 +931,20 @@ func onError(err error) {
 	}
 }
 
-func (suite *IntegrationTestSuite) createServerWithDefaultProperties() exasol_rest_api.Application {
+func (suite *IntegrationTestSuite) createServerWithUser(user string, password string) exasol_rest_api.Application {
 	properties := &exasol_rest_api.ApplicationProperties{
-		APITokens:      suite.defaultAuthTokens,
-		ExasolUser:     suite.defaultServiceUsername,
-		ExasolPassword: suite.defaultServicePassword,
-		ExasolHost:     suite.exasolHost,
-		ExasolPort:     suite.exasolPort,
-		Encryption:     -1,
+		APITokens:                       suite.defaultAuthTokens,
+		ExasolUser:                      user,
+		ExasolPassword:                  password,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		Encryption:                      1,
+		ExasolValidateServerCertificate: 0,
 	}
 	return suite.runApiServer(properties)
+}
+func (suite *IntegrationTestSuite) createServerWithDefaultProperties() exasol_rest_api.Application {
+	return suite.createServerWithUser(suite.defaultServiceUsername, suite.defaultServicePassword)
 }
 
 func (suite *IntegrationTestSuite) runApiServer(properties *exasol_rest_api.ApplicationProperties) exasol_rest_api.Application {
