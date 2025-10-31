@@ -12,16 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.24.2"
+          go-version: "1.25.3"
 
       - name: Install Swag
-        run: go install github.com/swaggo/swag/cmd/swag@v1.16.4
+        run: go install github.com/swaggo/swag/cmd/swag@v1.16.6
       - name: Setup Environment variable for Swagger
         run: export PATH=$(go env GOPATH)/bin:$PATH
       - name: Generate Swagger API Description

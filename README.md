@@ -4,8 +4,6 @@
 
 Exasol REST API is an extension for the Exasol database that provides the ability to interact with the database via REST API endpoints. The REST API is required by the [Power Apps Connector for Exasol](https://github.com/exasol/power-apps-connector).
 
-[![Go Build](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml/badge.svg)](https://github.com/exasol/exasol-rest-api/actions/workflows/linux-build.yml)
-
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-rest-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=com.exasol%3Aexasol-rest-api)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-rest-api&metric=coverage)](https://sonarcloud.io/summary/new_code?id=com.exasol%3Aexasol-rest-api)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-rest-api&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=com.exasol%3Aexasol-rest-api)

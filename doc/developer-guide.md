@@ -13,7 +13,7 @@ Please don't forget to change that version.
 2. Install `swag`:
 
     ```shell
-    go install github.com/swaggo/swag/cmd/swag@v1.16.4
+    go install github.com/swaggo/swag/cmd/swag@v1.16.6
     ```
 
 3. Run the following script to generate Swagger documentation:
@@ -55,3 +55,7 @@ To start a docker container:
                -p 8080:8080 \
                my-rest-api-image:latest
     ```
+
+## Building Releases
+
+Use [Release Droid](https://github.com/exasol/release-droid/) to build releases.

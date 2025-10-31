@@ -1,7 +1,7 @@
 sources:
   - type: golang
     path: go.mod
-version: 1.0.0
+version: 1.0.1
 excludes:
   # Need to generate Swagger API Description before running PK, see https://github.com/exasol/project-keeper/issues/642
   - "E-PK-CORE-18: Outdated content: '.github/workflows/project-keeper-verify.yml'"
