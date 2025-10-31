@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout the repository
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -32,7 +32,7 @@ jobs:
             .github/workflows/project-keeper.sh
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "1.24.2"
           cache-dependency-path: |
@@ -50,7 +50,7 @@ jobs:
       - name: Generate Swagger API Description
         run: |
           # Required to fix error message: "main/doc/swagger: package main/doc/swagger is not in GOROOT"
-          go install github.com/swaggo/swag/cmd/swag@v1.16.4
+          go install github.com/swaggo/swag/cmd/swag@v1.16.6
           ./generate-swagger-docs
 
       - name: Project Keeper Verify
