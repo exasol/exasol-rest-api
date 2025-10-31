@@ -2,17 +2,14 @@ FROM golang:1.25.3-alpine as builder
 
 RUN mkdir /exasol-rest-api
 RUN addgroup -S rest-api-user \
- && adduser -S -u 10000 -g rest-api-user rest-api-user \
- && chown -R rest-api-user:rest-api-user /exasol-rest-api
+ && adduser -S -u 10000 -g rest-api-user rest-api-user
 USER rest-api-user
 
 WORKDIR /exasol-rest-api
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum .
 
-RUN go mod download
-
-RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
+RUN go mod download \
+ && go install github.com/swaggo/swag/cmd/swag@v1.16.6
 
 COPY . .
 USER root
