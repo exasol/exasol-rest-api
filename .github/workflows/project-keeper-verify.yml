@@ -51,5 +51,8 @@ jobs:
           go install github.com/swaggo/swag/cmd/swag@v1.16.6
           ./generate-swagger-docs
 
+      - name: Workaround for go-licenses issue https://github.com/exasol/project-keeper/issues/692
+        run: go install github.com/google/go-licenses@latest
+
       - name: Project Keeper Verify
         run: ./.github/workflows/project-keeper.sh
