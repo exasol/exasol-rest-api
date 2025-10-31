@@ -1,4 +1,4 @@
-# Exasol Rest api 0.3.0, released 2025-05-07
+# Exasol Rest api 1.0.0, released 2025-05-07
 
 Code name: Support Exasol v8
 
