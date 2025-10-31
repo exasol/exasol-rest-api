@@ -6,6 +6,8 @@ Code name: Fix Dependency check
 
 This release fixes the dependency check and updates dependencies.
 
+We updated the Dockerfile to build and run the REST API with a non-root user for security and reduced the image size.
+
 ## Bugfixes
 
 * #104: Fix dependency check
