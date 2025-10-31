@@ -14,3 +14,6 @@ jobs:
 
       - name: Nancy Security scanner
         run: go list -json -deps | docker run --rm -i sonatypecommunity/nancy:latest sleuth --skip-update-check
+        env:
+          OSSI_USERNAME: ${{ secrets.OSSINDEX_USERNAME }}
+          OSSI_TOKEN: ${{ secrets.OSSINDEX_API_TOKEN }}
