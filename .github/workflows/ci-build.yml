@@ -12,15 +12,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - go: "1.24.9"
+          - go: "go1.25.8"
             db: "7.1.30"
-          - go: "1.25.3"
-            db: "8.29.12"
-          - go: "1.25.3"
-            db: "2025.1.3"
+          - go: "go1.26.1"
+            db: "7.1.30"
+          - go: "go1.26.1"
+            db: "2025.2.1"
     env:
-      DEFAULT_GO: "1.25.3"
-      DEFAULT_DB: "2025.1.3"
+      DEFAULT_GO: "go1.26.1"
+      DEFAULT_DB: "2025.2.1"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
@@ -37,11 +37,9 @@ jobs:
       - name: Cache OpenFastTrace
         uses: actions/cache@v5
         with:
-          path: |
-            /tmp/oft/
+          path: /tmp/oft/
           key: oft-${{ hashFiles('trace-requirements.sh') }}
-          restore-keys: |
-            oft-
+          restore-keys: oft-
 
       - name: Trace requirements
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
@@ -84,13 +82,6 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck -version
           govulncheck -format text -mode source -scan symbol -show verbose -test ./...
-
-      - name: Configure broken links checker
-        if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB
-        run: |
-          mkdir -p ./target
-          echo '{"aliveStatusCodes": [429, 200], "ignorePatterns": [' \
-               ']}' > ./target/broken_links_checker.json
   
   build:
     needs: matrix-build
