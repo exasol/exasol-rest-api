@@ -7,12 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"regexp"
 	"testing"
+
+	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 
 	"github.com/gin-gonic/gin"
 

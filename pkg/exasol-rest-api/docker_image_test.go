@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	exasol_rest_api "main/pkg/exasol-rest-api"
+	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 	"net"
 	"net/http"
 	"strconv"

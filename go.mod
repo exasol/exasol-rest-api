@@ -1,4 +1,4 @@
-module main
+module github.com/exasol/exasol-rest-api
 
 go 1.25.0
 
