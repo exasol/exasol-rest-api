@@ -19,6 +19,9 @@ jobs:
         with:
           go-version: "1.26.1"
 
+      - name: Install Swag required by govulncheck
+        run: go install github.com/swaggo/swag/cmd/swag@v1.16.6
+
       - name: Nancy Security scanner
         run: |
           go list -json -deps | docker run \
