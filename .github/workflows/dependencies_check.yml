@@ -14,6 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "go1.26.1"
+
       - name: Nancy Security scanner
         run: |
           go list -json -deps | docker run \
