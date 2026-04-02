@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - go: "go1.25.8"
+          - go: "1.25.8"
             db: "7.1.30"
-          - go: "go1.26.1"
+          - go: "1.26.1"
             db: "7.1.30"
-          - go: "go1.26.1"
+          - go: "1.26.1"
             db: "2025.2.1"
     env:
       DEFAULT_GO: "go1.26.1"
