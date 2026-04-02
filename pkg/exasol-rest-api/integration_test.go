@@ -1003,7 +1003,7 @@ func onError(err error) {
 	}
 }
 
-func (suite *IntegrationTestSuite) createServerWithUser(user string, password string) exasol_rest_api.Application {
+func (suite *IntegrationTestSuite) createServerWithUser(user, password string) exasol_rest_api.Application {
 	properties := &exasol_rest_api.ApplicationProperties{
 		APITokens:                       suite.defaultAuthTokens,
 		ExasolUser:                      user,

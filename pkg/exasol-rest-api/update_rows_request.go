@@ -40,7 +40,7 @@ func (request *UpdateRowsRequest) GetValuesToUpdate() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		valuesToUpdate.WriteString(fmt.Sprintf("%v=%v", value.getColumnName(), renderedValue))
+		fmt.Fprintf(&valuesToUpdate, "%v=%v", value.getColumnName(), renderedValue)
 		if index < len(request.ValuesToUpdate)-1 {
 			valuesToUpdate.WriteString(",")
 		}
