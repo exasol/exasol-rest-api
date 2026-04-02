@@ -1,4 +1,4 @@
-# Exasol Rest api 1.0.2, released 2026-04-02
+# Exasol Rest api 1.0.2, released 2026-04-07
 
 Code name: Fix vulnerabilities in dependencies
 
