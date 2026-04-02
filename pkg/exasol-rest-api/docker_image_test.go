@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 	"net"
 	"net/http"
 	"strconv"
 	"testing"
+
+	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 
 	testSetupAbstraction "github.com/exasol/exasol-test-setup-abstraction-server/go-client"
 	"github.com/stretchr/testify/suite"
