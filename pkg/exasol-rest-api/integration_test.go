@@ -366,7 +366,7 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 // [itest->dsn~insert-row-endpoint~1]
 // [itest->dsn~insert-row-request-body~1]
 // [itest->dsn~insert-row-response-body~1]
-func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
 	defer func() { onError(rows.Close()) }()
@@ -568,7 +568,7 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 	suite.assertUpdatedValuesInTable(schemaName, tableName)
 }
 
-func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
 	defer func() { onError(rows.Close()) }()
@@ -978,7 +978,7 @@ func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData, re
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
 }
 
-func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
 	defer func() { onError(rows.Close()) }()
@@ -1048,24 +1048,24 @@ func createDefaultServiceUserWithAccess(database *sql.DB, user, password string)
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) createExasolUser(username string, password string) {
+func (suite *IntegrationTestSuite) createExasolUser(username, password string) {
 	_, err := suite.connection.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) grantToUser(username string, privilege string) {
+func (suite *IntegrationTestSuite) grantToUser(username, privilege string) {
 	_, err := suite.connection.Exec("GRANT " + privilege + " TO " + username)
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName string, tableName string, columns string) {
+func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName, tableName, columns string) {
 	_, err := suite.connection.Exec("CREATE SCHEMA IF NOT EXISTS " + schemaName)
 	onError(err)
 	_, err = suite.connection.Exec("CREATE TABLE " + schemaName + "." + tableName + "(" + columns + ")")
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) insertRowIntoTable(schemaName string, tableName string, values string) {
+func (suite *IntegrationTestSuite) insertRowIntoTable(schemaName, tableName, values string) {
 	_, err := suite.connection.Exec("INSERT INTO " + schemaName + "." + tableName + " VALUES (" + values + ")")
 	onError(err)
 }
