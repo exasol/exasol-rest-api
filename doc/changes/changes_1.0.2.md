@@ -21,3 +21,20 @@ This release fixes the following vulnerabilities in dependencies.
 ## Security
 
 * #106: Fix vulnerabilities in dependencies
+
+## Dependency Updates
+
+### Compile Dependency Updates
+
+* Updated `golang:1.24.0` to `1.25.0`
+* Updated `github.com/gin-gonic/gin:v1.11.0` to `v1.12.0`
+* Updated `github.com/exasol/exasol-driver-go:v1.0.14` to `v1.0.16`
+
+### Test Dependency Updates
+
+* Updated `github.com/testcontainers/testcontainers-go:v0.39.0` to `v0.41.0`
+* Updated `github.com/exasol/exasol-test-setup-abstraction-server/go-client:v0.3.11` to `v1.0.0`
+
+### Other Dependency Updates
+
+* Updated `toolchain:go1.25.3` to `go1.26.1`
