@@ -1,4 +1,4 @@
-FROM golang:1.25.3-alpine as builder
+FROM golang:1.26.1-alpine AS builder
 
 RUN mkdir /exasol-rest-api
 RUN addgroup -S rest-api-user \
@@ -6,7 +6,7 @@ RUN addgroup -S rest-api-user \
 USER rest-api-user
 
 WORKDIR /exasol-rest-api
-COPY go.mod go.sum .
+COPY go.mod go.sum ./
 
 RUN go mod download \
  && go install github.com/swaggo/swag/cmd/swag@v1.16.6
