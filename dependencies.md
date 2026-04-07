@@ -24,9 +24,9 @@
 | github.com/testcontainers/testcontainers-go                      | [MIT][11] |
 
 [0]: https://github.com/exasol/error-reporting-go/blob/v0.2.0/LICENSE
-[1]: https://github.com/exasol/exasol-driver-go/blob/v1.0.14/LICENSE
-[2]: https://github.com/gin-gonic/gin/blob/v1.11.0/LICENSE
-[3]: https://github.com/stretchr/testify/blob/v1.10.0/LICENSE
+[1]: https://github.com/exasol/exasol-driver-go/blob/v1.0.16/LICENSE
+[2]: https://github.com/gin-gonic/gin/blob/v1.12.0/LICENSE
+[3]: https://github.com/stretchr/testify/blob/v1.11.1/LICENSE
 [4]: https://github.com/swaggo/files/blob/v1.0.1/LICENSE
 [5]: https://github.com/swaggo/gin-swagger/blob/v1.6.1/LICENSE
 [6]: https://github.com/swaggo/swag/blob/v1.16.6/license

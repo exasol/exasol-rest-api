@@ -2,7 +2,7 @@ package exasol_rest_api_test
 
 import (
 	"github.com/stretchr/testify/suite"
-	exasol_rest_api "main/pkg/exasol-rest-api"
+	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 	"net/http"
 	"testing"
 )

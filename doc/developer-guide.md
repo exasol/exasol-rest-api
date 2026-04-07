@@ -22,6 +22,23 @@ Please don't forget to change that version.
     ./generate-swagger-docs
     ```
 
+### Run Tests Locally
+
+```shell
+# Only unit tests
+go test -v -short ./...
+# Unit and integration tests
+go test -v -parallel 1 -count 1 ./... -timeout 2000s
+```
+
+### Run Linter
+
+Setup: [install golangci-lint](https://golangci-lint.run/docs/welcome/install/local/).
+
+```shell
+golangci-lint run
+```
+
 ### Building Docker Image Locally
 
 We are planning to deliver a docker image via a registry. If you need to develop or test the image, you can create it locally.

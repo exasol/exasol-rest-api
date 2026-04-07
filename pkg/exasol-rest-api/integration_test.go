@@ -7,12 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	exasol_rest_api "main/pkg/exasol-rest-api"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"regexp"
 	"testing"
+
+	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 
 	"github.com/gin-gonic/gin"
 
@@ -365,7 +366,7 @@ func (suite *IntegrationTestSuite) TestInsertRow() {
 // [itest->dsn~insert-row-endpoint~1]
 // [itest->dsn~insert-row-request-body~1]
 // [itest->dsn~insert-row-response-body~1]
-func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertInsertRowValuesInTable(schemaName, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
 	defer func() { onError(rows.Close()) }()
@@ -567,7 +568,7 @@ func (suite *IntegrationTestSuite) TestUpdateRows() {
 	suite.assertUpdatedValuesInTable(schemaName, tableName)
 }
 
-func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertUpdatedValuesInTable(schemaName, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
 	defer func() { onError(rows.Close()) }()
@@ -977,7 +978,7 @@ func (suite *IntegrationTestSuite) assertResponseBodyContains(data *testData, re
 	suite.Contains(responseRecorder.Body.String(), data.expectedBody)
 }
 
-func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, tableName string) {
+func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName, tableName string) {
 	rows, err := suite.connection.Query("SELECT * FROM " + schemaName + "." + tableName)
 	onError(err)
 	defer func() { onError(rows.Close()) }()
@@ -988,7 +989,7 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName string, t
 func runExasolContainer() *testSetupAbstraction.TestSetupAbstraction {
 	dbVersion := os.Getenv("EXASOL_DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "2025.1.3"
+		dbVersion = "2025.2.1"
 	}
 	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion(dbVersion).Start()
 	onError(err)
@@ -1002,7 +1003,7 @@ func onError(err error) {
 	}
 }
 
-func (suite *IntegrationTestSuite) createServerWithUser(user string, password string) exasol_rest_api.Application {
+func (suite *IntegrationTestSuite) createServerWithUser(user, password string) exasol_rest_api.Application {
 	properties := &exasol_rest_api.ApplicationProperties{
 		APITokens:                       suite.defaultAuthTokens,
 		ExasolUser:                      user,
@@ -1047,24 +1048,24 @@ func createDefaultServiceUserWithAccess(database *sql.DB, user, password string)
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) createExasolUser(username string, password string) {
+func (suite *IntegrationTestSuite) createExasolUser(username, password string) {
 	_, err := suite.connection.Exec("CREATE USER " + username + " IDENTIFIED BY \"" + password + "\"")
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) grantToUser(username string, privilege string) {
+func (suite *IntegrationTestSuite) grantToUser(username, privilege string) {
 	_, err := suite.connection.Exec("GRANT " + privilege + " TO " + username)
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName string, tableName string, columns string) {
+func (suite *IntegrationTestSuite) creatSchemaAndTable(schemaName, tableName, columns string) {
 	_, err := suite.connection.Exec("CREATE SCHEMA IF NOT EXISTS " + schemaName)
 	onError(err)
 	_, err = suite.connection.Exec("CREATE TABLE " + schemaName + "." + tableName + "(" + columns + ")")
 	onError(err)
 }
 
-func (suite *IntegrationTestSuite) insertRowIntoTable(schemaName string, tableName string, values string) {
+func (suite *IntegrationTestSuite) insertRowIntoTable(schemaName, tableName, values string) {
 	_, err := suite.connection.Exec("INSERT INTO " + schemaName + "." + tableName + " VALUES (" + values + ")")
 	onError(err)
 }

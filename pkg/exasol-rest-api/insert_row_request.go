@@ -1,7 +1,6 @@
 package exasol_rest_api
 
 import (
-	"fmt"
 	"strings"
 
 	exaerror "github.com/exasol/error-reporting-go"
@@ -36,7 +35,7 @@ func (request *InsertRowRequest) GetRow() (string, string, error) {
 			return "", "", err
 		}
 		values.WriteString(renderedValue)
-		columnNames.WriteString(fmt.Sprintf("%v", value.getColumnName()))
+		columnNames.WriteString(value.getColumnName())
 		if index < len(request.Row)-1 {
 			values.WriteString(",")
 			columnNames.WriteString(",")

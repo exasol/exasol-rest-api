@@ -1,9 +1,10 @@
 package exasol_rest_api
 
 import (
-	_ "main/doc/swagger" // importing Swagger-generated documentation
 	"net/http"
 	"time"
+
+	_ "github.com/exasol/exasol-rest-api/doc/swagger" // importing Swagger-generated documentation
 
 	exaerror "github.com/exasol/error-reporting-go"
 	"github.com/gin-gonic/gin"
