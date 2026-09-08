@@ -69,7 +69,7 @@ func (suite *DockerImageTestSuite) TestQueryDocker() {
 	port, err := apiContainer.MappedPort(suite.ctx, "8080")
 	onError(err)
 
-	baseUrl := "http://" + ip + ":" + strconv.Itoa(port.Int())
+	baseUrl := "http://" + ip + ":" + port.Port()
 	req, err := http.NewRequest(http.MethodGet, baseUrl+"/api/v1/query/SELECT * FROM TEST_SCHEMA_1.TEST_TABLE", nil)
 	req.Header.Set("Authorization", "3J90XAv9loMIXzQdfYmtJrHAbopPsc")
 	onError(err)
