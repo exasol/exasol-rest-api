@@ -118,6 +118,7 @@ func readProjectVersion(t *testing.T) string {
 	return configuration.Version
 }
 
+<<<<<<< HEAD
 // [itest->dsn~execute-statement-endpoint~1]
 // [itest->dsn~execute-statement-request-body~1]
 // [itest->dsn~execute-statement-response-body~1]
@@ -140,6 +141,8 @@ func (suite *DockerImageTestSuite) TestExecuteStatementWithMalformedJSONDocker()
 	suite.Equal("{\"status\":\"error\",\"exception\":\"unexpected EOF\"}", string(body))
 }
 
+=======
+>>>>>>> e36c59f (Verify API version in swagger doc is up-to-date)
 // [itest->dsn~execute-statement-endpoint~1]
 // [itest->dsn~execute-statement-request-body~1]
 // [itest->dsn~execute-statement-response-body~1]
