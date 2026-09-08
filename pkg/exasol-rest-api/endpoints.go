@@ -349,7 +349,7 @@ func getValueByType(valueType string, valueAsString string) (interface{}, error)
 	case "int":
 		return strconv.Atoi(valueAsString)
 	case "float":
-		return strconv.ParseFloat(valueType, 64)
+		return strconv.ParseFloat(valueAsString, 64)
 	default:
 		return "", errors.New("unsupported value type: " + valueType)
 	}

@@ -674,6 +674,20 @@ func (suite *IntegrationTestSuite) TestGetRows() {
 // [itest->dsn~get-rows-endpoint~1]
 // [itest->dsn~get-rows-request-parameters~1]
 // [itest->dsn~get-rows-response-body~2]
+func (suite *IntegrationTestSuite) TestGetRowsWithFloatFilter() {
+	data := testData{
+		server:         suite.createServerWithDefaultProperties(),
+		query:          "schemaName=TEST_SCHEMA_1&tableName=TEST_TABLE&columnName=X&value=15.0&valueType=float&comparisonPredicate==",
+		authToken:      suite.defaultAuthTokens[0],
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
+	}
+	suite.assertResponseBodyEquals(&data, suite.sendGetRows(&data))
+}
+
+// [itest->dsn~get-rows-endpoint~1]
+// [itest->dsn~get-rows-request-parameters~1]
+// [itest->dsn~get-rows-response-body~2]
 func (suite *IntegrationTestSuite) TestGetRowsWithoutPredicate() {
 	data := testData{
 		server:         suite.createServerWithDefaultProperties(),
