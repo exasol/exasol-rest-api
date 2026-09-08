@@ -1,4 +1,4 @@
-FROM golang:1.26.1-alpine AS builder
+FROM golang:1.27.1-alpine AS builder
 
 RUN mkdir /exasol-rest-api
 RUN addgroup -S rest-api-user \
