@@ -1003,7 +1003,7 @@ func (suite *IntegrationTestSuite) assertTableHasOnlyOneRow(schemaName, tableNam
 func runExasolContainer() *testSetupAbstraction.TestSetupAbstraction {
 	dbVersion := os.Getenv("EXASOL_DB_VERSION")
 	if dbVersion == "" {
-		dbVersion = "2025.2.1"
+		dbVersion = "2026.1.1"
 	}
 	exasolContainer, err := testSetupAbstraction.New().CloudSetupConfigFilePath("no-config.json").DockerDbVersion(dbVersion).Start()
 	onError(err)
