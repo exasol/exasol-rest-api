@@ -10,49 +10,49 @@ on:
 jobs:
   project-keeper-verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-      - name: Checkout the repository
-        id: checkout
-        uses: actions/checkout@v5
+      - id: checkout
+        name: Checkout the repository
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: Set up JDKs
+          persist-credentials: false
+      - id: setup-java
+        name: Set up JDKs
         uses: actions/setup-java@v5
         with:
-          distribution: "temurin"
-          java-version: 17
+          distribution: temurin
+          java-version: '21'
           cache-dependency-path: |
             .github/workflows/project-keeper-verify.yml
             .github/workflows/project-keeper.sh
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - id: setup-go
+        name: Set up Go
+        uses: actions/setup-go@v7
         with:
-          go-version: "1.25.3"
+          go-version: '1.27'
           cache-dependency-path: |
             **/go.sum
             .github/workflows/project-keeper-verify.yml
             .github/workflows/project-keeper.sh
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - id: setup-node
+        name: Set up Node
+        uses: actions/setup-node@v6
         if: ${{ false }}
         with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
       - name: Generate Swagger API Description
         run: |
           # Required to fix error message: "main/doc/swagger: package main/doc/swagger is not in GOROOT"
           go install github.com/swaggo/swag/cmd/swag@v1.16.6
           ./generate-swagger-docs
-
-      - name: Workaround for go-licenses issue https://github.com/exasol/project-keeper/issues/692
-        run: go install github.com/google/go-licenses@latest
-
-      - name: Project Keeper Verify
-        run: ./.github/workflows/project-keeper.sh
+      - id: project-keeper-verify
+        name: Project Keeper Verify
+        run: ./.github/workflows/project-keeper.sh verify
