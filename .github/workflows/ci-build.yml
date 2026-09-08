@@ -11,31 +11,30 @@ jobs:
       contents: read
     strategy:
       matrix:
+        go: ["1.27.1"]
+        db: ["2025.1.16", "2026.1.1"]
         include:
-          - go: "1.25.8"
-            db: "2025.2.1"
-          - go: "1.26.1"
-            db: "7.1.30"
-          - go: "1.26.1"
-            db: "2025.2.1"
+          - go: "1.26.8"
+            db: "2026.1.1"
     env:
-      DEFAULT_GO: "1.26.1"
-      DEFAULT_DB: "2025.2.1"
+      DEFAULT_GO: "1.27.1"
+      DEFAULT_DB: "2026.1.1"
     name: Build with Go ${{ matrix.go }} and Exasol ${{ matrix.db }}
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
 
       - name: Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Cache OpenFastTrace
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: /tmp/oft/
           key: oft-${{ hashFiles('trace-requirements.sh') }}
@@ -61,7 +60,7 @@ jobs:
         run: go test -v -p 1 -count 1 -coverprofile=coverage.out ./... -timeout 2000s
         env:
           EXASOL_DB_VERSION: ${{ matrix.db }}
-          
+
       - name: SonarCloud Scan
         if: matrix.go == env.DEFAULT_GO && matrix.db == env.DEFAULT_DB && github.repository_owner == 'exasol'
         uses: SonarSource/sonarqube-scan-action@v7
@@ -82,7 +81,7 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck -version
           govulncheck -format text -mode source -scan symbol -show verbose -test ./...
-  
+
   build:
     needs: matrix-build
     runs-on: ubuntu-latest
