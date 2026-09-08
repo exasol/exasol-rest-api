@@ -118,31 +118,6 @@ func readProjectVersion(t *testing.T) string {
 	return configuration.Version
 }
 
-<<<<<<< HEAD
-// [itest->dsn~execute-statement-endpoint~1]
-// [itest->dsn~execute-statement-request-body~1]
-// [itest->dsn~execute-statement-response-body~1]
-func (suite *DockerImageTestSuite) TestExecuteStatementWithMalformedJSONDocker() {
-	apiContainer := runRestAPIContainer(suite.restAPIProperties(), suite.exasolPort)
-	ip, err := apiContainer.Host(suite.ctx)
-	onError(err)
-	port, err := apiContainer.MappedPort(suite.ctx, "8080")
-	onError(err)
-
-	request, err := http.NewRequest(http.MethodPost, "http://"+ip+":"+port.Port()+"/api/v1/statement", bytes.NewBufferString("{"))
-	onError(err)
-	request.Header.Set("Authorization", "3J90XAv9loMIXzQdfYmtJrHAbopPsc")
-	response, err := http.DefaultClient.Do(request)
-	onError(err)
-	body, err := io.ReadAll(response.Body)
-	onError(err)
-
-	suite.Equal("400 Bad Request", response.Status)
-	suite.Equal("{\"status\":\"error\",\"exception\":\"unexpected EOF\"}", string(body))
-}
-
-=======
->>>>>>> e36c59f (Verify API version in swagger doc is up-to-date)
 // [itest->dsn~execute-statement-endpoint~1]
 // [itest->dsn~execute-statement-request-body~1]
 // [itest->dsn~execute-statement-response-body~1]
