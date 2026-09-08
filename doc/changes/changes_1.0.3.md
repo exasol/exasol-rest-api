@@ -6,7 +6,7 @@ Code name: Fix float row filters
 
 This release fixes float filters for the `GET /api/v1/rows` endpoint.
 
-**Note:** Starting with this release, the Rest API is not tested with Exasol version 7.1 any more.
+**Note:** Starting with this release, the Rest API is not tested with Exasol version 7.1 any more. Only the latest LTS release 2025.1.x and the latest release 2026.1.1 are supported.
 
 ## Bugfixes
 
