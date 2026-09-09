@@ -103,8 +103,8 @@ func (suite *ApplicationPropertiesSuite) TestPropertiesWithBlankAPITokenAreRejec
 	}
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
-		"E-ERA-25: An API token is empty in properties. "+
-		"Please specify non-empty API tokens via properties.",
+		"E-ERA-26: An API token has invalid length: 0. "+
+		"Please only use tokens with the length longer or equal to 30.",
 		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
@@ -115,8 +115,8 @@ func (suite *ApplicationPropertiesSuite) TestEnvironmentVariableWithBlankAPIToke
 	err := os.Setenv(exasol_rest_api.APITokensKey, validAPIToken+", ")
 	onError(err)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
-		"E-ERA-25: An API token is empty in properties. "+
-		"Please specify non-empty API tokens via properties.",
+		"E-ERA-26: An API token has invalid length: 0. "+
+		"Please only use tokens with the length longer or equal to 30.",
 		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
@@ -128,6 +128,32 @@ func (suite *ApplicationPropertiesSuite) TestPropertiesWithShortAPITokenAreRejec
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-26: An API token has invalid length: 3. "+
+		"Please only use tokens with the length longer or equal to 30.",
+		func() { exasol_rest_api.GetApplicationProperties("") })
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestPropertiesWithSurroundingWhitespaceInAPITokenAreTrimmed() {
+	properties := &exasol_rest_api.ApplicationProperties{
+		APITokens: []string{" \t" + validAPIToken + "\n "}, ExasolUser: "myUser", ExasolPassword: "pass",
+	}
+	suite.setPathToPropertiesFileEnv(properties)
+
+	actual := exasol_rest_api.GetApplicationProperties("")
+
+	suite.Equal([]string{validAPIToken}, actual.APITokens)
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestPropertiesWithWhitespacePaddedShortAPITokenAreRejected() {
+	shortToken := validAPIToken[:exasol_rest_api.APITokenMinimumLength-1]
+	properties := &exasol_rest_api.ApplicationProperties{
+		APITokens: []string{" " + shortToken + " "}, ExasolUser: "myUser", ExasolPassword: "pass",
+	}
+	suite.setPathToPropertiesFileEnv(properties)
+
+	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
+		"E-ERA-26: An API token has invalid length: 29. "+
 		"Please only use tokens with the length longer or equal to 30.",
 		func() { exasol_rest_api.GetApplicationProperties("") })
 }
@@ -215,6 +241,18 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	onError(err)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	suite.Equal(expected, actual)
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestReadingAPITokensWithSurroundingWhitespaceFromEnv() {
+	properties := &exasol_rest_api.ApplicationProperties{ExasolUser: "myUser", ExasolPassword: "pass"}
+	suite.setPathToPropertiesFileEnv(properties)
+	err := os.Setenv(exasol_rest_api.APITokensKey, " "+validAPIToken+" ,\t"+secondValidAPIToken+" ")
+	onError(err)
+
+	actual := exasol_rest_api.GetApplicationProperties("")
+
+	suite.Equal([]string{validAPIToken, secondValidAPIToken}, actual.APITokens)
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesFromEnvIgnoresInvalidExasolValidateServerCertificateKey() {

@@ -2,6 +2,7 @@ package exasol_rest_api
 
 import (
 	"os"
+	"regexp"
 	"strings"
 
 	exaerror "github.com/exasol/error-reporting-go"
@@ -15,6 +16,8 @@ const ExasolHostKey string = "EXASOL_HOST"
 const ExasolPortKey string = "EXASOL_PORT"
 const ExasolCertificateFingerprintKey string = "EXASOL_CERTIFICATE_FINGERPRINT"
 const ExasolValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIFICATE"
+
+var apiTokenPattern = regexp.MustCompile("^.{30,}$")
 
 // ApplicationProperties for Exasol REST API service.
 // [impl->dsn~service-account~1]
@@ -101,13 +104,10 @@ func (applicationProperties *ApplicationProperties) validate() error {
 			Message("exasol password is missing in properties.").
 			Mitigation("please specify an Exasol password via properties.")
 	}
-	for _, apiToken := range applicationProperties.APITokens {
-		if strings.TrimSpace(apiToken) == "" {
-			return exaerror.New("E-ERA-25").
-				Message("An API token is empty in properties.").
-				Mitigation("Please specify non-empty API tokens via properties.")
-		}
-		if len(apiToken) < APITokenMinimumLength {
+	for index, apiToken := range applicationProperties.APITokens {
+		apiToken = strings.TrimSpace(apiToken)
+		applicationProperties.APITokens[index] = apiToken
+		if !apiTokenPattern.MatchString(apiToken) {
 			return exaerror.New("E-ERA-26").
 				Message("An API token has invalid length: {{length|uq}}.").
 				Parameter("length", len(apiToken)).

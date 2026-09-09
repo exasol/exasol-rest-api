@@ -80,6 +80,28 @@ func (suite *IntegrationTestSuite) TestQuery() {
 	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
 }
 
+// [itest->dsn~execute-query-headers~1]
+func (suite *IntegrationTestSuite) TestQueryWithAuthorizationTokenContainingWhitespace() {
+	const token = "123456789012345 internal-token"
+	properties := &exasol_rest_api.ApplicationProperties{
+		APITokens:                       []string{token},
+		ExasolUser:                      suite.defaultServiceUsername,
+		ExasolPassword:                  suite.defaultServicePassword,
+		ExasolHost:                      suite.exasolHost,
+		ExasolPort:                      suite.exasolPort,
+		ExasolValidateServerCertificate: "false",
+	}
+	data := testData{
+		server:         suite.runApiServer(properties),
+		query:          "SELECT * FROM TEST_SCHEMA_1.TEST_TABLE",
+		authToken:      token,
+		expectedStatus: http.StatusOK,
+		expectedBody:   "{\"status\":\"ok\",\"rows\":[{\"X\":15,\"Y\":\"test\"},{\"X\":10,\"Y\":\"test_2\"}],\"meta\":{\"columns\":[{\"name\":\"X\",\"dataType\":{\"type\":\"DECIMAL\",\"precision\":18}},{\"name\":\"Y\",\"dataType\":{\"type\":\"VARCHAR\",\"size\":100}}]}}",
+	}
+
+	suite.assertResponseBodyEquals(&data, suite.sendQueryRequest(&data))
+}
+
 // [itest->dsn~execute-query-endpoint~1]
 // [itest->dsn~execute-query-response-body~2]
 func (suite *IntegrationTestSuite) TestQueryWithTypo() {
