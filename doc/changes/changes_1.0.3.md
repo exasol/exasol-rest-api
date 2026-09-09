@@ -11,6 +11,7 @@ This release fixes float filters for the `GET /api/v1/rows` endpoint.
 ## Bugfixes
 
 * #111: Fix float row filters
+* #109: Reject missing or empty API token configuration at startup
 
 ## Dependency Updates
 

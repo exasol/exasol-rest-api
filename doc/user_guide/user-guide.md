@@ -76,7 +76,7 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 | Property                     |     Default      | Description                                                  |
 | :--------------------------- |  :------------:  | :----------------------------------------------------------- |
-| API_TOKENS                   |                  | List of allowed API tokens for authorization.                |
+| API_TOKENS                   |                  | Required list of allowed API tokens for authorization; each entry must be non-empty. |
 | SERVER_ADDRESS               | `"0.0.0.0:8080"` | Address for the server to listen for new connection.         |
 | EXASOL_USER                  |                  | Name of the Exasol service account.                          |
 | EXASOL_PASSWORD              |                  | Password of the Exasol service account.                      |
@@ -103,7 +103,7 @@ Another option is to disable certificate validation by setting property `EXASOL_
 
 ### Authorization
 
-Add a comma separated list of API tokens to the configuration file (find an example above).
+Add a comma separated list of non-empty API tokens to the configuration file (find an example above). The service refuses to start if the list is missing, empty, or contains an empty token.
 The tokens must have **at least 30 alphanumeric** characters. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service

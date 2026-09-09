@@ -2,6 +2,7 @@ package exasol_rest_api
 
 import (
 	"os"
+	"strings"
 
 	exaerror "github.com/exasol/error-reporting-go"
 )
@@ -18,6 +19,7 @@ const ExasolValidateServerCertificateKey string = "EXASOL_VALIDATE_SERVER_CERTIF
 // ApplicationProperties for Exasol REST API service.
 // [impl->dsn~service-account~1]
 // [impl->dsn~service-credentials~1]
+// [impl->dsn~api-token-configuration~1]
 type ApplicationProperties struct {
 	APITokens         []string `yaml:"API_TOKENS"`
 	ApplicationServer string   `yaml:"SERVER_ADDRESS"`
@@ -98,9 +100,20 @@ func (applicationProperties *ApplicationProperties) validate() error {
 		return exaerror.New("E-ERA-10").
 			Message("exasol password is missing in properties.").
 			Mitigation("please specify an Exasol password via properties.")
-	} else {
-		return nil
 	}
+	for _, apiToken := range applicationProperties.APITokens {
+		if strings.TrimSpace(apiToken) == "" {
+			return exaerror.New("E-ERA-25").
+				Message("An API token is empty in properties.").
+				Mitigation("Please specify non-empty API tokens via properties.")
+		}
+	}
+	if len(applicationProperties.APITokens) == 0 {
+		return exaerror.New("E-ERA-24").
+			Message("API tokens are missing in properties.").
+			Mitigation("Please specify at least one non-empty API token via properties.")
+	}
+	return nil
 }
 
 func getDefaultProperties() *ApplicationProperties {

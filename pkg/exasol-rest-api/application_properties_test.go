@@ -1,9 +1,10 @@
 package exasol_rest_api_test
 
 import (
-	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 	"os"
 	"testing"
+
+	exasol_rest_api "github.com/exasol/exasol-rest-api/pkg/exasol-rest-api"
 
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
@@ -52,13 +53,14 @@ func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 }
 func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	minimalRequiredProperties := &exasol_rest_api.ApplicationProperties{
+		APITokens:      []string{"abc"},
 		ExasolUser:     "myUser",
 		ExasolPassword: "pass",
 	}
 	suite.setPathToPropertiesFileEnv(minimalRequiredProperties)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{},
+		APITokens:                       []string{"abc"},
 		ApplicationServer:               "0.0.0.0:8080",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -68,6 +70,52 @@ func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 		ExasolCertificateFingerprint:    "",
 	}
 	suite.Equal(expected, actual)
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestPropertiesWithEmptyAPITokenListAreRejected() {
+	properties := &exasol_rest_api.ApplicationProperties{ExasolUser: "myUser", ExasolPassword: "pass"}
+	suite.setPathToPropertiesFileEnv(properties)
+	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
+		"E-ERA-24: API tokens are missing in properties. "+
+		"Please specify at least one non-empty API token via properties.",
+		func() { exasol_rest_api.GetApplicationProperties("") })
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestMissingAPITokensAreRejected() {
+	err := os.Setenv(exasol_rest_api.ExasolUserKey, "myUser")
+	onError(err)
+	err = os.Setenv(exasol_rest_api.ExasolPasswordKey, "pass")
+	onError(err)
+	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
+		"E-ERA-24: API tokens are missing in properties. "+
+		"Please specify at least one non-empty API token via properties.",
+		func() { exasol_rest_api.GetApplicationProperties("") })
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestPropertiesWithBlankAPITokenAreRejected() {
+	properties := &exasol_rest_api.ApplicationProperties{
+		APITokens: []string{"valid-token", " \t "}, ExasolUser: "myUser", ExasolPassword: "pass",
+	}
+	suite.setPathToPropertiesFileEnv(properties)
+	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
+		"E-ERA-25: An API token is empty in properties. "+
+		"Please specify non-empty API tokens via properties.",
+		func() { exasol_rest_api.GetApplicationProperties("") })
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestEnvironmentVariableWithBlankAPITokenIsRejected() {
+	properties := &exasol_rest_api.ApplicationProperties{ExasolUser: "myUser", ExasolPassword: "pass"}
+	suite.setPathToPropertiesFileEnv(properties)
+	err := os.Setenv(exasol_rest_api.APITokensKey, "valid-token, ")
+	onError(err)
+	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
+		"E-ERA-25: An API token is empty in properties. "+
+		"Please specify non-empty API tokens via properties.",
+		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithMissingPropertiesFileAndWithoutEnv() {

@@ -29,6 +29,17 @@ This section describes the runtime behavior of the software.
 
 ## Authentication
 
+### API Token Configuration
+`dsn~api-token-configuration~1`
+
+ERA validates API token configuration at startup and refuses to start when the token list is empty or contains an empty token.
+
+Covers:
+
+* `req~api-token-configuration~1`
+
+Needs: impl, utest
+
 ## Proxy Service
 
 ### Communicate with Database
