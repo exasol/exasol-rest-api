@@ -107,6 +107,13 @@ func (applicationProperties *ApplicationProperties) validate() error {
 				Message("An API token is empty in properties.").
 				Mitigation("Please specify non-empty API tokens via properties.")
 		}
+		if len(apiToken) < APITokenMinimumLength {
+			return exaerror.New("E-ERA-26").
+				Message("An API token has invalid length: {{length|uq}}.").
+				Parameter("length", len(apiToken)).
+				Mitigation("Please only use tokens with the length longer or equal to {{minimum length|uq}}.").
+				Parameter("minimum length", APITokenMinimumLength)
+		}
 	}
 	if len(applicationProperties.APITokens) == 0 {
 		return exaerror.New("E-ERA-24").

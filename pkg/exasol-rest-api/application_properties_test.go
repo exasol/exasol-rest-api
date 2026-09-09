@@ -11,6 +11,8 @@ import (
 )
 
 const applicationPropertiesPathKey = "APPLICATION_PROPERTIES_PATH"
+const validAPIToken = "123456789012345678901234567890"
+const secondValidAPIToken = "abcdefghijklmnopqrstuvwxyzABCD"
 
 type ApplicationPropertiesSuite struct {
 	suite.Suite
@@ -22,7 +24,7 @@ func TestApplicationPropertiesSuite(t *testing.T) {
 
 func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc"},
+		APITokens:                       []string{validAPIToken},
 		ApplicationServer:               "test:8888",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -37,7 +39,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingProperties() {
 }
 func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc"},
+		APITokens:                       []string{validAPIToken},
 		ApplicationServer:               "test:8888",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -53,14 +55,14 @@ func (suite *ApplicationPropertiesSuite) TestViaCLIArgumentParam() {
 }
 func (suite *ApplicationPropertiesSuite) TestDefaultProperties() {
 	minimalRequiredProperties := &exasol_rest_api.ApplicationProperties{
-		APITokens:      []string{"abc"},
+		APITokens:      []string{validAPIToken},
 		ExasolUser:     "myUser",
 		ExasolPassword: "pass",
 	}
 	suite.setPathToPropertiesFileEnv(minimalRequiredProperties)
 	actual := exasol_rest_api.GetApplicationProperties("")
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc"},
+		APITokens:                       []string{validAPIToken},
 		ApplicationServer:               "0.0.0.0:8080",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -97,7 +99,7 @@ func (suite *ApplicationPropertiesSuite) TestMissingAPITokensAreRejected() {
 // [utest->dsn~api-token-configuration~1]
 func (suite *ApplicationPropertiesSuite) TestPropertiesWithBlankAPITokenAreRejected() {
 	properties := &exasol_rest_api.ApplicationProperties{
-		APITokens: []string{"valid-token", " \t "}, ExasolUser: "myUser", ExasolPassword: "pass",
+		APITokens: []string{validAPIToken, " \t "}, ExasolUser: "myUser", ExasolPassword: "pass",
 	}
 	suite.setPathToPropertiesFileEnv(properties)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
@@ -110,11 +112,23 @@ func (suite *ApplicationPropertiesSuite) TestPropertiesWithBlankAPITokenAreRejec
 func (suite *ApplicationPropertiesSuite) TestEnvironmentVariableWithBlankAPITokenIsRejected() {
 	properties := &exasol_rest_api.ApplicationProperties{ExasolUser: "myUser", ExasolPassword: "pass"}
 	suite.setPathToPropertiesFileEnv(properties)
-	err := os.Setenv(exasol_rest_api.APITokensKey, "valid-token, ")
+	err := os.Setenv(exasol_rest_api.APITokensKey, validAPIToken+", ")
 	onError(err)
 	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
 		"E-ERA-25: An API token is empty in properties. "+
 		"Please specify non-empty API tokens via properties.",
+		func() { exasol_rest_api.GetApplicationProperties("") })
+}
+
+// [utest->dsn~api-token-configuration~1]
+func (suite *ApplicationPropertiesSuite) TestPropertiesWithShortAPITokenAreRejected() {
+	properties := &exasol_rest_api.ApplicationProperties{
+		APITokens: []string{"abc"}, ExasolUser: "myUser", ExasolPassword: "pass",
+	}
+	suite.setPathToPropertiesFileEnv(properties)
+	suite.PanicsWithValue("E-ERA-7: application properties validation failed. "+
+		"E-ERA-26: An API token has invalid length: 3. "+
+		"Please only use tokens with the length longer or equal to 30.",
 		func() { exasol_rest_api.GetApplicationProperties("") })
 }
 
@@ -174,7 +188,7 @@ func (suite *ApplicationPropertiesSuite) TestDefaultPropertiesWithMissingUsernam
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc", "bca"},
+		APITokens:                       []string{validAPIToken, secondValidAPIToken},
 		ApplicationServer:               "test:8888",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -183,7 +197,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 		ExasolValidateServerCertificate: "false",
 		ExasolCertificateFingerprint:    "fingerprint",
 	}
-	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
+	err := os.Setenv(exasol_rest_api.APITokensKey, validAPIToken+","+secondValidAPIToken)
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ApplicationServerKey, "test:8888")
 	onError(err)
@@ -205,7 +219,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesWithEnv() {
 
 func (suite *ApplicationPropertiesSuite) TestReadingPropertiesFromEnvIgnoresInvalidExasolValidateServerCertificateKey() {
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc", "bca"},
+		APITokens:                       []string{validAPIToken, secondValidAPIToken},
 		ApplicationServer:               "test:8888",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -213,7 +227,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesFromEnvIgnoresInva
 		ExasolPort:                      1234,
 		ExasolValidateServerCertificate: "true",
 	}
-	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
+	err := os.Setenv(exasol_rest_api.APITokensKey, validAPIToken+","+secondValidAPIToken)
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ApplicationServerKey, "test:8888")
 	onError(err)
@@ -233,7 +247,7 @@ func (suite *ApplicationPropertiesSuite) TestReadingPropertiesFromEnvIgnoresInva
 
 func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv() {
 	propertiesFromFile := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc"},
+		APITokens:                       []string{validAPIToken},
 		ApplicationServer:               "1.1.1.1:8888",
 		ExasolUser:                      "user",
 		ExasolPassword:                  "pass111",
@@ -244,7 +258,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc", "bca"},
+		APITokens:                       []string{validAPIToken, secondValidAPIToken},
 		ApplicationServer:               "test:8888",
 		ExasolUser:                      "myUser",
 		ExasolPassword:                  "pass",
@@ -253,7 +267,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 		ExasolValidateServerCertificate: "false",
 		ExasolCertificateFingerprint:    "fingerprint2",
 	}
-	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
+	err := os.Setenv(exasol_rest_api.APITokensKey, validAPIToken+","+secondValidAPIToken)
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ApplicationServerKey, "test:8888")
 	onError(err)
@@ -275,7 +289,7 @@ func (suite *ApplicationPropertiesSuite) TestOverridingPropertiesFromFileWithEnv
 
 func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	propertiesFromFile := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc"},
+		APITokens:                       []string{validAPIToken},
 		ApplicationServer:               "1.1.1.1:8888",
 		ExasolUser:                      "user",
 		ExasolPassword:                  "pass111",
@@ -286,7 +300,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 	}
 	suite.setPathToPropertiesFileEnv(propertiesFromFile)
 	expected := &exasol_rest_api.ApplicationProperties{
-		APITokens:                       []string{"abc", "bca"},
+		APITokens:                       []string{validAPIToken, secondValidAPIToken},
 		ApplicationServer:               "test:8888",
 		ExasolUser:                      "user",
 		ExasolPassword:                  "pass",
@@ -295,7 +309,7 @@ func (suite *ApplicationPropertiesSuite) TestMixingPropertiesFromFileAndEnv() {
 		ExasolValidateServerCertificate: "true",
 		ExasolCertificateFingerprint:    "fingerprint2",
 	}
-	err := os.Setenv(exasol_rest_api.APITokensKey, "abc,bca")
+	err := os.Setenv(exasol_rest_api.APITokensKey, validAPIToken+","+secondValidAPIToken)
 	onError(err)
 	err = os.Setenv(exasol_rest_api.ApplicationServerKey, "test:8888")
 	onError(err)

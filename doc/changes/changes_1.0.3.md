@@ -6,12 +6,14 @@ Code name: Fix float row filters
 
 This release fixes float filters for the `GET /api/v1/rows` endpoint.
 
+**Note:** API token configuration is now validated at startup. Each configured token must be non-empty and at least 30 characters long.
+
 **Note:** Starting with this release, the Rest API is not tested with Exasol version 7.1 any more. Only the latest LTS release 2025.1.x and 8.29.x and the latest release 2026.1.1 are supported. Exasol 7.1 is officially past end-of-life since 2026-06-30 (see https://docs.exasol.com/db/latest/planning/life_cycle/life_cycle_policy.htm).
 
 ## Bugfixes
 
 * #111: Fix float row filters
-* #109: Reject missing or empty API token configuration at startup
+* #109: Validate API token configuration at startup
 
 ## Dependency Updates
 
