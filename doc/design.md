@@ -21,7 +21,7 @@ This section introduces the building blocks of the software. Together those buil
 
 ## Proxy Service
 
-An application that works as a proxy between an API user and [Exasol WebSockets API](https://github.com/exasol/websocket-api). 
+An application that works as a proxy between an API user and [Exasol WebSockets API](https://github.com/exasol/websocket-api).
 
 # Runtime
 
@@ -32,7 +32,7 @@ This section describes the runtime behavior of the software.
 ### API Token Configuration
 `dsn~api-token-configuration~1`
 
-ERA trims surrounding whitespace from configured API tokens at startup and refuses to start when the resulting token list is empty, contains an empty token, or contains a token shorter than 30 characters.
+ERA refuses to start when the API token list is empty, contains an empty token, or contains a token shorter than 30 characters with trimmed leading and trailing whitespace.
 
 Covers:
 
@@ -96,7 +96,7 @@ Covers:
 
 ### Execute Query
 
-#### Execute Query Endpoint 
+#### Execute Query Endpoint
 `dsn~execute-query-endpoint~1`
 
 ERA provide the following endpoint to the API users: `/api/v1/query [get]`
@@ -143,7 +143,7 @@ The endpoint has the following JSON response body format:
   "status": <"ok"|"error">,
   "rows": [
     {
-      "columnName" : <value>, 
+      "columnName" : <value>,
       "columnName2" : <value>,
       ...
     },
@@ -421,7 +421,7 @@ The endpoint has the following JSON response body format:
   "status": <"ok"|"error">,
   "rows": [
     {
-      "columnName" : <value>, 
+      "columnName" : <value>,
       "columnName2" : <value>,
       ...
     },

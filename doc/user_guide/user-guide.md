@@ -40,7 +40,7 @@ API_TOKENS:
 
 Please be aware of the API token length: only 30 or more characters are allowed.
 
-Before starting the application, you need to 
+Before starting the application, you need to
 - set an environment variable that points to the properties file:
 
 ```
@@ -55,7 +55,7 @@ On Linux:
 ./exasol-rest-api -application-properties-path='<PATH>'
 ```
 
-On Windows: open a command prompt and start the service from the prompt:  
+On Windows: open a command prompt and start the service from the prompt:
 
 ```cmd
 path\to\file\exasol-rest-api-x86-64.exe -application-properties-path='<PATH>'
@@ -103,7 +103,7 @@ Another option is to disable certificate validation by setting property `EXASOL_
 
 ### Authorization
 
-Add a comma separated list of non-empty API tokens to the configuration file (find an example above). Surrounding whitespace is ignored. The service refuses to start if the list is missing, empty, or contains an empty token.
+Add a comma separated list of API tokens to the configuration file (find an example above). Surrounding whitespace is ignored. The service refuses to start if the list is missing, empty, or contains an empty token.
 The tokens must have **at least 30 characters**. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
