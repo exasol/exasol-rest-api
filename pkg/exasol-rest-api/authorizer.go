@@ -6,6 +6,8 @@ import (
 	exaerror "github.com/exasol/error-reporting-go"
 )
 
+const APITokenMinimumLength = 30
+
 // Authorizer is responsible for the API users' authorization.
 type Authorizer interface {
 	// Authorize a token
@@ -25,12 +27,13 @@ func (auth *TokenAuthorizer) Authorize(request *http.Request) error {
 
 	authorized := false
 	for _, token := range tokens {
-		if len(token) < 30 {
+		if len(token) < APITokenMinimumLength {
 			errorLogger.Print("attempt to access API with a token of a wrong length")
 			return exaerror.New("E-ERA-23").
 				Message("an authorization token has invalid length: {{length|uq}}.").
 				Parameter("length", len(token)).
-				Mitigation("please only use tokens with the length longer or equal to 30.")
+				Mitigation("please only use tokens with the length longer or equal to {{minimum length|uq}}.").
+				Parameter("minimum length", APITokenMinimumLength)
 		}
 
 		if auth.AllowedTokens[token] {

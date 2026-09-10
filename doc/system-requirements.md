@@ -61,6 +61,17 @@ Covers:
 
 Needs: dsn
 
+### API Token Configuration
+`req~api-token-configuration~1`
+
+Exasol admins configure ERA with at least one non-empty API token before starting the service.
+
+Covers:
+
+* [feat~exasol-rest-endpoints~1](#exasol-rest-endpoints)
+
+Needs: dsn
+
 ### Execute Query
 `req~execute-query~1`
 

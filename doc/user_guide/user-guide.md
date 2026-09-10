@@ -33,14 +33,14 @@ Exasol service account described above and a list of API tokens (see [Authorizat
 EXASOL_USER: "api_service_account"
 EXASOL_PASSWORD: "secret_password"
 API_TOKENS:
-  - "abc"
-  - "bca"
-  - "cab"
+  - "123456789012345678901234567890"
+  - "abcdefghijklmnopqrstuvwxyzABCD"
+  - "qwertyuiopasdfghjklzxcvbnm1234"
 ```
 
 Please be aware of the API token length: only 30 or more characters are allowed.
 
-Before starting the application, you need to 
+Before starting the application, you need to
 - set an environment variable that points to the properties file:
 
 ```
@@ -55,7 +55,7 @@ On Linux:
 ./exasol-rest-api -application-properties-path='<PATH>'
 ```
 
-On Windows: open a command prompt and start the service from the prompt:  
+On Windows: open a command prompt and start the service from the prompt:
 
 ```cmd
 path\to\file\exasol-rest-api-x86-64.exe -application-properties-path='<PATH>'
@@ -76,7 +76,7 @@ For the API tokens' value use the following format: `token1,token2,token3,...`
 
 | Property                     |     Default      | Description                                                  |
 | :--------------------------- |  :------------:  | :----------------------------------------------------------- |
-| API_TOKENS                   |                  | List of allowed API tokens for authorization.                |
+| API_TOKENS                   |                  | Required list of allowed API tokens for authorization; surrounding whitespace is ignored; each resulting entry must be non-empty and at least 30 characters long. |
 | SERVER_ADDRESS               | `"0.0.0.0:8080"` | Address for the server to listen for new connection.         |
 | EXASOL_USER                  |                  | Name of the Exasol service account.                          |
 | EXASOL_PASSWORD              |                  | Password of the Exasol service account.                      |
@@ -103,8 +103,8 @@ Another option is to disable certificate validation by setting property `EXASOL_
 
 ### Authorization
 
-Add a comma separated list of API tokens to the configuration file (find an example above).
-The tokens must have **at least 30 alphanumeric** characters. Only users with the tokens you listed can access secured API endpoints.
+Add a comma separated list of API tokens to the configuration file (find an example above). Surrounding whitespace is ignored. The service refuses to start if the list is missing, empty, or contains an empty token.
+The tokens must have **at least 30 characters**. Only users with the tokens you listed can access secured API endpoints.
 
 ### Start API Service
 
