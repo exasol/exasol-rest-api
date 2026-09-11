@@ -1,4 +1,4 @@
-# Exasol REST API 1.0.3, released 2026-09-??
+# Exasol REST API 1.0.3, released 2026-09-11
 
 Code name: Fix float row filters
 
@@ -14,6 +14,7 @@ This release fixes float filters for the `GET /api/v1/rows` endpoint.
 
 * #111: Fix float row filters
 * #109: Validate API token configuration at startup
+* #110: Return API error responses for malformed JSON requests
 
 ## Dependency Updates
 

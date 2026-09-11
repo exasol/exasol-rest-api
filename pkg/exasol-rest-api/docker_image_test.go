@@ -1,11 +1,13 @@
 package exasol_rest_api_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"testing"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"gopkg.in/yaml.v3"
 )
 
 type DockerImageTestSuite struct {
@@ -51,18 +54,7 @@ func (suite *DockerImageTestSuite) SetupSuite() {
 }
 
 func (suite *DockerImageTestSuite) TestQueryDocker() {
-	host, err := getHostAddress()
-	onError(err)
-	suite.T().Logf("Using host %s:%d", host, suite.exasolPort)
-	properties := map[string]string{
-		exasol_rest_api.APITokensKey:                       suite.defaultAuthTokens,
-		exasol_rest_api.ExasolUserKey:                      suite.defaultExasolUsername,
-		exasol_rest_api.ExasolPasswordKey:                  suite.defaultExasolPassword,
-		exasol_rest_api.ExasolHostKey:                      host,
-		exasol_rest_api.ExasolPortKey:                      strconv.Itoa(suite.exasolPort),
-		exasol_rest_api.ExasolValidateServerCertificateKey: "false",
-	}
-	apiContainer := runRestAPIContainer(properties)
+	apiContainer := runRestAPIContainer(suite.restAPIProperties(), suite.exasolPort)
 	ip, err := apiContainer.Host(suite.ctx)
 	onError(err)
 
@@ -86,26 +78,87 @@ func (suite *DockerImageTestSuite) TestQueryDocker() {
 		string(body))
 }
 
-// getHostAddress returns an address accessible from other Docker containers.
-// This is a workaround for https://github.com/exasol/exasol-test-setup-abstraction-server/issues/38
-// Implementation adapted from https://stackoverflow.com/a/37382208
-func getHostAddress() (string, error) {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		return "", err
+func (suite *DockerImageTestSuite) TestSwaggerDocumentationContainsProjectVersion() {
+	apiContainer := runRestAPIContainer(suite.restAPIProperties(), suite.exasolPort)
+	ip, err := apiContainer.Host(suite.ctx)
+	suite.Require().NoError(err)
+	port, err := apiContainer.MappedPort(suite.ctx, "8080")
+	suite.Require().NoError(err)
+
+	response, err := http.Get("http://" + ip + ":" + port.Port() + "/swagger/doc.json")
+	suite.Require().NoError(err)
+	defer func() { suite.NoError(response.Body.Close()) }()
+	suite.Equal(http.StatusOK, response.StatusCode)
+
+	var swaggerDocument struct {
+		Info struct {
+			Version string `json:"version"`
+		} `json:"info"`
 	}
-	defer func() { onError(conn.Close()) }()
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return localAddr.IP.String(), err
+	suite.Require().NoError(json.NewDecoder(response.Body).Decode(&swaggerDocument))
+	suite.Equalf(
+		readProjectVersion(suite.T()),
+		swaggerDocument.Info.Version,
+		"Update the project version in .project-keeper.yml and the Swagger @version annotation in main.go.",
+	)
 }
 
-func runRestAPIContainer(env map[string]string) testcontainers.Container {
+func readProjectVersion(t *testing.T) string {
+	t.Helper()
+	projectKeeperConfiguration, err := os.ReadFile("../../.project-keeper.yml")
+	if err != nil {
+		t.Fatalf("failed to read the project configuration: %v", err)
+	}
+	var configuration struct {
+		Version string `yaml:"version"`
+	}
+	if err := yaml.Unmarshal(projectKeeperConfiguration, &configuration); err != nil {
+		t.Fatalf("failed to parse the project configuration: %v", err)
+	}
+	return configuration.Version
+}
+
+// [itest->dsn~execute-statement-endpoint~1]
+// [itest->dsn~execute-statement-request-body~1]
+// [itest->dsn~execute-statement-response-body~1]
+func (suite *DockerImageTestSuite) TestExecuteStatementWithMalformedJSONDocker() {
+	apiContainer := runRestAPIContainer(suite.restAPIProperties(), suite.exasolPort)
+	ip, err := apiContainer.Host(suite.ctx)
+	onError(err)
+	port, err := apiContainer.MappedPort(suite.ctx, "8080")
+	onError(err)
+
+	request, err := http.NewRequest(http.MethodPost, "http://"+ip+":"+port.Port()+"/api/v1/statement", bytes.NewBufferString("{"))
+	onError(err)
+	request.Header.Set("Authorization", "3J90XAv9loMIXzQdfYmtJrHAbopPsc")
+	response, err := http.DefaultClient.Do(request)
+	onError(err)
+	body, err := io.ReadAll(response.Body)
+	onError(err)
+
+	suite.Equal("400 Bad Request", response.Status)
+	suite.Equal("{\"status\":\"error\",\"exception\":\"unexpected EOF\"}", string(body))
+}
+
+func (suite *DockerImageTestSuite) restAPIProperties() map[string]string {
+	return map[string]string{
+		exasol_rest_api.APITokensKey:                       suite.defaultAuthTokens,
+		exasol_rest_api.ExasolUserKey:                      suite.defaultExasolUsername,
+		exasol_rest_api.ExasolPasswordKey:                  suite.defaultExasolPassword,
+		exasol_rest_api.ExasolHostKey:                      testcontainers.HostInternal,
+		exasol_rest_api.ExasolPortKey:                      strconv.Itoa(suite.exasolPort),
+		exasol_rest_api.ExasolValidateServerCertificateKey: "false",
+	}
+}
+
+func runRestAPIContainer(env map[string]string, hostAccessPort int) testcontainers.Container {
 	image := "rest-api-test-image:latest"
 	request := testcontainers.ContainerRequest{
-		Image:        image,
-		ExposedPorts: []string{"8080"},
-		WaitingFor:   wait.ForLog("Listening and serving HTTP"),
-		Env:          env,
+		Image:           image,
+		ExposedPorts:    []string{"8080"},
+		HostAccessPorts: []int{hostAccessPort},
+		WaitingFor:      wait.ForLog("Listening and serving HTTP"),
+		Env:             env,
 	}
 	apiContainer, err := testcontainers.GenericContainer(context.Background(), testcontainers.GenericContainerRequest{
 		ContainerRequest: request,

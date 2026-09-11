@@ -47,7 +47,7 @@ func (application *Application) Query(context *gin.Context) {
 // [impl->dsn~execute-statement-endpoint~1]
 func (application *Application) ExecuteStatement(context *gin.Context) {
 	var request ExecuteStatementRequest
-	err := context.BindJSON(&request)
+	err := context.ShouldBindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
@@ -85,7 +85,7 @@ func (application *Application) GetTables(context *gin.Context) {
 // [impl->dsn~insert-row-endpoint~1]
 func (application *Application) InsertRow(context *gin.Context) {
 	var request InsertRowRequest
-	err := context.BindJSON(&request)
+	err := context.ShouldBindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
@@ -117,7 +117,7 @@ func (application *Application) InsertRow(context *gin.Context) {
 // [impl->dsn~delete-rows-endpoint~1]
 func (application *Application) DeleteRows(context *gin.Context) {
 	var request RowsRequest
-	err := context.BindJSON(&request)
+	err := context.ShouldBindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
@@ -149,7 +149,7 @@ func (application *Application) DeleteRows(context *gin.Context) {
 // [impl->dsn~update-rows-endpoint~1]
 func (application *Application) UpdateRows(context *gin.Context) {
 	var request UpdateRowsRequest
-	err := context.BindJSON(&request)
+	err := context.ShouldBindJSON(&request)
 	validationError := request.Validate()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, apiErrorResponse(err))
