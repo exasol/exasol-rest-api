@@ -1,4 +1,4 @@
-# Exasol REST API 1.0.3, released 2026-09-??
+# Exasol REST API 1.0.3, released 2026-09-11
 
 Code name: Fix float row filters
 
